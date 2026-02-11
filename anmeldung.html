@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anmeldung – TALENTEXPERTE Fußball-Feriencamps</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/anmeldung.css">
+<meta name="description" content="Jetzt anmelden zum Fußball-Feriencamp der Fußballschule TALENTEXPERTE in Aachen. Online-Anmeldung in 2 Minuten.">
+<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg" />
+<link rel="shortcut icon" href="favicon/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="TALENTEXPERTE" />
+<link rel="manifest" href="favicon/site.webmanifest" />
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav"><div class="container">
+  <a href="index.html" class="nav-logo"><img src="ci/logo.png" alt="Logo"><span class="nav-brand">TALENT<span>EXPERTE</span></span></a>
+  <a href="index.html" class="nav-back">← Zurück zur Startseite</a>
+</div></nav>
+
+<!-- HERO -->
+<section class="hero-mini"><div class="container">
+  <div class="badge">⚽ Online-Anmeldung</div>
+  <h1>JETZT <span class="accent">ANMELDEN</span></h1>
+  <p>In 2 Minuten zum Camp-Platz. Wähle dein Camp, fülle das Formular aus und sichere den Platz mit einer Online-Zahlung.</p>
+</div></section>
+
+<!-- FORM -->
+<div class="main">
+
+  <!-- CAMP AUSWAHL -->
+  <div class="camp-select">
+    <h2>1. Camp auswählen</h2>
+    <p class="camp-select-hint">Mehrere Camps wählbar – Preisberechnung erfolgt automatisch</p>
+    <div class="camp-grid" id="campGrid">
+      <div class="camp-loading"><div class="spinner"></div>Camps werden geladen…</div>
+    </div>
+    <div class="price-summary" id="priceSummary">
+      <div class="price-summary-inner">
+        <div><span class="price-summary-label" id="priceLabel">0 Camps gewählt</span></div>
+        <div class="price-summary-total" id="priceTotal">0€</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KIND -->
+  <form id="registrationForm" novalidate>
+  <div class="form-section">
+    <h2>2. Daten des Kindes</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>Vorname <span class="req">*</span></label>
+        <input type="text" id="vorname" name="vorname" placeholder="Max" required>
+        <span class="error-msg">Bitte Vorname eingeben</span>
+      </div>
+      <div class="field">
+        <label>Nachname <span class="req">*</span></label>
+        <input type="text" id="nachname" name="nachname" placeholder="Mustermann" required>
+        <span class="error-msg">Bitte Nachname eingeben</span>
+      </div>
+      <div class="field">
+        <label>Geburtsdatum <span class="req">*</span></label>
+        <input type="date" id="geburtsdatum" name="geburtsdatum" required>
+        <span class="error-msg">Bitte Geburtsdatum eingeben</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ELTERN -->
+  <div class="form-section">
+    <h2>3. Eltern & Kontakt</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>Vorname Elternteil <span class="req">*</span></label>
+        <input type="text" id="eltern_vorname" name="eltern_vorname" placeholder="Thomas" required>
+        <span class="error-msg">Bitte Vorname eingeben</span>
+      </div>
+      <div class="field">
+        <label>Nachname Elternteil <span class="req">*</span></label>
+        <input type="text" id="eltern_nachname" name="eltern_nachname" placeholder="Mustermann" required>
+        <span class="error-msg">Bitte Nachname eingeben</span>
+      </div>
+      <div class="field">
+        <label>E-Mail-Adresse <span class="req">*</span></label>
+        <input type="email" id="email" name="email" placeholder="thomas@example.com" required>
+        <span class="error-msg">Bitte gültige E-Mail eingeben</span>
+      </div>
+      <div class="field">
+        <label>Telefon / Mobil <span class="req">*</span></label>
+        <input type="tel" id="telefon" name="telefon" placeholder="+49 151 12345678" required>
+        <span class="error-msg">Bitte Telefonnummer eingeben</span>
+      </div>
+      <div class="field form-full">
+        <label>Adresse</label>
+        <input type="text" id="adresse" name="adresse" placeholder="Musterstr. 1, 52066 Aachen">
+      </div>
+    </div>
+  </div>
+
+  <!-- ZUSATZINFOS -->
+  <div class="form-section">
+    <h2>4. Zusätzliche Infos</h2>
+    <div class="form-grid">
+      <div class="field form-full">
+        <label>Fußball-Erfahrung</label>
+        <input type="text" id="erfahrung" name="erfahrung" placeholder="z.B. Vereinsspieler bei FC Aachen, Anfänger, Hobbykicker…">
+      </div>
+      <div class="field form-full">
+        <label>Allergien / Unverträglichkeiten / Besonderheiten</label>
+        <textarea id="allergien" name="allergien" placeholder="z.B. Laktoseintoleranz, Asthma, vegetarisches Essen gewünscht…"></textarea>
+      </div>
+      <div class="field form-full">
+        <label>Sonstige Anmerkungen</label>
+        <textarea id="notizen" name="notizen" placeholder="z.B. Darf alleine nach Hause gehen, Geschwisterkind in anderem Camp…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- AGB -->
+  <label class="agb-check" id="agbCheck">
+    <input type="checkbox" id="agb" required>
+    <div class="agb-box"></div>
+    <div class="agb-text">
+      Ich habe die <a href="agb.html" target="_blank">Teilnahmebedingungen (AGB)</a> und die <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a> gelesen und akzeptiere diese. Ich versichere, dass mein Kind sportlich voll belastbar und gesund ist.
+    </div>
+  </label>
+
+  <!-- SUBMIT -->
+  <div class="submit-area">
+    <button type="submit" class="btn-submit" id="submitBtn" disabled>
+      <span class="btn-text">Verbindlich anmelden</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+    <p class="submit-note">Nach der Anmeldung wirst du zur sicheren Bezahlung über Stripe weitergeleitet.<br>Der Platz wird erst nach Zahlungseingang verbindlich reserviert.</p>
+  </div>
+  </form>
+</div>
+
+<!-- SUMMARY BAR (mobile) -->
+<div class="summary-bar" id="summaryBar">
+  <div class="summary-camp" id="summaryCamp">Kein Camp gewählt</div>
+  <div class="summary-price" id="summaryPrice">–</div>
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="overlay" id="successOverlay">
+  <div class="overlay-card">
+    <div class="overlay-icon success">🎉</div>
+    <h2>Anmeldung erfolgreich!</h2>
+    <p id="successMessage">Die Anmeldung wurde gespeichert. Bitte bezahle jetzt, um den Platz verbindlich zu reservieren.</p>
+    <a href="#" class="btn-overlay btn-pay" id="payBtn">Jetzt bezahlen →</a>
+    <br>
+    <a href="index.html" class="btn-overlay btn-back">Zurück zur Startseite</a>
+  </div>
+</div>
+
+<!-- ERROR OVERLAY -->
+<div class="overlay" id="errorOverlay">
+  <div class="overlay-card">
+    <div class="overlay-icon error">⚠️</div>
+    <h2>Fehler</h2>
+    <p id="errorMessage">Ein Fehler ist aufgetreten. Bitte versuche es erneut.</p>
+    <button class="btn-overlay btn-back" onclick="document.getElementById('errorOverlay').classList.remove('visible')">Schließen</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer-mini">
+  <div>© 2005–2026 Fußballschule TALENTEXPERTE · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a> · <a href="agb.html">AGB</a></div>
+</footer>
+
+<script>
+// ============================================================
+// KONFIGURATION
+// ============================================================
+// ⚠️ HIER DEINE SUPABASE-DATEN EINTRAGEN:
+const SUPABASE_URL = 'https://yxygwwoocsdnneqykiym.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U'; // Settings → API → anon public
+
+// ============================================================
+// STATE
+// ============================================================
+let camps = [];
+let selectedCampIds = [];
+
+// ============================================================
+// CAMPS LADEN
+// ============================================================
+async function loadCamps() {
+  const grid = document.getElementById('campGrid');
+  
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/camp_verfuegbarkeit?status=in.(aktiv,ausgebucht)&order=datum_von.asc`,
+      {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        }
+      }
+    );
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    camps = await res.json();
+
+    if (camps.length === 0) {
+      grid.innerHTML = '<div class="camp-error">Aktuell sind keine Camps verfügbar. Bitte schaue später wieder vorbei.</div>';
+      return;
+    }
+
+    grid.innerHTML = camps.map(camp => {
+      const frei = camp.freie_plaetze;
+      const voll = frei <= 0;
+      const wenig = frei > 0 && frei <= 5;
+      const preis = camp.aktueller_preis || camp.preis_euro;
+      const fruehbucher = camp.fruehbucher_aktiv;
+
+      const saisonEmoji = {
+        'ostern': '🐣', 'sommer': '☀️', 'herbst': '🍂', 'winter': '❄️'
+      }[camp.saison] || '⚽';
+
+      const datumVon = formatDate(camp.datum_von);
+      const datumBis = formatDate(camp.datum_bis);
+
+      return `
+        <label class="camp-option ${voll ? 'disabled' : ''}" data-id="${camp.id}">
+          <input type="checkbox" name="camp" value="${camp.id}" ${voll ? 'disabled' : ''}>
+          <div class="camp-radio"></div>
+          <div class="camp-info">
+            <h3>${saisonEmoji} ${camp.name}</h3>
+            <div class="camp-meta">
+              <span>📅 ${datumVon} – ${datumBis}</span>
+              <span>📍 ${camp.ort}</span>
+            </div>
+          </div>
+          <div class="camp-right">
+            <div>
+              <div class="camp-price-tag">${preis}€</div>
+              <div class="camp-spots ${voll ? 'full' : wenig ? 'few' : 'available'}">
+                ${voll ? '✕ Ausgebucht' : wenig ? `⚡ Nur noch ${frei} Plätze` : `✓ ${frei} Plätze frei`}
+              </div>
+              ${fruehbucher ? '<div class="camp-fruehbucher">🏷️ Frühbucher-Preis</div>' : ''}
+            </div>
+          </div>
+        </label>
+      `;
+    }).join('');
+
+    // Click-Handler (Mehrfach-Auswahl)
+    grid.querySelectorAll('.camp-option:not(.disabled)').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        var id = el.dataset.id;
+        var idx = selectedCampIds.indexOf(id);
+        if (idx > -1) {
+          selectedCampIds.splice(idx, 1);
+          el.classList.remove('selected');
+          el.querySelector('input').checked = false;
+        } else {
+          selectedCampIds.push(id);
+          el.classList.add('selected');
+          el.querySelector('input').checked = true;
+        }
+        updateSummary();
+        checkFormReady();
+      });
+    });
+
+  } catch (err) {
+    console.error('Camps laden fehlgeschlagen:', err);
+    grid.innerHTML = '<div class="camp-error">Camps konnten nicht geladen werden. Bitte lade die Seite neu oder versuche es später erneut.</div>';
+  }
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+}
+
+// ============================================================
+// SUMMARY BAR (mobile)
+// ============================================================
+function updateSummary() {
+  const bar = document.getElementById('summaryBar');
+  const campEl = document.getElementById('summaryCamp');
+  const priceEl = document.getElementById('summaryPrice');
+  const priceSummary = document.getElementById('priceSummary');
+
+  if (selectedCampIds.length > 0) {
+    var selected = camps.filter(c => selectedCampIds.indexOf(c.id) > -1);
+    var total = selected.reduce(function(s, c) { return s + (c.aktueller_preis || c.preis_euro); }, 0);
+    var names = selected.map(c => c.name).join(', ');
+
+    campEl.innerHTML = '<strong>' + selected.length + ' Camp' + (selected.length > 1 ? 's' : '') + '</strong>' + names;
+    priceEl.textContent = total + '€';
+    bar.classList.add('visible');
+
+    // Price summary box
+    document.getElementById('priceLabel').textContent = selected.length + ' Camp' + (selected.length > 1 ? 's' : '') + ' gewählt: ' + names;
+    document.getElementById('priceTotal').textContent = total + '€';
+    priceSummary.style.display = 'block';
+  } else {
+    bar.classList.remove('visible');
+    priceSummary.style.display = 'none';
+  }
+}
+
+// ============================================================
+// FORM VALIDATION
+// ============================================================
+const requiredFields = ['vorname','nachname','geburtsdatum','eltern_vorname','eltern_nachname','email','telefon'];
+
+function checkFormReady() {
+  const allFilled = requiredFields.every(id => document.getElementById(id).value.trim());
+  const agbChecked = document.getElementById('agb').checked;
+  const campSelected = selectedCampIds.length > 0;
+  document.getElementById('submitBtn').disabled = !(allFilled && agbChecked && campSelected);
+}
+
+// Live-Validation
+requiredFields.forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    document.getElementById(id).closest('.field').classList.remove('error');
+    checkFormReady();
+  });
+});
+document.getElementById('agb').addEventListener('change', () => {
+  document.getElementById('agbCheck').classList.remove('error');
+  checkFormReady();
+});
+
+function validateForm() {
+  let valid = true;
+  
+  requiredFields.forEach(id => {
+    const field = document.getElementById(id);
+    const parent = field.closest('.field');
+    if (!field.value.trim()) {
+      parent.classList.add('error');
+      valid = false;
+    } else {
+      parent.classList.remove('error');
+    }
+  });
+
+  // Email-Format
+  const email = document.getElementById('email');
+  if (email.value && !email.value.includes('@')) {
+    email.closest('.field').classList.add('error');
+    valid = false;
+  }
+
+  // AGB
+  if (!document.getElementById('agb').checked) {
+    document.getElementById('agbCheck').classList.add('error');
+    valid = false;
+  }
+
+  // Camp
+  if (selectedCampIds.length === 0) {
+    valid = false;
+  }
+
+  return valid;
+}
+
+// ============================================================
+// FORM SUBMIT
+// ============================================================
+document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  if (!validateForm()) {
+    // Scroll zum ersten Fehler
+    const firstError = document.querySelector('.field.error, .agb-check.error');
+    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  const formData = {
+    vorname: document.getElementById('vorname').value,
+    nachname: document.getElementById('nachname').value,
+    geburtsdatum: document.getElementById('geburtsdatum').value,
+    eltern_vorname: document.getElementById('eltern_vorname').value,
+    eltern_nachname: document.getElementById('eltern_nachname').value,
+    email: document.getElementById('email').value,
+    telefon: document.getElementById('telefon').value,
+    adresse: document.getElementById('adresse').value || null,
+    erfahrung: document.getElementById('erfahrung').value || null,
+    allergien: document.getElementById('allergien').value || null,
+    notizen: document.getElementById('notizen').value || null,
+  };
+
+  try {
+    // Für jedes gewählte Camp eine Anmeldung senden
+    var results = [];
+    var errors = [];
+
+    for (var i = 0; i < selectedCampIds.length; i++) {
+      var cid = selectedCampIds[i];
+      var data = Object.assign({}, formData, { camp_id: cid });
+
+      var res = await fetch(SUPABASE_URL + '/functions/v1/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      var text = await res.text();
+      var result;
+      try { result = JSON.parse(text); } catch (e) { 
+        errors.push('Server-Fehler für Camp ' + (i+1)); 
+        continue; 
+      }
+
+      if (res.ok && result.success) {
+        results.push(result);
+      } else {
+        errors.push(result.error || 'Fehler bei Camp ' + (i+1));
+      }
+    }
+
+    if (results.length > 0) {
+      // Daten für Bestätigungsseite speichern
+      var campNames = results.map(function(r) { return r.camp_name; });
+      var totalBetrag = results.reduce(function(s, r) { return s + r.betrag; }, 0);
+      var firstResult = results[0];
+
+      localStorage.setItem('te_anmeldung_id', firstResult.anmeldung_id);
+      localStorage.setItem('te_camp_name', campNames.join(', '));
+      localStorage.setItem('te_betrag', totalBetrag);
+      localStorage.setItem('te_kind_name', formData.vorname + ' ' + formData.nachname);
+      localStorage.setItem('te_eltern_name', formData.eltern_vorname + ' ' + formData.eltern_nachname);
+      localStorage.setItem('te_email', formData.email);
+      localStorage.setItem('te_telefon', formData.telefon);
+      localStorage.setItem('te_geburtsdatum', formData.geburtsdatum);
+      localStorage.setItem('te_camp_id', selectedCampIds[0]);
+      localStorage.setItem('te_camp_ids', JSON.stringify(selectedCampIds));
+      localStorage.setItem('te_camp_count', results.length);
+
+      // Erfolgsmeldung
+      var successMsg = formData.vorname + ' wurde erfolgreich zu ' + results.length + ' Camp' + (results.length > 1 ? 's' : '') + ' angemeldet (' + campNames.join(', ') + ')! Bitte bezahle jetzt ' + totalBetrag + '€, um die Plätze verbindlich zu reservieren.';
+      if (results.length === 1) {
+        successMsg = formData.vorname + ' wurde erfolgreich zum ' + campNames[0] + ' angemeldet! Bitte bezahle jetzt ' + totalBetrag + '€, um den Platz verbindlich zu reservieren.';
+      }
+      document.getElementById('successMessage').textContent = successMsg;
+      
+      var payBtn = document.getElementById('payBtn');
+      if (firstResult.stripe_link) {
+        payBtn.href = firstResult.stripe_link;
+        payBtn.style.display = 'inline-flex';
+        // Bei mehreren Camps Hinweis auf Menge
+        if (results.length > 1) {
+          payBtn.textContent = totalBetrag + '€ bezahlen (' + results.length + '× Camp) →';
+        }
+      } else {
+        payBtn.style.display = 'none';
+      }
+
+      document.getElementById('successOverlay').classList.add('visible');
+    }
+
+    if (errors.length > 0 && results.length === 0) {
+      document.getElementById('errorMessage').textContent = errors.join('. ');
+      document.getElementById('errorOverlay').classList.add('visible');
+    }
+  } catch (err) {
+    console.error('Anmeldung fehlgeschlagen:', err);
+    document.getElementById('errorMessage').textContent = 'Verbindungsfehler: ' + (err.message || err) + '. Bitte prüfe deine Internetverbindung und versuche es erneut.';
+    document.getElementById('errorOverlay').classList.add('visible');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    checkFormReady();
+  }
+});
+
+// ============================================================
+// INIT
+// ============================================================
+loadCamps();
+</script>
+</body>
+</html>

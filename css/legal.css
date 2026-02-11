@@ -1,0 +1,24 @@
+/* Legal Pages – AGB, Datenschutz, Impressum */
+:root{--red:#e50000;--red-dark:#c00;--black:#0a0a0a;--black-soft:#111;--white:#fff;--gray-200:#e8e8e8;--gray-300:#d0d0d0;--gray-500:#888;--font-display:'Bebas Neue',Impact,sans-serif;--font-body:'Plus Jakarta Sans',system-ui,sans-serif;--radius:12px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font-body);background:var(--black);color:var(--white);line-height:1.6}
+a{color:var(--red);text-decoration:none;transition:color .3s}a:hover{color:var(--red-dark)}
+.nav{background:rgba(10,10,10,.95);backdrop-filter:blur(20px);padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.nav .container{max-width:1200px;margin:0 auto;padding:0 clamp(20px,5vw,80px);display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--white)}
+.nav-logo img{height:42px;width:42px;border-radius:50%;object-fit:cover}
+.nav-brand{font-family:var(--font-display);font-size:1.3rem;letter-spacing:.1em}
+.nav-brand span{color:var(--red)}
+.nav-back{font-size:.85rem;font-weight:600;color:var(--gray-300);display:flex;align-items:center;gap:6px;transition:color .3s}
+.nav-back:hover{color:var(--red)}
+.content{max-width:800px;margin:0 auto;padding:60px clamp(20px,5vw,80px) 100px}
+.content h1{font-family:var(--font-display);font-size:clamp(2rem,4vw,3rem);letter-spacing:.04em;margin-bottom:8px;color:var(--red)}
+.content .subtitle{font-size:.9rem;color:var(--gray-500);margin-bottom:40px;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,.06)}
+.content h2{font-family:var(--font-display);font-size:1.4rem;letter-spacing:.06em;margin:36px 0 12px;color:var(--white)}
+.content h3{font-size:1rem;font-weight:700;margin:24px 0 8px;color:var(--gray-200)}
+.content p{color:var(--gray-300);margin-bottom:14px;line-height:1.75;font-size:.92rem}
+.content ul{color:var(--gray-300);margin:0 0 14px 20px;font-size:.92rem;line-height:1.75}
+.content strong{color:var(--white)}
+.footer-mini{background:var(--black);border-top:1px solid rgba(255,255,255,.05);padding:24px 0;text-align:center;font-size:.78rem;color:var(--gray-500)}
+.footer-mini a{color:var(--gray-500);margin:0 12px}.footer-mini a:hover{color:var(--red)}

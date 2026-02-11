@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firmen-Anmeldung — TALENTEXPERTE Fußball-Feriencamps</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/anmeldung.css">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg" />
+<link rel="shortcut icon" href="favicon/favicon.ico" />
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav"><div class="container">
+  <a href="index.html" class="nav-logo"><img src="ci/logo.png" alt="Logo"><span class="nav-brand">TALENT<span>EXPERTE</span></span></a>
+  <a href="index.html" class="nav-back">← Zurück zur Startseite</a>
+</div></nav>
+
+<!-- HERO -->
+<section class="hero-mini"><div class="container">
+  <div class="badge">🏢 Firmen-Anmeldung</div>
+  <h1>CAMP-PLÄTZE FÜR <span class="accent">MITARBEITER</span></h1>
+  <p>Keine Online-Zahlung erforderlich</p>
+</div></section>
+
+<!-- FORM -->
+<div class="main">
+
+  <!-- CAMP AUSWAHL -->
+  <div class="camp-select">
+    <h2>1. Camp auswählen</h2>
+    <p class="camp-select-hint">Wähle ein Camp für das Mitarbeiter-Kind</p>
+    <div class="camp-grid" id="campGrid">
+      <div class="camp-loading"><div class="spinner"></div>Camps werden geladen…</div>
+    </div>
+    <div class="price-summary" id="priceSummary" style="display: block;">
+      <div class="price-summary-inner">
+        <div><span class="price-summary-label" id="priceLabel">Kein Camp gewählt</span></div>
+        <div class="price-summary-total" id="priceTotal">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORMULAR -->
+  <form id="firmenForm" novalidate>
+  
+  <!-- MITARBEITER -->
+  <div class="form-section">
+    <h2>2. Mitarbeiter-Daten (Elternteil)</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>Vorname <span class="req">*</span></label>
+        <input type="text" name="mitarbeiter_vorname" required>
+        <span class="error-msg">Bitte Vorname eingeben</span>
+      </div>
+      <div class="field">
+        <label>Nachname <span class="req">*</span></label>
+        <input type="text" name="mitarbeiter_nachname" required>
+        <span class="error-msg">Bitte Nachname eingeben</span>
+      </div>
+      <div class="field">
+        <label>Mitarbeiter-E-Mail</label>
+        <input type="email" name="mitarbeiter_email">
+      </div>
+      <div class="field">
+        <label>Mitarbeiter-Telefon <span class="req">*</span></label>
+        <input type="tel" name="mitarbeiter_telefon" required>
+        <span class="error-msg">Bitte Telefonnummer eingeben</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- KIND -->
+  <div class="form-section">
+    <h2>3. Daten des Kindes</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>Vorname <span class="req">*</span></label>
+        <input type="text" name="kind_vorname" required>
+        <span class="error-msg">Bitte Vorname eingeben</span>
+      </div>
+      <div class="field">
+        <label>Nachname <span class="req">*</span></label>
+        <input type="text" name="kind_nachname" required>
+        <span class="error-msg">Bitte Nachname eingeben</span>
+      </div>
+      <div class="field">
+        <label>Geburtsdatum <span class="req">*</span></label>
+        <input type="date" name="kind_geburtsdatum" required>
+        <span class="error-msg">Bitte Geburtsdatum eingeben</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZUSATZ -->
+  <div class="form-section">
+    <h2>4. Zusatzinformationen</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label>Fußball-Erfahrung</label>
+        <select name="erfahrung">
+          <option value="">Bitte wählen</option>
+          <option value="Anfänger, kein Verein">Anfänger, kein Verein</option>
+          <option value="Anfänger, Hobby">Anfänger, Hobby</option>
+          <option value="Fortgeschritten, Hobby">Fortgeschritten, Hobby</option>
+          <option value="Seit 1 Jahr im Verein">Seit 1 Jahr im Verein</option>
+          <option value="Seit 2-3 Jahren im Verein">Seit 2-3 Jahren im Verein</option>
+          <option value="Seit mehr als 3 Jahren im Verein">Seit mehr als 3 Jahren im Verein</option>
+        </select>
+      </div>
+      <div class="field form-full">
+        <label>Allergien / Unverträglichkeiten</label>
+        <input type="text" name="allergien">
+      </div>
+      <div class="field form-full">
+        <label>Notizen (optional)</label>
+        <textarea name="notizen" rows="3"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- AGB -->
+  <div class="form-section">
+    <h2>5. Bestätigung</h2>
+    <div class="form-grid">
+      <div class="field form-full">
+        <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
+          <input type="checkbox" name="agb" required style="width: 20px; height: 20px; margin-top: 2px; cursor: pointer;">
+          <span>Ich akzeptiere die <a href="agb.html" target="_blank" style="color: var(--red); text-decoration: underline;">AGB</a> und <a href="datenschutz.html" target="_blank" style="color: var(--red); text-decoration: underline;">Datenschutzerklärung</a> <span class="req">*</span></span>
+        </label>
+        <span class="error-msg">Bitte AGB akzeptieren</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="form-actions">
+    <button type="submit" class="btn-primary" id="submitBtn">
+      <span class="btn-text">Verbindlich anmelden</span>
+      <span class="btn-spinner" style="display:none;"><div class="spinner"></div></span>
+    </button>
+  </div>
+
+  </form>
+</div>
+
+<footer class="footer"><div class="container">
+  <p>&copy; 2026 TALENTEXPERTE Fußballschule | <a href="impressum.html">Impressum</a> | <a href="datenschutz.html">Datenschutz</a> | <a href="agb.html">AGB</a></p>
+</div></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function() {
+'use strict';
+
+const supabase = window.supabase.createClient(
+  'https://yxygwwoocsdnneqykiym.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U'
+);
+
+let selectedCamp = null;
+let camps = [];
+
+// Camps laden
+async function loadCamps() {
+  try {
+    const { data, error } = await supabase
+      .from('camp_verfuegbarkeit')
+      .select('*')
+      .gte('datum_bis', new Date().toISOString().split('T')[0])
+      .gt('freie_plaetze', 0)
+      .eq('status', 'aktiv')
+      .order('datum_von', { ascending: true });
+
+    if (error) throw error;
+    camps = data || [];
+    renderCamps();
+  } catch (error) {
+    console.error('Fehler:', error);
+    document.getElementById('campGrid').innerHTML = '<p style="color:red;">Fehler beim Laden. Bitte neu laden.</p>';
+  }
+}
+
+function renderCamps() {
+  const grid = document.getElementById('campGrid');
+  if (camps.length === 0) {
+    grid.innerHTML = '<p class="camp-error">Keine Camps verfügbar.</p>';
+    return;
+  }
+
+  grid.innerHTML = camps.map(c => {
+    const spotsLeft = c.freie_plaetze;
+    const spotsClass = spotsLeft > 10 ? 'available' : spotsLeft > 0 ? 'few' : 'full';
+    const disabled = spotsLeft === 0;
+    const selected = selectedCamp === c.id ? 'selected' : '';
+    
+    return `
+      <div class="camp-option ${selected} ${disabled ? 'disabled' : ''}" onclick="selectCamp('${c.id}')">
+        <div class="camp-radio"></div>
+        <div class="camp-info">
+          <h3>${c.name}</h3>
+          <div class="camp-meta">
+            <span>📅 ${formatDate(c.datum_von)} - ${formatDate(c.datum_bis)}</span>
+            <span>🕐 ${c.uhrzeit_von.substring(0,5)} - ${c.uhrzeit_bis.substring(0,5)}</span>
+            <span>📍 ${c.ort}</span>
+          </div>
+        </div>
+        <div class="camp-right">
+          <div class="camp-price-tag" style="text-decoration: line-through; opacity: 0.5;">${c.aktueller_preis}€</div>
+          <div class="camp-spots ${spotsClass}">${spotsLeft} von ${c.max_plaetze} frei</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function selectCamp(id) {
+  const camp = camps.find(c => c.id === id);
+  if (!camp || camp.freie_plaetze === 0) return; // Ausgebuchte Camps nicht auswählbar
+  
+  selectedCamp = id;
+  renderCamps();
+  updatePrice();
+}
+
+// Global verfügbar machen für onclick
+window.selectCamp = selectCamp;
+
+function updatePrice() {
+  const label = document.getElementById('priceLabel');
+  const total = document.getElementById('priceTotal');
+  
+  if (selectedCamp) {
+    const camp = camps.find(c => c.id === selectedCamp);
+    label.textContent = camp.name;
+    total.innerHTML = '<span style="text-decoration: line-through; opacity: 0.5;">' + camp.aktueller_preis + '€</span> <span style="color: #22c55e; margin-left: 8px;">Wird von Firma übernommen</span>';
+  } else {
+    label.textContent = 'Kein Camp gewählt';
+    total.textContent = '—';
+  }
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const date = new Date(d + 'T00:00:00');
+  return date.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit', year:'numeric'});
+}
+
+// Form Submit
+document.getElementById('firmenForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  if (!selectedCamp) {
+    alert('Bitte wähle ein Camp aus.');
+    return;
+  }
+  
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.querySelector('.btn-text').textContent = 'Wird gesendet...';
+  btn.querySelector('.btn-spinner').style.display = 'inline-block';
+  
+  try {
+    const formData = new FormData(e.target);
+    const raw = Object.fromEntries(formData);
+    const selectedCampData = camps.find(c => c.id === selectedCamp);
+    const preis = Number(selectedCampData?.aktueller_preis ?? selectedCampData?.preis_euro ?? 0);
+
+    // Exakt an Supabase-Schema "firmen_anmeldungen" angepasst
+    const data = {
+      camp_id: selectedCamp,
+      betrag_euro: preis,
+      status: 'offen',
+
+      mitarbeiter_vorname: raw.mitarbeiter_vorname?.trim(),
+      mitarbeiter_nachname: raw.mitarbeiter_nachname?.trim(),
+      mitarbeiter_email: raw.mitarbeiter_email?.trim() || null,
+      mitarbeiter_telefon: raw.mitarbeiter_telefon?.trim(),
+
+      kind_vorname: raw.kind_vorname?.trim(),
+      kind_nachname: raw.kind_nachname?.trim(),
+      kind_geburtsdatum: raw.kind_geburtsdatum || null,
+
+      erfahrung: raw.erfahrung || null,
+      allergien: raw.allergien?.trim() || null,
+      notizen: raw.notizen?.trim() || null,
+
+      // Firma-Daten (Platzhalter, bis Firmenfelder im Formular ergänzt sind)
+      firma_name: 'Firma',
+      firma_email: raw.mitarbeiter_email?.trim() || 'info@firma.de',
+      firma_telefon: raw.mitarbeiter_telefon?.trim() || null,
+      rechnungsadresse: 'Wird nachgetragen',
+
+      // Optionale Felder im Schema
+      ansprechpartner_vorname: raw.mitarbeiter_vorname?.trim() || null,
+      ansprechpartner_nachname: raw.mitarbeiter_nachname?.trim() || null,
+      kostenstelle: null,
+      trikot_groesse: null
+    };
+
+    const { error } = await supabase
+      .from('firmen_anmeldungen')
+      .insert([data]);
+    
+    if (error) throw error;
+
+    // Für Bestätigungsseite lokal puffern (RLS-sicher ohne public SELECT)
+    const confirmationPayload = {
+      firma_name: data.firma_name,
+      mitarbeiter_vorname: data.mitarbeiter_vorname,
+      mitarbeiter_nachname: data.mitarbeiter_nachname,
+      mitarbeiter_telefon: data.mitarbeiter_telefon,
+      kind_vorname: data.kind_vorname,
+      kind_nachname: data.kind_nachname,
+      kind_geburtsdatum: data.kind_geburtsdatum,
+      rechnungsadresse: data.rechnungsadresse,
+      betrag_euro: data.betrag_euro,
+      camp_name: selectedCampData?.name || 'Camp',
+      camp_ort: selectedCampData?.ort || '',
+      camp_datum_von: selectedCampData?.datum_von || null,
+      camp_datum_bis: selectedCampData?.datum_bis || null,
+      camp_uhrzeit_von: selectedCampData?.uhrzeit_von || '',
+      camp_uhrzeit_bis: selectedCampData?.uhrzeit_bis || ''
+    };
+
+    try {
+      localStorage.setItem('te_firma_last_submission', JSON.stringify(confirmationPayload));
+    } catch (storageError) {
+      console.warn('LocalStorage konnte nicht beschrieben werden:', storageError);
+    }
+
+    const qs = new URLSearchParams({
+      fn: confirmationPayload.firma_name || '',
+      mv: confirmationPayload.mitarbeiter_vorname || '',
+      mn: confirmationPayload.mitarbeiter_nachname || '',
+      mt: confirmationPayload.mitarbeiter_telefon || '',
+      kv: confirmationPayload.kind_vorname || '',
+      kn: confirmationPayload.kind_nachname || '',
+      kg: confirmationPayload.kind_geburtsdatum || '',
+      ra: confirmationPayload.rechnungsadresse || '',
+      be: String(confirmationPayload.betrag_euro || 0),
+      cn: confirmationPayload.camp_name || '',
+      co: confirmationPayload.camp_ort || '',
+      cdv: confirmationPayload.camp_datum_von || '',
+      cdb: confirmationPayload.camp_datum_bis || '',
+      cuv: confirmationPayload.camp_uhrzeit_von || '',
+      cub: confirmationPayload.camp_uhrzeit_bis || ''
+    });
+
+    window.location.href = `bestaetigung-firma.html?${qs.toString()}`;
+    
+  } catch (error) {
+    console.error('Fehler:', error);
+    const msg = error?.message || 'Unbekannter Fehler';
+    const details = error?.details ? ' | Details: ' + error.details : '';
+    const hint = error?.hint ? ' | Hinweis: ' + error.hint : '';
+    alert('Fehler bei der Anmeldung: ' + msg + details + hint);
+    btn.disabled = false;
+    btn.querySelector('.btn-text').textContent = 'Verbindlich anmelden';
+    btn.querySelector('.btn-spinner').style.display = 'none';
+  }
+});
+
+// Validation
+document.getElementById('firmenForm').querySelectorAll('[required]').forEach(field => {
+  field.addEventListener('input', () => {
+    field.closest('.field')?.classList.remove('error');
+  });
+});
+
+window.addEventListener('DOMContentLoaded', loadCamps);
+})();
+</script>
+
+<style>
+/* Submit Button */
+.form-actions {
+  text-align: center;
+  margin-top: 32px;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 48px;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  border-radius: 60px;
+  background: var(--red);
+  color: var(--white);
+  box-shadow: 0 4px 25px rgba(229,0,0,.35);
+  transition: all .3s;
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--red-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 35px rgba(229,0,0,.45);
+}
+
+.btn-primary:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary .btn-spinner {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.btn-primary .btn-spinner .spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+/* Checkbox fix: restore native checkbox behavior for legal consent */
+.field input[type="checkbox"] {
+  -webkit-appearance: checkbox;
+  appearance: checkbox;
+  width: 20px !important;
+  height: 20px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  margin-top: 2px;
+  flex: 0 0 20px;
+}
+
+.field input[type="checkbox"]:focus {
+  box-shadow: none !important;
+}
+</style>
+
+</body>
+</html>

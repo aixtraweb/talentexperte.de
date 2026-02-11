@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin – TALENTEXPERTE</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/admin.css">
+<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg" />
+<link rel="shortcut icon" href="favicon/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="TALENTEXPERTE" />
+<link rel="manifest" href="favicon/site.webmanifest" />
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <h1>TALENT<span>EXPERTE</span></h1>
+    <p>Admin-Dashboard – Bitte einloggen</p>
+    <div class="login-field"><label>E-Mail</label><input type="email" id="loginEmail" placeholder="kontakt@talentexperte.de"></div>
+    <div class="login-field"><label>Passwort</label><input type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="login-btn" onclick="doLogin()">Einloggen</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<div class="dashboard" id="dashboard">
+  <nav class="dash-nav">
+    <div class="dash-nav-left"><h1>TALENT<span>EXPERTE</span></h1><span class="dash-nav-badge">Admin</span></div>
+    <div class="dash-nav-right"><span class="dash-time" id="dashTime"></span><button class="dash-logout" onclick="doLogout()">Abmelden ↗</button></div>
+  </nav>
+  <div class="dash-content">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Camps aktiv</div><div class="stat-value" id="statCamps">–</div><div class="stat-sub" id="statCampsSub"></div></div>
+      <div class="stat-card"><div class="stat-label">Anmeldungen</div><div class="stat-value red" id="statAnmeldungen">–</div><div class="stat-sub" id="statAnmeldungenSub"></div></div>
+      <div class="stat-card"><div class="stat-label">Bezahlt</div><div class="stat-value green" id="statBezahlt">–</div><div class="stat-sub" id="statBezahltSub"></div></div>
+      <div class="stat-card"><div class="stat-label">Offen</div><div class="stat-value yellow" id="statOffen">–</div><div class="stat-sub" id="statOffenSub"></div></div>
+      <div class="stat-card"><div class="stat-label">Umsatz (bezahlt)</div><div class="stat-value green" id="statUmsatz">–</div><div class="stat-sub" id="statUmsatzSub"></div></div>
+      <div class="stat-card"><div class="stat-label">Auslastung ∅</div><div class="stat-value" id="statAuslastung">–</div><div class="stat-sub" id="statAuslastungSub"></div></div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-tab="camps" onclick="switchTab('camps',this)">⚽ Camps</button>
+      <button class="tab" data-tab="anmeldungen" onclick="switchTab('anmeldungen',this)">📋 Anmeldungen</button>
+    </div>
+    <div class="tab-content active" id="tabCamps"><div class="camp-cards" id="campCards"><div class="empty-state"><div class="icon">⏳</div>Laden…</div></div></div>
+    <div class="tab-content" id="tabAnmeldungen">
+      <div class="table-controls">
+        <input type="text" class="table-search" id="searchInput" placeholder="🔍 Name, E-Mail, Telefon…" oninput="filterTable()">
+        <div class="table-filters">
+          <select class="filter-select" id="filterCamp" onchange="filterTable()"><option value="">Alle Camps</option></select>
+          <select class="filter-select" id="filterStatus" onchange="filterTable()"><option value="">Alle Status</option><option value="offen">⏳ Offen</option><option value="bezahlt">✅ Bezahlt</option><option value="storniert">❌ Storniert</option><option value="erstattet">↩ Erstattet</option></select>
+          <button class="btn-sm btn-export" onclick="exportCSV()">📥 CSV</button>
+          <button class="btn-sm btn-refresh" onclick="loadAll()">↻ Laden</button>
+        </div>
+      </div>
+      <div class="result-count" id="resultCount"></div>
+      <div class="table-wrap"><table><thead><tr>
+        <th onclick="sortTable('camp')">Camp ↕</th><th onclick="sortTable('kind')">Kind ↕</th><th onclick="sortTable('alter')">Alter</th>
+        <th onclick="sortTable('eltern')">Eltern</th><th onclick="sortTable('email')">E-Mail</th><th onclick="sortTable('telefon')">Telefon</th>
+        <th onclick="sortTable('status')">Status ↕</th><th onclick="sortTable('betrag')">Betrag</th><th onclick="sortTable('datum')">Datum ↕</th><th>Aktionen</th>
+      </tr></thead><tbody id="tableBody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- CAMP EDIT MODAL -->
+<div class="modal-overlay" id="campModal">
+  <div class="modal">
+    <div class="modal-header"><h2 id="campModalTitle">Camp bearbeiten</h2><button class="modal-close" onclick="closeCampModal()">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="editCampId">
+      <div class="modal-field"><label>Name</label><input type="text" id="editCampName"></div>
+      <div class="modal-row"><div class="modal-field"><label>Datum von</label><input type="date" id="editCampVon"></div><div class="modal-field"><label>Datum bis</label><input type="date" id="editCampBis"></div></div>
+      <div class="modal-row"><div class="modal-field"><label>Uhrzeit von</label><input type="time" id="editCampUhrzeitVon"></div><div class="modal-field"><label>Uhrzeit bis</label><input type="time" id="editCampUhrzeitBis"></div></div>
+      <div class="modal-row"><div class="modal-field"><label>Preis (€)</label><input type="number" id="editCampPreis" step="0.01"></div><div class="modal-field"><label>Max. Plätze</label><input type="number" id="editCampPlaetze"></div></div>
+      <div class="modal-row"><div class="modal-field"><label>Frühbucher-Preis (€)</label><input type="number" id="editCampFruehPreis" step="0.01" placeholder="Leer = kein Frühbucher"></div><div class="modal-field"><label>Frühbucher bis</label><input type="date" id="editCampFruehBis"></div></div>
+      <div class="modal-field"><label>Status</label><select id="editCampStatus"><option value="aktiv">Aktiv</option><option value="ausgebucht">Ausgebucht</option><option value="archiviert">Archiviert</option></select></div>
+      <div class="modal-field"><label>Stripe Payment Link</label><input type="url" id="editCampStripe" placeholder="https://buy.stripe.com/..."><span class="hint">Bezahl-Link nach Anmeldung</span></div>
+      <div class="modal-field"><label>Beschreibung</label><textarea id="editCampBeschreibung" rows="3"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn-modal btn-modal-cancel" onclick="closeCampModal()">Abbrechen</button><button class="btn-modal btn-modal-save" onclick="saveCamp()">Speichern</button></div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-header"><h2 id="detailTitle">Details</h2><button class="modal-close" onclick="closeDetail()">✕</button></div>
+  <div id="detailContent"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SUPABASE_URL='https://yxygwwoocsdnneqykiym.supabase.co';
+var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
+var accessToken=null,allCamps=[],allAnmeldungen=[],currentSort={field:'datum',dir:'desc'};
+
+function updateClock(){var e=document.getElementById('dashTime');if(e)e.textContent=new Date().toLocaleString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+setInterval(updateClock,30000);
+
+async function doLogin(){var email=document.getElementById('loginEmail').value,pw=document.getElementById('loginPassword').value,err=document.getElementById('loginError');err.style.display='none';
+try{var r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:JSON.stringify({email:email,password:pw})});var d=await r.json();
+if(d.access_token){accessToken=d.access_token;localStorage.setItem('sb_token',accessToken);localStorage.setItem('sb_refresh',d.refresh_token);showDashboard()}else{err.textContent='Falsche E-Mail oder Passwort.';err.style.display='block'}}
+catch(e){err.textContent='Verbindungsfehler: '+e.message;err.style.display='block'}}
+
+function doLogout(){accessToken=null;localStorage.removeItem('sb_token');localStorage.removeItem('sb_refresh');document.getElementById('loginScreen').style.display='flex';document.getElementById('dashboard').style.display='none'}
+function showDashboard(){document.getElementById('loginScreen').style.display='none';document.getElementById('dashboard').style.display='block';updateClock();loadAll()}
+(function(){var s=localStorage.getItem('sb_token');if(s){accessToken=s;showDashboard()}})();
+
+function apiH(){return{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json','Prefer':'return=representation'}}
+async function apiGet(p){
+var r=await fetch(SUPABASE_URL+'/rest/v1/'+p,{headers:apiH()});
+if(r.status===401){doLogout();return null}
+var j=await r.json();
+if(!r.ok){console.error('apiGet failed:',p,j);return null}
+return j
+}
+async function apiPatch(t,id,d){var r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?id=eq.'+id,{method:'PATCH',headers:apiH(),body:JSON.stringify(d)});if(r.status===401){doLogout();return null}return r}
+
+async function loadAll(){await Promise.all([loadCamps(),loadAnmeldungen()]);updateStats()}
+async function loadCamps(){var d=await apiGet('camp_verfuegbarkeit?order=datum_von.asc');if(!d)return;allCamps=d;renderCamps();populateCampFilter()}
+async function loadAnmeldungen(){
+var all=await apiGet('alle_anmeldungen?select=*&order=created_at.desc');
+if(Array.isArray(all)){
+allAnmeldungen=all.map(function(a){
+var typ=(a.typ||a.anmeldung_typ||'').toLowerCase()==='firma'?'Firma':'Privat';
+var campName=a.camp_name||a.name||'';
+return{
+id:a.id,__table:typ==='Firma'?'firmen_anmeldungen':'anmeldungen',__typ:typ,
+camp_id:a.camp_id,camps:campName?{name:campName}:null,
+vorname:a.kind_vorname||a.vorname||'',nachname:a.kind_nachname||a.nachname||'',
+geburtsdatum:a.kind_geburtsdatum||a.geburtsdatum||null,
+trikot_groesse:a.trikot_groesse||null,
+eltern_vorname:a.kontakt_vorname||a.mitarbeiter_vorname||a.eltern_vorname||'',
+eltern_nachname:a.kontakt_nachname||a.mitarbeiter_nachname||a.eltern_nachname||'',
+email:a.kontakt_email||a.mitarbeiter_email||a.email||a.firma_email||'',
+telefon:a.kontakt_telefon||a.mitarbeiter_telefon||a.telefon||a.firma_telefon||'',
+adresse:a.adresse||a.rechnungsadresse||'',
+erfahrung:a.erfahrung||null,allergien:a.allergien||null,notizen:a.notizen||null,
+zahlungsstatus:a.zahlungsstatus||a.status||'offen',
+betrag_euro:a.betrag_euro||0,zahlung_am:a.zahlung_am||a.bezahlt_am||null,storniert_am:a.storniert_am||null,created_at:a.created_at,
+firma_name:a.firma_name||null
+}})
+.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at)});
+renderTable();
+return
+}
+var priv=await apiGet('anmeldungen?select=*,camps(name,datum_von,datum_bis)&order=created_at.desc');
+var firm=await apiGet('firmen_anmeldungen?select=*,camps(name,datum_von,datum_bis)&order=created_at.desc');
+var p=Array.isArray(priv)?priv:[];
+var f=Array.isArray(firm)?firm:[];
+var nPriv=p.map(function(a){return Object.assign({},a,{__table:'anmeldungen',__typ:'Privat',zahlungsstatus:a.zahlungsstatus||a.status||'offen'})});
+var nFirm=f.map(function(a){return{
+id:a.id,__table:'firmen_anmeldungen',__typ:'Firma',
+camp_id:a.camp_id,camps:a.camps||null,
+vorname:a.kind_vorname,nachname:a.kind_nachname,geburtsdatum:a.kind_geburtsdatum,
+trikot_groesse:a.trikot_groesse||null,
+eltern_vorname:a.mitarbeiter_vorname,eltern_nachname:a.mitarbeiter_nachname,
+email:a.mitarbeiter_email||a.firma_email||'',telefon:a.mitarbeiter_telefon||a.firma_telefon||'',
+adresse:a.rechnungsadresse||'',erfahrung:a.erfahrung||null,allergien:a.allergien||null,notizen:a.notizen||null,
+zahlungsstatus:a.status||'offen',betrag_euro:a.betrag_euro,zahlung_am:a.bezahlt_am||null,storniert_am:a.storniert_am||null,created_at:a.created_at,
+firma_name:a.firma_name||null
+}});
+allAnmeldungen=nPriv.concat(nFirm).sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at)});
+renderTable()
+}
+
+function updateStats(){
+var aktive=allCamps.filter(function(c){return c.status==='aktiv'});
+var gesamt=allAnmeldungen.filter(function(a){return a.zahlungsstatus!=='storniert'});
+var bezahlt=allAnmeldungen.filter(function(a){return a.zahlungsstatus==='bezahlt'});
+var offen=allAnmeldungen.filter(function(a){return a.zahlungsstatus==='offen'});
+var umsatz=bezahlt.reduce(function(s,a){return s+Number(a.betrag_euro||0)},0);
+var umsatzO=offen.reduce(function(s,a){return s+Number(a.betrag_euro||0)},0);
+var tp=aktive.reduce(function(s,c){return s+c.max_plaetze},0);
+var bp=aktive.reduce(function(s,c){return s+c.anmeldungen_count},0);
+var ausl=tp>0?Math.round((bp/tp)*100):0;
+document.getElementById('statCamps').textContent=aktive.length;
+document.getElementById('statCampsSub').textContent=allCamps.length+' insgesamt';
+document.getElementById('statAnmeldungen').textContent=gesamt.length;
+var firmenCount=allAnmeldungen.filter(function(a){return a.__typ==='Firma'}).length;
+document.getElementById('statAnmeldungenSub').textContent=firmenCount+' Firmen · '+allAnmeldungen.length+' gesamt';
+document.getElementById('statBezahlt').textContent=bezahlt.length;
+document.getElementById('statBezahltSub').textContent=umsatz.toLocaleString('de-DE')+' € Umsatz';
+document.getElementById('statOffen').textContent=offen.length;
+document.getElementById('statOffenSub').textContent=umsatzO.toLocaleString('de-DE')+' € ausstehend';
+document.getElementById('statUmsatz').textContent=umsatz.toLocaleString('de-DE')+' €';
+document.getElementById('statUmsatzSub').textContent=umsatzO>0?'+ '+umsatzO.toLocaleString('de-DE')+' € offen':'Keine offenen';
+document.getElementById('statAuslastung').textContent=ausl+'%';
+document.getElementById('statAuslastungSub').textContent=bp+' / '+tp+' Plätze'}
+
+function renderCamps(){var c=document.getElementById('campCards');if(allCamps.length===0){c.innerHTML='<div class="empty-state"><div class="icon">📋</div>Keine Camps</div>';return}
+var em={ostern:'🐣',sommer:'☀️',herbst:'🍂',winter:'❄️'};
+c.innerHTML=allCamps.map(function(x){var p=x.max_plaetze>0?Math.round(((x.max_plaetze-x.freie_plaetze)/x.max_plaetze)*100):0;var l=p<50?'low':p<80?'medium':'high';
+return '<div class="camp-admin-card"><div class="camp-admin-header"><div class="camp-admin-name">'+(em[x.saison]||'⚽')+' '+x.name+'</div><span class="camp-admin-status '+x.status+'">'+x.status+'</span></div>'+
+'<div class="camp-admin-meta"><span>📅 '+fD(x.datum_von)+' – '+fD(x.datum_bis)+'</span><span>🕐 '+(x.uhrzeit_von||'').slice(0,5)+' – '+(x.uhrzeit_bis||'').slice(0,5)+' Uhr</span><span>📍 '+x.ort+'</span><span>💰 '+x.aktueller_preis+' €'+(x.fruehbucher_aktiv?' (Frühbucher)':'')+'</span></div>'+
+'<div class="capacity-bar"><div class="capacity-fill '+l+'" style="width:'+p+'%"></div></div>'+
+'<div class="capacity-text"><span>'+x.anmeldungen_count+' / '+x.max_plaetze+' belegt</span><span>'+x.bezahlt_count+' bezahlt · '+x.offen_count+' offen</span></div>'+
+'<div class="camp-actions"><button class="btn-camp btn-camp-edit" onclick="openCampEdit(\''+x.id+'\')">✏️ Bearbeiten</button>'+
+'<button class="btn-camp btn-camp-view" onclick="filterByCamp(\''+x.id+'\')">'+x.anmeldungen_count+' Anmeldungen →</button></div></div>'}).join('')}
+
+function filterByCamp(id){switchTab('anmeldungen',document.querySelector('[data-tab="anmeldungen"]'));document.getElementById('filterCamp').value=id;filterTable()}
+
+function openCampEdit(id){var c=allCamps.find(function(x){return x.id===id});if(!c)return;
+document.getElementById('editCampId').value=c.id;document.getElementById('editCampName').value=c.name;
+document.getElementById('editCampVon').value=c.datum_von;document.getElementById('editCampBis').value=c.datum_bis;
+document.getElementById('editCampUhrzeitVon').value=(c.uhrzeit_von||'').slice(0,5);document.getElementById('editCampUhrzeitBis').value=(c.uhrzeit_bis||'').slice(0,5);
+document.getElementById('editCampPreis').value=c.preis_euro;document.getElementById('editCampPlaetze').value=c.max_plaetze;
+document.getElementById('editCampFruehPreis').value=c.fruehbucher_preis||'';document.getElementById('editCampFruehBis').value=c.fruehbucher_bis||'';
+document.getElementById('editCampStatus').value=c.status;document.getElementById('editCampStripe').value=c.stripe_link||'';
+document.getElementById('editCampBeschreibung').value=c.beschreibung||'';
+document.getElementById('campModalTitle').textContent=c.name+' bearbeiten';document.getElementById('campModal').classList.add('visible')}
+
+function closeCampModal(){document.getElementById('campModal').classList.remove('visible')}
+
+async function saveCamp(){var id=document.getElementById('editCampId').value;
+var u={name:document.getElementById('editCampName').value,datum_von:document.getElementById('editCampVon').value,datum_bis:document.getElementById('editCampBis').value,
+uhrzeit_von:document.getElementById('editCampUhrzeitVon').value+':00',uhrzeit_bis:document.getElementById('editCampUhrzeitBis').value+':00',
+preis_euro:parseFloat(document.getElementById('editCampPreis').value),max_plaetze:parseInt(document.getElementById('editCampPlaetze').value),
+status:document.getElementById('editCampStatus').value,stripe_link:document.getElementById('editCampStripe').value||null,
+beschreibung:document.getElementById('editCampBeschreibung').value||null};
+var fp=document.getElementById('editCampFruehPreis').value,fb=document.getElementById('editCampFruehBis').value;
+u.fruehbucher_preis=fp?parseFloat(fp):null;u.fruehbucher_bis=fb||null;
+var r=await apiPatch('camps',id,u);if(r&&r.ok){closeCampModal();showToast('Camp gespeichert ✓');await loadAll()}else{showToast('Fehler beim Speichern',true)}}
+
+function renderTable(){var tb=document.getElementById('tableBody'),f=getFiltered();
+document.getElementById('resultCount').textContent=f.length+' Anmeldung'+(f.length!==1?'en':'')+' gefunden';
+if(f.length===0){tb.innerHTML='<tr><td colspan="10" class="empty-state"><div class="icon">📭</div>Keine Anmeldungen</td></tr>';return}
+tb.innerHTML=f.map(function(a){var cn=a.camps?a.camps.name:'–';var d=new Date(a.created_at);var ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+return '<tr class="clickable" ondblclick="openDetail(\''+a.id+'\')">'+'<td>'+cn+'</td><td><strong>'+a.vorname+' '+a.nachname+'</strong>'+(a.allergien?' <span title="Hat Allergien/Hinweise" class="badge-allergy">⚠️</span>':'')+'</td>'+
+'<td>'+getAge(a.geburtsdatum)+'</td><td>'+a.eltern_vorname+' '+a.eltern_nachname+'</td>'+
+'<td><a href="mailto:'+a.email+'" class="text-red" onclick="event.stopPropagation()">'+a.email+'</a></td>'+
+'<td><a href="tel:'+a.telefon+'" class="link-gray" onclick="event.stopPropagation()">'+a.telefon+'</a></td>'+
+'<td><span class="status-badge status-'+a.zahlungsstatus+'">'+a.zahlungsstatus+'</span></td>'+
+'<td>'+(a.betrag_euro||'–')+' €</td><td>'+ds+'</td>'+
+'<td onclick="event.stopPropagation()">'+actBtns(a)+'</td></tr>'}).join('')}
+
+function actBtns(a){var h='';if(a.zahlungsstatus==='offen'){h+='<button class="action-btn action-pay" onclick="setStatus(\''+a.id+'\',\'bezahlt\')">✓ Bezahlt</button> <button class="action-btn action-cancel" onclick="setStatus(\''+a.id+'\',\'storniert\')">✕</button>'}
+else if(a.zahlungsstatus==='bezahlt'){h+='<button class="action-btn action-cancel" onclick="setStatus(\''+a.id+'\',\'erstattet\')">↩</button>'}
+h+=' <button class="action-btn" class="action-btn-view" onclick="openDetail(\''+a.id+'\')">👁</button>';return h}
+
+function openDetail(id){var a=allAnmeldungen.find(function(x){return x.id===id});if(!a)return;
+var cn=a.camps?a.camps.name:'–';document.getElementById('detailTitle').textContent=a.vorname+' '+a.nachname;
+var h='<div class="detail-section"><h3>Kind</h3>'+rw('Vorname',a.vorname)+rw('Nachname',a.nachname)+rw('Geburtsdatum',fD(a.geburtsdatum)+' ('+getAge(a.geburtsdatum)+' Jahre)')+rw('Trikotgröße',a.trikot_groesse||'–')+'</div>';
+h+='<div class="detail-section"><h3>Eltern & Kontakt</h3>'+rw('Elternteil',a.eltern_vorname+' '+a.eltern_nachname)+rw('E-Mail','<a href="mailto:'+a.email+'" class="text-red">'+a.email+'</a>')+rw('Telefon','<a href="tel:'+a.telefon+'" class="link-gray">'+a.telefon+'</a>')+rw('Adresse',a.adresse||'–')+'</div>';
+h+='<div class="detail-section"><h3>Camp & Zahlung</h3>'+rw('Camp',cn)+rw('Status','<span class="status-badge status-'+a.zahlungsstatus+'">'+a.zahlungsstatus+'</span>')+rw('Betrag',(a.betrag_euro||'–')+' €')+rw('Angemeldet',fDT(a.created_at))+rw('Bezahlt am',a.zahlung_am?fDT(a.zahlung_am):'–')+rw('Storniert am',a.storniert_am?fDT(a.storniert_am):'–')+'</div>';
+if(a.erfahrung||a.allergien||a.notizen){h+='<div class="detail-section"><h3>Zusätzliche Infos</h3>';
+if(a.erfahrung)h+='<div class="detail-info-block"><div class="detail-info-label">ERFAHRUNG</div><div class="detail-notes">'+esc(a.erfahrung)+'</div></div>';
+if(a.allergien)h+='<div class="detail-info-block"><div class="detail-info-label--warning">⚠️ ALLERGIEN / BESONDERHEITEN</div><div class="detail-notes" class="detail-notes--warning">'+esc(a.allergien)+'</div></div>';
+if(a.notizen)h+='<div class="detail-info-block"><div class="detail-info-label">NOTIZEN</div><div class="detail-notes">'+esc(a.notizen)+'</div></div>';h+='</div>'}
+h+='<div class="detail-actions">';
+if(a.zahlungsstatus==='offen'){h+='<button class="detail-action-btn btn-mark-paid" onclick="setStatus(\''+a.id+'\',\'bezahlt\')">✓ Als bezahlt markieren</button><button class="detail-action-btn btn-storno" onclick="setStatus(\''+a.id+'\',\'storniert\')">✕ Stornieren</button>'}
+else if(a.zahlungsstatus==='bezahlt'){h+='<button class="detail-action-btn btn-erstattung" onclick="setStatus(\''+a.id+'\',\'erstattet\')">↩ Erstatten</button>'}
+var waMsg='Hallo '+a.eltern_vorname+', hier ist die Fußballschule TALENTEXPERTE. ';
+var waNum=a.telefon.replace(/[^0-9]/g,'').replace(/^0/,'');
+h+='<a class="detail-action-btn btn-wa" href="https://wa.me/49'+waNum+'?text='+encodeURIComponent(waMsg)+'" target="_blank" rel="noopener">💬 WhatsApp</a>';
+h+='<a class="detail-action-btn btn-mail" href="mailto:'+a.email+'?subject=Feriencamp%20TALENTEXPERTE" target="_blank">📧 E-Mail</a></div>';
+document.getElementById('detailContent').innerHTML=h;
+document.getElementById('detailOverlay').classList.add('visible');document.getElementById('detailPanel').classList.add('open')}
+
+function closeDetail(){document.getElementById('detailOverlay').classList.remove('visible');document.getElementById('detailPanel').classList.remove('open')}
+function rw(l,v){return '<div class="detail-row"><span class="label">'+l+'</span><span class="value">'+v+'</span></div>'}
+
+function getFiltered(){var s=document.getElementById('searchInput').value.toLowerCase(),cf=document.getElementById('filterCamp').value,sf=document.getElementById('filterStatus').value;
+var l=allAnmeldungen.filter(function(a){if(cf&&a.camp_id!==cf)return false;if(sf&&a.zahlungsstatus!==sf)return false;
+if(s){var h=(a.vorname+' '+a.nachname+' '+a.eltern_vorname+' '+a.eltern_nachname+' '+a.email+' '+a.telefon).toLowerCase();if(h.indexOf(s)===-1)return false}return true});
+l.sort(function(a,b){var va,vb;switch(currentSort.field){case'camp':va=(a.camps?a.camps.name:'');vb=(b.camps?b.camps.name:'');break;case'kind':va=a.nachname;vb=b.nachname;break;
+case'alter':va=getAge(a.geburtsdatum);vb=getAge(b.geburtsdatum);break;case'eltern':va=a.eltern_nachname;vb=b.eltern_nachname;break;case'email':va=a.email;vb=b.email;break;
+case'telefon':va=a.telefon;vb=b.telefon;break;case'status':va=a.zahlungsstatus;vb=b.zahlungsstatus;break;case'betrag':va=Number(a.betrag_euro||0);vb=Number(b.betrag_euro||0);break;
+default:va=a.created_at;vb=b.created_at}if(va<vb)return currentSort.dir==='asc'?-1:1;if(va>vb)return currentSort.dir==='asc'?1:-1;return 0});return l}
+
+function filterTable(){renderTable()}
+function sortTable(f){if(currentSort.field===f){currentSort.dir=currentSort.dir==='asc'?'desc':'asc'}else{currentSort.field=f;currentSort.dir='asc'}renderTable()}
+function populateCampFilter(){var s=document.getElementById('filterCamp'),c=s.value;s.innerHTML='<option value="">Alle Camps</option>';allCamps.forEach(function(x){s.innerHTML+='<option value="'+x.id+'">'+x.name+'</option>'});s.value=c}
+
+async function setStatus(id,st){var lb={bezahlt:'als bezahlt markieren',storniert:'stornieren',erstattet:'als erstattet markieren'};
+if(!confirm('Anmeldung wirklich '+lb[st]+'?'))return;
+var a=allAnmeldungen.find(function(x){return x.id===id});
+var table=(a&&a.__table)||'anmeldungen';
+var u={};
+if(table==='firmen_anmeldungen'){
+u.status=st;
+if(st==='bezahlt')u.bezahlt_am=new Date().toISOString();
+if(st==='storniert')u.storniert_am=new Date().toISOString();
+}else{
+u.zahlungsstatus=st;
+if(st==='bezahlt')u.zahlung_am=new Date().toISOString();
+if(st==='storniert')u.storniert_am=new Date().toISOString();
+}
+var r=await apiPatch(table,id,u);if(r&&r.ok){showToast('Status: '+st+' ✓');closeDetail();await loadAll()}else{showToast('Fehler',true)}}
+
+function exportCSV(){var f=getFiltered();if(f.length===0){alert('Keine Daten.');return}
+var h=['Camp','Vorname Kind','Nachname Kind','Geburtsdatum','Alter','Trikotgroesse','Vorname Eltern','Nachname Eltern','E-Mail','Telefon','Adresse','Erfahrung','Allergien','Notizen','Status','Betrag','Angemeldet am','Bezahlt am'];
+var rows=f.map(function(a){return[a.camps?a.camps.name:'',a.vorname,a.nachname,a.geburtsdatum,getAge(a.geburtsdatum),a.trikot_groesse||'',a.eltern_vorname,a.eltern_nachname,a.email,a.telefon,a.adresse||'',a.erfahrung||'',a.allergien||'',a.notizen||'',a.zahlungsstatus,a.betrag_euro||'',a.created_at?new Date(a.created_at).toLocaleDateString('de-DE'):'',a.zahlung_am?new Date(a.zahlung_am).toLocaleDateString('de-DE'):''].map(function(v){return '"'+String(v).replace(/"/g,'""')+'"'}).join(';')});
+var csv='\uFEFF'+h.join(';')+'\n'+rows.join('\n');var b=new Blob([csv],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='talentexperte-'+new Date().toISOString().slice(0,10)+'.csv';a.click();showToast('CSV exportiert ✓')}
+
+function switchTab(n,btn){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active')});
+if(btn)btn.classList.add('active');else document.querySelector('[data-tab="'+n+'"]').classList.add('active');
+document.getElementById('tab'+n.charAt(0).toUpperCase()+n.slice(1)).classList.add('active')}
+
+function showToast(m,e){var t=document.getElementById('toast');t.textContent=m;t.className='toast show'+(e?' error':'');setTimeout(function(){t.className='toast'},3000)}
+
+function fD(s){if(!s)return '–';return new Date(s+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})}
+function fDT(s){if(!s)return '–';var d=new Date(s);return d.toLocaleDateString('de-DE')+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}
+function getAge(s){if(!s)return '–';var b=new Date(s),t=new Date(),a=t.getFullYear()-b.getFullYear(),m=t.getMonth()-b.getMonth();if(m<0||(m===0&&t.getDate()<b.getDate()))a--;return a}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+</script>
+</body>
+</html>

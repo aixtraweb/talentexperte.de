@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zahlung bestätigt – TALENTEXPERTE</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/bestaetigung.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg" />
+<link rel="shortcut icon" href="favicon/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="TALENTEXPERTE" />
+<link rel="manifest" href="favicon/site.webmanifest" />
+</head>
+<body>
+
+<nav class="nav"><div class="container">
+  <a href="index.html" class="nav-logo"><img src="ci/logo.png" alt="Logo"><span class="nav-brand">TALENT<span>EXPERTE</span></span></a>
+</div></nav>
+
+<div class="main">
+  <div class="success-header">
+    <div class="check-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <h1>ZAHLUNG <span class="green">BESTÄTIGT!</span></h1>
+    <p id="headerText">Vielen Dank! Der Camp-Platz ist jetzt verbindlich reserviert.</p>
+  </div>
+
+  <!-- ANMELDEDATEN -->
+  <div class="info-card">
+    <h2>📋 Anmeldebestätigung</h2>
+    <div class="info-row"><span class="info-label">Teilnehmer</span><span class="info-value" id="dKind">–</span></div>
+    <div class="info-row"><span class="info-label">Geburtsdatum</span><span class="info-value" id="dGeb">–</span></div>
+    <div class="info-row"><span class="info-label">Elternteil</span><span class="info-value" id="dEltern">–</span></div>
+    <div class="info-row"><span class="info-label">E-Mail</span><span class="info-value" id="dEmail">–</span></div>
+    <div class="info-row"><span class="info-label">Telefon</span><span class="info-value" id="dTelefon">–</span></div>
+    <div class="info-row"><span class="info-label">Buchungs-Nr.</span><span class="info-value" id="dNr" class="info-value--small">–</span></div>
+  </div>
+
+  <!-- CAMP DETAILS -->
+  <div class="info-card">
+    <h2>⚽ Camp-Details</h2>
+    <div class="info-row"><span class="info-label">Camp</span><span class="info-value" id="dCamp">–</span></div>
+    <div class="info-row"><span class="info-label">Zeitraum</span><span class="info-value" id="dZeitraum">–</span></div>
+    <div class="info-row"><span class="info-label">Uhrzeit</span><span class="info-value" id="dUhrzeit">09:00 – 15:00 Uhr</span></div>
+    <div class="info-row"><span class="info-label">Ort</span><span class="info-value" id="dOrt">JSC BW Aachen, Branderhofer Weg, 52066 Aachen</span></div>
+    <div class="info-row"><span class="info-label">Betrag</span><span class="info-value" id="dBetrag" class="info-value--betrag">–</span></div>
+  </div>
+
+  <!-- INKLUSIVE -->
+  <div class="info-card">
+    <h2>🎁 Im Camp enthalten</h2>
+    <ul class="checklist">
+      <li><span class="icon">✅</span>4 Tage professionelles Fußballtraining</li>
+      <li><span class="icon">✅</span>Mittagessen, Getränke & Obst jeden Tag</li>
+      <li><span class="icon">✅</span>Urkunde, Foto & Medaille</li>
+      <li><span class="icon">✅</span>Betreuung durch lizenzierte Trainer</li>
+    </ul>
+  </div>
+
+  <!-- NÄCHSTE SCHRITTE -->
+  <div class="info-card">
+    <h2>📋 Nächste Schritte</h2>
+    <ul class="checklist">
+      <li><span class="icon">1️⃣</span>Der Camp-Platz ist ab sofort verbindlich für dein Kind reserviert.</li>
+      <li><span class="icon">2️⃣</span>Kurz vor dem Camp senden wir dir eine Info-Mail mit allen Details (Treffpunkt, Ablauf, was mitbringen).</li>
+      <li><span class="icon">3️⃣</span>Am ersten Tag bitte 15 Minuten früher da sein (8:45 Uhr) für die Begrüßung.</li>
+    </ul>
+  </div>
+
+  <!-- MITBRINGEN -->
+  <div class="info-card">
+    <h2>🎒 Das sollte dein Kind mitbringen</h2>
+    <div class="pack-grid">
+      <div class="pack-item"><span class="icon">👟</span>Fußballschuhe (Kunstrasen)</div>
+      <div class="pack-item"><span class="icon">🥾</span>Hallenschuhe (bei Regen)</div>
+      <div class="pack-item"><span class="icon">⚽</span>Schienbeinschoner</div>
+      <div class="pack-item"><span class="icon">👕</span>Sportkleidung</div>
+      <div class="pack-item"><span class="icon">🧴</span>Sonnencreme</div>
+      <div class="pack-item"><span class="icon">💧</span>Trinkflasche</div>
+      <div class="pack-item"><span class="icon">🧢</span>Kappe / Mütze</div>
+      <div class="pack-item"><span class="icon">🎒</span>Rucksack</div>
+    </div>
+  </div>
+
+  <!-- KONTAKT -->
+  <div class="info-card">
+    <h2>📞 Fragen? Wir sind für dich da!</h2>
+    <p class="contact-intro">Bei Fragen, Änderungswünschen oder Stornierung – melde dich einfach.</p>
+    <div class="contact-bar">
+      <a href="https://wa.me/4915234678108?text=Hallo%2C%20ich%20habe%20gerade%20ein%20Feriencamp%20gebucht%20und%20habe%20eine%20Frage." class="contact-link wa" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <a href="tel:+4915234678108" class="contact-link">📱 +49 1523 4678108</a>
+      <a href="/cdn-cgi/l/email-protection#4d262223392c26390d392c2128233928353d283f3928632928" class="contact-link">📧 E-Mail</a>
+    </div>
+  </div>
+
+  <!-- BUTTONS -->
+  <div class="btn-area">
+    <button class="btn-dl" onclick="downloadPDF()">📥 Bestätigung als PDF</button>
+    <a href="index.html" class="btn-home">← Zur Startseite</a>
+  </div>
+</div>
+
+<footer class="footer-mini">
+  <div>© 2005–2026 Fußballschule TALENTEXPERTE · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a> · <a href="agb.html">AGB</a></div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ============================================================
+// CONFIG
+// ============================================================
+var SUPABASE_URL = 'https://yxygwwoocsdnneqykiym.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
+
+// ============================================================
+// DATEN LADEN
+// ============================================================
+var regData = {
+  kind: localStorage.getItem('te_kind_name') || '',
+  eltern: localStorage.getItem('te_eltern_name') || '',
+  email: localStorage.getItem('te_email') || '',
+  telefon: localStorage.getItem('te_telefon') || '',
+  geburtsdatum: localStorage.getItem('te_geburtsdatum') || '',
+  camp_name: localStorage.getItem('te_camp_name') || '',
+  betrag: localStorage.getItem('te_betrag') || '',
+  camp_count: localStorage.getItem('te_camp_count') || '1',
+  anmeldung_id: localStorage.getItem('te_anmeldung_id') || '',
+  camp_id: localStorage.getItem('te_camp_id') || '',
+  camp_ids: JSON.parse(localStorage.getItem('te_camp_ids') || '[]'),
+  camp_datum_von: '',
+  camp_datum_bis: '',
+  camp_uhrzeit_von: '09:00',
+  camp_uhrzeit_bis: '15:00',
+  camp_ort: 'JSC BW Aachen',
+  camp_adresse: 'Branderhofer Weg, 52066 Aachen',
+  datum: new Date().toLocaleDateString('de-DE')
+};
+
+function fmtDate(s) {
+  if (!s) return '–';
+  var d = new Date(s + 'T00:00:00');
+  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function fmtDateShort(s) {
+  if (!s) return '';
+  var d = new Date(s + 'T00:00:00');
+  return d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+// Seite befüllen
+function fillPage() {
+  document.getElementById('dKind').textContent = regData.kind || '–';
+  document.getElementById('dGeb').textContent = fmtDate(regData.geburtsdatum);
+  document.getElementById('dEltern').textContent = regData.eltern || '–';
+  document.getElementById('dEmail').textContent = regData.email || '–';
+  document.getElementById('dTelefon').textContent = regData.telefon || '–';
+  document.getElementById('dNr').textContent = regData.anmeldung_id ? regData.anmeldung_id.slice(0, 8).toUpperCase() : '–';
+  document.getElementById('dCamp').textContent = regData.camp_name || '–';
+  var betragNum = parseInt(regData.betrag) || 0;
+  document.getElementById('dBetrag').textContent = betragNum > 0 ? betragNum + ',00 € ✓' : '–';
+  if (parseInt(regData.camp_count) > 1) {
+    document.getElementById('dBetrag').textContent = betragNum + ',00 € (' + regData.camp_count + ' Camps) ✓';
+  }
+
+  if (regData.kind) {
+    document.getElementById('headerText').textContent = 'Vielen Dank! Der Camp-Platz für ' + regData.kind + ' ist jetzt verbindlich reserviert.';
+  }
+}
+
+// Camp-Details aus Supabase nachladen
+async function loadCampDetails() {
+  if (!regData.camp_id) return;
+  try {
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/camps?id=eq.' + regData.camp_id + '&select=datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,ort,adresse',
+      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY } }
+    );
+    var data = await res.json();
+    if (data && data.length > 0) {
+      var c = data[0];
+      regData.camp_datum_von = c.datum_von;
+      regData.camp_datum_bis = c.datum_bis;
+      regData.camp_uhrzeit_von = (c.uhrzeit_von || '09:00:00').slice(0, 5);
+      regData.camp_uhrzeit_bis = (c.uhrzeit_bis || '15:00:00').slice(0, 5);
+      regData.camp_ort = c.ort || regData.camp_ort;
+      regData.camp_adresse = c.adresse || regData.camp_adresse;
+
+      document.getElementById('dZeitraum').textContent = fmtDateShort(c.datum_von) + ' – ' + fmtDateShort(c.datum_bis);
+      document.getElementById('dUhrzeit').textContent = regData.camp_uhrzeit_von + ' – ' + regData.camp_uhrzeit_bis + ' Uhr';
+      document.getElementById('dOrt').textContent = regData.camp_ort + ', ' + regData.camp_adresse;
+    }
+  } catch (e) {
+    console.log('Camp-Details konnten nicht geladen werden:', e);
+  }
+}
+
+fillPage();
+loadCampDetails();
+
+// ============================================================
+// PDF DOWNLOAD
+// ============================================================
+function downloadPDF() {
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF('p', 'mm', 'a4');
+  var w = 210;
+  var margin = 25;
+  var col = w - 2 * margin;
+  var y = 0;
+
+  // Header-Balken rot
+  doc.setFillColor(229, 0, 0);
+  doc.rect(0, 0, w, 35, 'F');
+
+  // Logo-Text
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.text('TALENTEXPERTE', margin, 16);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Fussballschule seit 2005 | Anmeldebestaetigung', margin, 24);
+
+  // Buchungsnr rechts
+  doc.setFontSize(9);
+  doc.text('Buchungs-Nr: ' + (regData.anmeldung_id ? regData.anmeldung_id.slice(0, 8).toUpperCase() : '–'), w - margin, 16, { align: 'right' });
+  doc.text('Datum: ' + regData.datum, w - margin, 22, { align: 'right' });
+
+  y = 48;
+
+  // Bestätigungstext
+  doc.setTextColor(34, 34, 34);
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Anmeldebestaetigung', margin, y);
+  y += 10;
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(80, 80, 80);
+  doc.text('Vielen Dank fuer die Anmeldung! Der Camp-Platz ist verbindlich reserviert.', margin, y);
+  y += 14;
+
+  // Teilnehmer-Box
+  doc.setFillColor(245, 245, 245);
+  doc.roundedRect(margin, y, col, 52, 3, 3, 'F');
+  doc.setTextColor(34, 34, 34);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('Teilnehmer', margin + 8, y + 10);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(100, 100, 100);
+  var ly = y + 20;
+  var rows1 = [
+    ['Kind:', regData.kind],
+    ['Geburtsdatum:', fmtDate(regData.geburtsdatum)],
+    ['Elternteil:', regData.eltern],
+    ['E-Mail:', regData.email],
+    ['Telefon:', regData.telefon],
+  ];
+  rows1.forEach(function(r) {
+    doc.setTextColor(120, 120, 120);
+    doc.text(r[0], margin + 8, ly);
+    doc.setTextColor(34, 34, 34);
+    doc.setFont('helvetica', 'bold');
+    doc.text(r[1] || '–', margin + 45, ly);
+    doc.setFont('helvetica', 'normal');
+    ly += 6;
+  });
+  y += 60;
+
+  // Camp-Box
+  doc.setFillColor(245, 245, 245);
+  doc.roundedRect(margin, y, col, 46, 3, 3, 'F');
+  doc.setTextColor(34, 34, 34);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('Camp-Details', margin + 8, y + 10);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  ly = y + 20;
+  var zeitraum = regData.camp_datum_von && regData.camp_datum_bis ? fmtDate(regData.camp_datum_von) + ' - ' + fmtDate(regData.camp_datum_bis) : '–';
+  var rows2 = [
+    ['Camp:', regData.camp_name],
+    ['Zeitraum:', zeitraum],
+    ['Uhrzeit:', regData.camp_uhrzeit_von + ' - ' + regData.camp_uhrzeit_bis + ' Uhr'],
+    ['Ort:', regData.camp_ort + ', ' + regData.camp_adresse],
+  ];
+  rows2.forEach(function(r) {
+    doc.setTextColor(120, 120, 120);
+    doc.text(r[0], margin + 8, ly);
+    doc.setTextColor(34, 34, 34);
+    doc.setFont('helvetica', 'bold');
+    doc.text(r[1] || '–', margin + 45, ly);
+    doc.setFont('helvetica', 'normal');
+    ly += 6;
+  });
+  y += 54;
+
+  // Betrag-Box
+  doc.setFillColor(34, 197, 94);
+  doc.roundedRect(margin, y, col, 16, 3, 3, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  var betragLabel = (regData.betrag || '–') + ',00 EUR';
+  if (parseInt(regData.camp_count) > 1) betragLabel += ' (' + regData.camp_count + ' Camps)';
+  doc.text('Bezahlt: ' + betragLabel, margin + 8, y + 11);
+  doc.text('Status: BEZAHLT', w - margin - 8, y + 11, { align: 'right' });
+  y += 26;
+
+  // Inklusive
+  doc.setTextColor(34, 34, 34);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('Im Camp enthalten', margin, y);
+  y += 8;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(80, 80, 80);
+  var inkl = [
+    '4 Tage professionelles Fussballtraining',
+    'Mittagessen, Getraenke & Obst jeden Tag',
+    'Urkunde, Foto & Medaille',
+    'Betreuung durch lizenzierte Trainer',
+  ];
+  inkl.forEach(function(t) { doc.text('  •  ' + t, margin, y); y += 6; });
+  y += 6;
+
+  // Mitbringen
+  doc.setTextColor(34, 34, 34);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('Bitte mitbringen', margin, y);
+  y += 8;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(80, 80, 80);
+  var pack = [
+    ['Fussballschuhe (Kunstrasen)', 'Hallenschuhe (bei Regen)'],
+    ['Schienbeinschoner', 'Sportkleidung'],
+    ['Sonnencreme', 'Trinkflasche'],
+    ['Kappe / Muetze', 'Rucksack'],
+  ];
+  pack.forEach(function(row) {
+    doc.text('  •  ' + row[0], margin, y);
+    doc.text('  •  ' + row[1], margin + 80, y);
+    y += 6;
+  });
+  y += 8;
+
+  // Hinweis
+  doc.setFillColor(255, 248, 230);
+  doc.roundedRect(margin, y, col, 18, 3, 3, 'F');
+  doc.setTextColor(120, 100, 0);
+  doc.setFontSize(8);
+  doc.text('Bitte am ersten Tag 15 Minuten frueher da sein (8:45 Uhr) fuer die Begruessung.', margin + 8, y + 8);
+  doc.text('Bei Fragen: kontakt@talentexperte.de | +49 1523 4678108 | WhatsApp', margin + 8, y + 14);
+
+  // Footer
+  doc.setFillColor(229, 0, 0);
+  doc.rect(0, 287, w, 10, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(7);
+  doc.text('Fussballschule TALENTEXPERTE | Alejandro Medina | kontakt@talentexperte.de | www.talentexperte.de', w / 2, 293, { align: 'center' });
+
+  // Download
+  v
