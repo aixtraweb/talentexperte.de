@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# Alte URL nach Relaunch: Firmenanmeldung
+Redirect 301 /anmeldung-saint-gobain.html /firmen-anmeldung.html
+
+# Alte URL nach Relaunch: Camps-Sektion
+Redirect 301 /camps-in /index.html#camps
+
+# Alle weiteren nicht existierenden URLs auf Startseite
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^.*$ /index.html [R=301,L]
