@@ -47,9 +47,25 @@
   <!-- FORMULAR -->
   <form id="firmenForm" novalidate>
   
+  <!-- FIRMA -->
+  <div class="form-section">
+    <h2>2. Firma</h2>
+    <div class="form-grid">
+      <div class="field form-full">
+        <label>Firmenname <span class="req">*</span></label>
+        <input type="text" name="firma_name" required>
+        <span class="error-msg">Bitte Firmenname eingeben</span>
+      </div>
+      <div class="field form-full">
+        <label>Rechnungsadresse (optional)</label>
+        <textarea name="rechnungsadresse" rows="2" placeholder="Straße, PLZ Ort"></textarea>
+      </div>
+    </div>
+  </div>
+
   <!-- MITARBEITER -->
   <div class="form-section">
-    <h2>2. Mitarbeiter-Daten (Elternteil)</h2>
+    <h2>3. Mitarbeiter-Daten (Elternteil)</h2>
     <div class="form-grid">
       <div class="field">
         <label>Vorname <span class="req">*</span></label>
@@ -75,7 +91,7 @@
 
   <!-- KIND -->
   <div class="form-section">
-    <h2>3. Daten des Kindes</h2>
+    <h2>4. Daten des Kindes</h2>
     <div class="form-grid">
       <div class="field">
         <label>Vorname <span class="req">*</span></label>
@@ -97,7 +113,7 @@
 
   <!-- ZUSATZ -->
   <div class="form-section">
-    <h2>4. Zusatzinformationen</h2>
+    <h2>5. Zusatzinformationen</h2>
     <div class="form-grid">
       <div class="field">
         <label>Fußball-Erfahrung</label>
@@ -124,7 +140,7 @@
 
   <!-- AGB -->
   <div class="form-section">
-    <h2>5. Bestätigung</h2>
+    <h2>6. Bestätigung</h2>
     <div class="form-grid">
       <div class="field form-full">
         <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
@@ -156,10 +172,9 @@
 (function() {
 'use strict';
 
-const supabase = window.supabase.createClient(
-  'https://yxygwwoocsdnneqykiym.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U'
-);
+const SUPABASE_URL = 'https://yxygwwoocsdnneqykiym.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let selectedCamp = null;
 let camps = [];
@@ -249,6 +264,43 @@ function formatDate(d) {
   return date.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit', year:'numeric'});
 }
 
+async function mirrorToLegacyAnmeldungen(payload) {
+  // Some live dashboards still read from "anmeldungen" only.
+  const base = {
+    camp_id: payload.camp_id,
+    vorname: payload.kind_vorname,
+    nachname: payload.kind_nachname,
+    geburtsdatum: payload.kind_geburtsdatum,
+    eltern_vorname: payload.mitarbeiter_vorname,
+    eltern_nachname: payload.mitarbeiter_nachname,
+    email: payload.mitarbeiter_email || payload.firma_email,
+    telefon: payload.mitarbeiter_telefon || payload.firma_telefon,
+    adresse: payload.rechnungsadresse || null,
+    erfahrung: payload.erfahrung,
+    allergien: payload.allergien,
+    notizen: payload.notizen,
+    betrag_euro: payload.betrag_euro
+  };
+
+  let res = await supabase
+    .from('anmeldungen')
+    .insert([Object.assign({}, base, { zahlungsstatus: 'bezahlt' })]);
+
+  if (!res.error) return;
+  if (!String(res.error.message || '').includes('zahlungsstatus')) {
+    console.warn('Mirror insert failed:', res.error);
+    return;
+  }
+
+  res = await supabase
+    .from('anmeldungen')
+    .insert([Object.assign({}, base, { status: 'bezahlt' })]);
+
+  if (res.error) {
+    console.warn('Mirror insert fallback failed:', res.error);
+  }
+}
+
 // Form Submit
 document.getElementById('firmenForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -269,11 +321,10 @@ document.getElementById('firmenForm').addEventListener('submit', async (e) => {
     const selectedCampData = camps.find(c => c.id === selectedCamp);
     const preis = Number(selectedCampData?.aktueller_preis ?? selectedCampData?.preis_euro ?? 0);
 
-    // Exakt an Supabase-Schema "firmen_anmeldungen" angepasst
     const data = {
       camp_id: selectedCamp,
       betrag_euro: preis,
-      status: 'offen',
+      status: 'bezahlt',
 
       mitarbeiter_vorname: raw.mitarbeiter_vorname?.trim(),
       mitarbeiter_nachname: raw.mitarbeiter_nachname?.trim(),
@@ -288,11 +339,10 @@ document.getElementById('firmenForm').addEventListener('submit', async (e) => {
       allergien: raw.allergien?.trim() || null,
       notizen: raw.notizen?.trim() || null,
 
-      // Firma-Daten (Platzhalter, bis Firmenfelder im Formular ergänzt sind)
-      firma_name: 'Firma',
+      firma_name: raw.firma_name?.trim() || 'Firma',
       firma_email: raw.mitarbeiter_email?.trim() || 'info@firma.de',
-      firma_telefon: raw.mitarbeiter_telefon?.trim() || null,
-      rechnungsadresse: 'Wird nachgetragen',
+      firma_telefon: raw.mitarbeiter_telefon?.trim() || '',
+      rechnungsadresse: raw.rechnungsadresse?.trim() || null,
 
       // Optionale Felder im Schema
       ansprechpartner_vorname: raw.mitarbeiter_vorname?.trim() || null,
@@ -306,10 +356,30 @@ document.getElementById('firmenForm').addEventListener('submit', async (e) => {
       .insert([data]);
     
     if (error) throw error;
+    await mirrorToLegacyAnmeldungen(data);
 
-    // Für Bestätigungsseite lokal puffern (RLS-sicher ohne public SELECT)
+    // Optional: confirmation mail via Edge Function if deployed.
+    try {
+      await fetch(SUPABASE_URL + '/functions/v1/send-firma-confirmation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY
+        },
+        body: JSON.stringify({
+          email: data.mitarbeiter_email || data.firma_email,
+          firma_name: data.firma_name,
+          kind_name: data.kind_vorname + ' ' + data.kind_nachname,
+          camp_name: selectedCampData?.name || ''
+        })
+      });
+    } catch (mailErr) {
+      console.warn('Confirmation mail hook unavailable:', mailErr);
+    }
+
     const confirmationPayload = {
       firma_name: data.firma_name,
+      email: data.mitarbeiter_email || data.firma_email,
       mitarbeiter_vorname: data.mitarbeiter_vorname,
       mitarbeiter_nachname: data.mitarbeiter_nachname,
       mitarbeiter_telefon: data.mitarbeiter_telefon,
@@ -334,6 +404,7 @@ document.getElementById('firmenForm').addEventListener('submit', async (e) => {
 
     const qs = new URLSearchParams({
       fn: confirmationPayload.firma_name || '',
+      em: confirmationPayload.email || '',
       mv: confirmationPayload.mitarbeiter_vorname || '',
       mn: confirmationPayload.mitarbeiter_nachname || '',
       mt: confirmationPayload.mitarbeiter_telefon || '',

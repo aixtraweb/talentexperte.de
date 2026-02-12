@@ -28,86 +28,27 @@
     
     <p class="success-lead">Vielen Dank für die Anmeldung! Die Buchung wurde erfolgreich registriert.</p>
 
-    <div class="info-box">
-      <p style="margin:0; color:#22c55e; font-weight:600;">Ihre Anmeldung wurde erfolgreich gespeichert und ist im Dashboard verfügbar.</p>
-    </div>
-
-    <!-- KOSTENÜBERNAHME HINWEIS -->
-    <div class="highlight-box" style="margin: 2rem 0; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; text-align: center;">
-      <h2 style="margin: 0 0 1rem 0; font-size: 1.5rem;">💼 Kostenübernahme durch Firma</h2>
-      <p style="margin: 0; font-size: 1.1rem; line-height: 1.6;">
-        <strong>Die Kosten für diesen Camp-Platz werden vollständig von der Firma übernommen.</strong><br>
-        Es fallen <strong>keine Kosten</strong> für Sie als Mitarbeiter/Elternteil an.
-      </p>
+    <div class="info-box" id="confirmCard">
+      <p style="margin:0; color:#22c55e; font-weight:600;">Ihre Anmeldung wurde gespeichert.</p>
     </div>
 
     <div class="next-steps">
-      <h2>📋 So geht es weiter</h2>
-      <ol>
-        <li>
-          <strong>📧 Bestätigungs-E-Mail:</strong><br>
-          Sie erhalten in Kürze eine Bestätigung an Ihre angegebene E-Mail-Adresse.
-        </li>
-        <li>
-          <strong>💰 Rechnung an Firma:</strong><br>
-          Die Rechnung wird direkt an die Firma (Rechnungsadresse) versendet.<br>
-          <span style="color: #28a745; font-weight: bold;">→ Für Sie entstehen keine Kosten!</span>
-        </li>
-        <li>
-          <strong>📅 Camp-Details:</strong><br>
-          Ca. 1 Woche vor Camp-Beginn erhalten Sie alle wichtigen Informationen:<br>
-          • Treffpunkt & Uhrzeit<br>
-          • Packliste<br>
-          • Kontaktdaten der Trainer
-        </li>
-        <li>
-          <strong>🎉 Camp-Tag:</strong><br>
-          Bringen Sie Ihr Kind zum angegebenen Treffpunkt.<br>
-          Wir freuen uns auf eine tolle Camp-Woche!
-        </li>
-      </ol>
+      <h2>📋 Kurz bestätigt</h2>
+      <p id="confirmKind" style="margin:.4rem 0;">Kind: —</p>
+      <p id="confirmCamp" style="margin:.4rem 0;">Camp: —</p>
+      <p id="confirmDate" style="margin:.4rem 0;">Zeitraum: —</p>
+      <p id="confirmLocation" style="margin:.4rem 0;">Ort: —</p>
     </div>
 
-    <div class="payment-info" style="margin: 2rem 0; padding: 1.5rem; background: #f8f9fa; border-left: 4px solid #28a745; border-radius: 8px;">
-      <h3 style="margin: 0 0 1rem 0; color: #28a745;">
-        <svg width="20" height="20" style="vertical-align: middle; margin-right: 0.5rem;" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-        </svg>
-        Wichtige Information zur Zahlung
-      </h3>
-      <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
-        <li><strong>Keine Vorauszahlung erforderlich</strong> – Sie müssen nichts bezahlen</li>
-        <li><strong>Rechnung geht an Firma</strong> – Ihre Firma erhält die Rechnung per E-Mail</li>
-        <li><strong>Zahlungsziel 14 Tage</strong> – Ihre Firma hat 14 Tage Zeit zur Begleichung</li>
-        <li><strong>Camp-Platz ist sicher</strong> – Der Platz ist direkt nach dieser Anmeldung reserviert</li>
-      </ul>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:1.2rem;">
+      <button type="button" class="btn-primary" id="downloadBtn">Bestätigung downloaden</button>
+      <button type="button" class="btn-primary" id="printBtn">Als PDF speichern</button>
+      <a href="/pdf/faq-camps-mitarbeiter.pdf" class="btn-primary" target="_blank" rel="noopener">📄 FAQ Mitarbeiter (PDF)</a>
     </div>
 
-    <div class="contact-box">
-      <h3>❓ Fragen zur Anmeldung?</h3>
-      <p>Bei Rückfragen zur Buchung oder zum Camp erreichst du uns gerne:</p>
-      <div style="display: grid; gap: 0.8rem; margin-top: 1rem;">
-        <p style="margin: 0;">
-          <strong>📧 E-Mail:</strong> 
-          <a href="mailto:info@talentexperte.de" style="color: #667eea;">info@talentexperte.de</a>
-        </p>
-        <p style="margin: 0;">
-          <strong>📱 Telefon:</strong> 
-          <a href="tel:+4924112345678" style="color: #667eea;">+49 241 123 456 78</a>
-        </p>
-        <p style="margin: 0; font-size: 0.9rem; color: #666;">
-          Mo-Fr: 9:00 - 17:00 Uhr
-        </p>
-      </div>
-    </div>
-
-    <div style="margin: 2rem 0; padding: 1.5rem; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
-      <p style="margin: 0; color: #856404;">
-        <strong>📄 Hinweis für Ihre Firma:</strong><br>
-        Die Rechnung enthält alle notwendigen Informationen für die Buchhaltung.<br>
-        Bei Fragen zur Rechnung kann sich Ihre Firma direkt an uns wenden.
-      </p>
-    </div>
+    <p style="margin-top:1rem; color:#8f8f8f; font-size:.92rem;">
+      Falls die Bestätigungsmail aktiv ist, wird sie an die hinterlegte E-Mail gesendet.
+    </p>
 
     <a href="index.html" class="btn-primary" style="margin-top: 2rem;">Zurück zur Startseite</a>
 
@@ -119,56 +60,128 @@
   <p>&copy; 2026 TALENTEXPERTE Fußballschule | <a href="impressum.html">Impressum</a> | <a href="datenschutz.html">Datenschutz</a></p>
 </div></footer>
 
+<script>
+(function() {
+  'use strict';
+
+  function getData() {
+    var params = new URLSearchParams(window.location.search);
+    var ls = null;
+    try { ls = JSON.parse(localStorage.getItem('te_firma_last_submission') || 'null'); } catch (e) {}
+    return {
+      kind_vorname: params.get('kv') || (ls && ls.kind_vorname) || '',
+      kind_nachname: params.get('kn') || (ls && ls.kind_nachname) || '',
+      camp_name: params.get('cn') || (ls && ls.camp_name) || '',
+      camp_ort: params.get('co') || (ls && ls.camp_ort) || '',
+      camp_datum_von: params.get('cdv') || (ls && ls.camp_datum_von) || '',
+      camp_datum_bis: params.get('cdb') || (ls && ls.camp_datum_bis) || '',
+      email: params.get('em') || (ls && ls.email) || ''
+    };
+  }
+
+  function fmtDate(d) {
+    if (!d) return '—';
+    var dt = new Date(d + 'T00:00:00');
+    if (isNaN(dt.getTime())) return d;
+    return dt.toLocaleDateString('de-DE');
+  }
+
+  function render(data) {
+    document.getElementById('confirmKind').textContent = 'Kind: ' + ((data.kind_vorname + ' ' + data.kind_nachname).trim() || '—');
+    document.getElementById('confirmCamp').textContent = 'Camp: ' + (data.camp_name || '—');
+    document.getElementById('confirmDate').textContent = 'Zeitraum: ' + fmtDate(data.camp_datum_von) + ' - ' + fmtDate(data.camp_datum_bis);
+    document.getElementById('confirmLocation').textContent = 'Ort: ' + (data.camp_ort || '—');
+  }
+
+  function openPdfWindow(data, autoPrint) {
+    var pdfWindow = window.open('', '_blank');
+    if (!pdfWindow) {
+      if (autoPrint) window.print();
+      return;
+    }
+    pdfWindow.document.open();
+    pdfWindow.document.write(buildPdfHtml(data));
+    pdfWindow.document.close();
+    pdfWindow.focus();
+    if (autoPrint) {
+      setTimeout(function() {
+        pdfWindow.print();
+      }, 250);
+    }
+  }
+
+  function escapeHtml(v) {
+    return String(v || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function buildPdfHtml(data) {
+    var logoUrl = new URL('ci/logo.png', window.location.href).href;
+    var kind = ((data.kind_vorname + ' ' + data.kind_nachname).trim() || '—');
+    var camp = data.camp_name || '—';
+    var zeitraum = fmtDate(data.camp_datum_von) + ' - ' + fmtDate(data.camp_datum_bis);
+    var ort = data.camp_ort || '—';
+    var now = new Date().toLocaleString('de-DE');
+
+    return '<!doctype html><html lang="de"><head><meta charset="utf-8"><title>TALENTEXPERTE Bestätigung</title><style>' +
+      '@page{size:A4;margin:18mm;}body{font-family:Arial,sans-serif;color:#111;line-height:1.45;margin:0;}' +
+      '.wrap{max-width:760px;margin:0 auto;} .head{display:flex;align-items:center;gap:14px;border-bottom:2px solid #111;padding-bottom:14px;margin-bottom:18px;}' +
+      '.head img{width:56px;height:56px;object-fit:contain;} .brand{font-weight:700;letter-spacing:.06em;}' +
+      'h1{font-size:24px;margin:6px 0 12px;} .ok{color:#0a7f2e;font-weight:700;margin:0 0 14px;}' +
+      '.card{border:1px solid #ddd;border-radius:10px;padding:14px 16px;margin:14px 0;} .row{margin:6px 0;}' +
+      '.lbl{font-weight:700;display:inline-block;min-width:110px;} .meta{margin-top:10px;color:#555;font-size:12px;}' +
+      '.foot{margin-top:26px;border-top:1px solid #ddd;padding-top:14px;font-size:13px;} .foot h2{font-size:14px;margin:0 0 6px;letter-spacing:.04em;}' +
+      '</style></head><body><div class="wrap">' +
+      '<div class="head"><img src="' + escapeHtml(logoUrl) + '" alt="TALENTEXPERTE Logo"><div class="brand">FUSSBALLSCHULE TALENTEXPERTE</div></div>' +
+      '<h1>Anmeldebestätigung</h1>' +
+      '<p class="ok">Die Anmeldung wurde erfolgreich registriert.</p>' +
+      '<div class="card">' +
+      '<div class="row"><span class="lbl">Kind:</span>' + escapeHtml(kind) + '</div>' +
+      '<div class="row"><span class="lbl">Camp:</span>' + escapeHtml(camp) + '</div>' +
+      '<div class="row"><span class="lbl">Zeitraum:</span>' + escapeHtml(zeitraum) + '</div>' +
+      '<div class="row"><span class="lbl">Ort:</span>' + escapeHtml(ort) + '</div>' +
+      '<div class="meta">Erstellt am: ' + escapeHtml(now) + '</div>' +
+      '</div>' +
+      '<div class="foot">' +
+      '<h2>FUSSBALLSCHULE TALENTEXPERTE</h2>' +
+      '<div>- Elias Medina -</div>' +
+      '<br>' +
+      '<div>www.talentexperte.de</div>' +
+      '<div>Telefon: +49 1523 4678108</div>' +
+      '<div>E-Mail: kontakt@talentexperte.de</div>' +
+      '<br>' +
+      '<div><strong>Trainingsadresse</strong></div>' +
+      '<div>Kunstrasenplatz</div>' +
+      '<div>JSC Blau-Weiss Aachen 1946 e.V.</div>' +
+      '<div>Branderhofer Weg</div>' +
+      '<div>52066 Aachen</div>' +
+      '</div>' +
+      '</div></body></html>';
+  }
+
+  var data = getData();
+  render(data);
+
+  document.getElementById('downloadBtn').addEventListener('click', function() {
+    openPdfWindow(data, false);
+  });
+  document.getElementById('printBtn').addEventListener('click', function() {
+    openPdfWindow(data, true);
+  });
+})();
+</script>
+
 <style>
-.next-steps ol {
-  counter-reset: step-counter;
-  list-style: none;
-  padding-left: 0;
+.next-steps {
+  margin-top: 1.5rem;
 }
-
-.next-steps ol li {
-  counter-increment: step-counter;
-  margin-bottom: 1.5rem;
-  padding-left: 3rem;
-  position: relative;
-  line-height: 1.6;
-}
-
-.next-steps ol li:before {
-  content: counter(step-counter);
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 2rem;
-  height: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-.next-steps ol li strong {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #333;
-  font-size: 1.05rem;
-}
-
-.contact-box {
-  margin: 2rem 0;
-  padding: 2rem;
-  background: #f8f9fa;
-  border-radius: 12px;
-  border: 2px solid #e0e0e0;
-}
-
-.contact-box h3 {
-  margin: 0 0 1rem 0;
-  color: #333;
+@media print {
+  .nav, .footer, #downloadBtn, #printBtn, a.btn-primary { display: none !important; }
+  body { background: #fff !important; color: #000 !important; }
 }
 </style>
 

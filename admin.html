@@ -36,7 +36,7 @@
       <div class="stat-card"><div class="stat-label">Camps aktiv</div><div class="stat-value" id="statCamps">–</div><div class="stat-sub" id="statCampsSub"></div></div>
       <div class="stat-card"><div class="stat-label">Anmeldungen</div><div class="stat-value red" id="statAnmeldungen">–</div><div class="stat-sub" id="statAnmeldungenSub"></div></div>
       <div class="stat-card"><div class="stat-label">Bezahlt</div><div class="stat-value green" id="statBezahlt">–</div><div class="stat-sub" id="statBezahltSub"></div></div>
-      <div class="stat-card"><div class="stat-label">Offen</div><div class="stat-value yellow" id="statOffen">–</div><div class="stat-sub" id="statOffenSub"></div></div>
+      <div class="stat-card" id="statCardOffen" style="cursor:pointer;"><div class="stat-label">Offen</div><div class="stat-value yellow" id="statOffen">–</div><div class="stat-sub" id="statOffenSub"></div></div>
       <div class="stat-card"><div class="stat-label">Umsatz (bezahlt)</div><div class="stat-value green" id="statUmsatz">–</div><div class="stat-sub" id="statUmsatzSub"></div></div>
       <div class="stat-card"><div class="stat-label">Auslastung ∅</div><div class="stat-value" id="statAuslastung">–</div><div class="stat-sub" id="statAuslastungSub"></div></div>
     </div>
@@ -51,6 +51,7 @@
         <div class="table-filters">
           <select class="filter-select" id="filterCamp" onchange="filterTable()"><option value="">Alle Camps</option></select>
           <select class="filter-select" id="filterStatus" onchange="filterTable()"><option value="">Alle Status</option><option value="offen">⏳ Offen</option><option value="bezahlt">✅ Bezahlt</option><option value="storniert">❌ Storniert</option><option value="erstattet">↩ Erstattet</option></select>
+          <button class="btn-sm" id="filterMitarbeiterBtn" onclick="toggleMitarbeiterFilter()">👔 Mitarbeiter</button>
           <button class="btn-sm btn-export" onclick="exportCSV()">📥 CSV</button>
           <button class="btn-sm btn-refresh" onclick="loadAll()">↻ Laden</button>
         </div>
@@ -96,7 +97,8 @@
 <script>
 var SUPABASE_URL='https://yxygwwoocsdnneqykiym.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
-var accessToken=null,allCamps=[],allAnmeldungen=[],currentSort={field:'datum',dir:'desc'};
+var accessToken=null,allCamps=[],allAnmeldungen=[],currentSort={field:'datum',dir:'desc'},onlyMitarbeiter=false;
+var KNOWN_STATUS={offen:true,bezahlt:true,storniert:true,erstattet:true};
 
 function updateClock(){var e=document.getElementById('dashTime');if(e)e.textContent=new Date().toLocaleString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}
 setInterval(updateClock,30000);
@@ -107,7 +109,7 @@ if(d.access_token){accessToken=d.access_token;localStorage.setItem('sb_token',ac
 catch(e){err.textContent='Verbindungsfehler: '+e.message;err.style.display='block'}}
 
 function doLogout(){accessToken=null;localStorage.removeItem('sb_token');localStorage.removeItem('sb_refresh');document.getElementById('loginScreen').style.display='flex';document.getElementById('dashboard').style.display='none'}
-function showDashboard(){document.getElementById('loginScreen').style.display='none';document.getElementById('dashboard').style.display='block';updateClock();loadAll()}
+function showDashboard(){document.getElementById('loginScreen').style.display='none';document.getElementById('dashboard').style.display='block';updateClock();bindQuickFilters();updateMitarbeiterBtn();loadAll()}
 (function(){var s=localStorage.getItem('sb_token');if(s){accessToken=s;showDashboard()}})();
 
 function apiH(){return{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json','Prefer':'return=representation'}}
@@ -119,60 +121,128 @@ if(!r.ok){console.error('apiGet failed:',p,j);return null}
 return j
 }
 async function apiPatch(t,id,d){var r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?id=eq.'+id,{method:'PATCH',headers:apiH(),body:JSON.stringify(d)});if(r.status===401){doLogout();return null}return r}
+async function apiDelete(t,id){var r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?id=eq.'+id,{method:'DELETE',headers:apiH()});if(r.status===401){doLogout();return null}return r}
+
+function hasPaymentSignal(a){
+if(!a)return false;
+if(a.zahlung_am||a.bezahlt_am||a.zahlungsdatum||
+   a.stripe_payment_id||a.stripe_session_id||a.stripe_checkout_session_id||
+   a.payment_intent_id||a.stripe_payment_intent||a.checkout_session_id||
+   a.paid_at||a.payment_id||a.transaction_id)return true;
+var pStatus=String(a.payment_status||'').toLowerCase().trim();
+if(pStatus==='paid'||pStatus==='succeeded'||pStatus==='complete'||pStatus==='completed')return true;
+var keys=Object.keys(a);
+for(var i=0;i<keys.length;i++){
+var k=String(keys[i]||'').toLowerCase();
+if(k.indexOf('link')!==-1)continue;
+if((k.indexOf('stripe_')===0||k.indexOf('payment_')===0||k.indexOf('_paid')!==-1||k.indexOf('paid_')===0||k.indexOf('zahlung')!==-1)&&a[keys[i]])return true;
+}
+return false
+}
+
+function getEffectiveStatus(a){
+var s=String(a&&a.zahlungsstatus||'').toLowerCase().trim();
+if(!KNOWN_STATUS[s])s='offen';
+if(a&&a.__typ==='Firma'){
+if(s==='storniert'||s==='erstattet')return s;
+return 'bezahlt';
+}
+if(s==='storniert'||s==='erstattet')return s;
+if(s==='bezahlt'||hasPaymentSignal(a)||a&&a.__paymentSignal)return 'bezahlt';
+return 'offen'
+}
+function statusRank(s){
+if(s==='erstattet')return 4;
+if(s==='storniert')return 3;
+if(s==='bezahlt')return 2;
+return 1
+}
+function preferRow(a,b){
+var sa=getEffectiveStatus(a),sb=getEffectiveStatus(b);
+if(statusRank(sb)!==statusRank(sa))return statusRank(sb)>statusRank(sa)?b:a;
+if(hasPaymentSignal(b)&&!hasPaymentSignal(a))return b;
+if(hasPaymentSignal(a)&&!hasPaymentSignal(b))return a;
+return new Date(b.created_at||0)>new Date(a.created_at||0)?b:a
+}
 
 async function loadAll(){await Promise.all([loadCamps(),loadAnmeldungen()]);updateStats()}
 async function loadCamps(){var d=await apiGet('camp_verfuegbarkeit?order=datum_von.asc');if(!d)return;allCamps=d;renderCamps();populateCampFilter()}
 async function loadAnmeldungen(){
-var all=await apiGet('alle_anmeldungen?select=*&order=created_at.desc');
-if(Array.isArray(all)){
-allAnmeldungen=all.map(function(a){
-var typ=(a.typ||a.anmeldung_typ||'').toLowerCase()==='firma'?'Firma':'Privat';
-var campName=a.camp_name||a.name||'';
+function normalizeStatus(v){
+var s=String(v||'').trim().toLowerCase();
+if(s==='paid'||s==='zahlung_erfolgt'||s==='bezahlt')return 'bezahlt';
+if(s==='cancelled'||s==='storniert')return 'storniert';
+if(s==='refunded'||s==='erstattet')return 'erstattet';
+if(s==='open'||s==='offen'||s==='pending')return 'offen';
+return s||'offen'
+}
+function resolveStatus(a){
+var s1=normalizeStatus(a&&a.status);
+var s2=normalizeStatus(a&&a.zahlungsstatus);
+var s3=normalizeStatus(a&&a.payment_status);
+if(s3==='bezahlt')return 'bezahlt';
+if(s1===s2)return s1;
+if(s1==='erstattet'||s2==='erstattet')return 'erstattet';
+if(s1==='storniert'||s2==='storniert')return 'storniert';
+if(s1==='bezahlt'||s2==='bezahlt')return 'bezahlt';
+if(s1==='offen'||s2==='offen')return 'offen';
+return s1||s2||'offen'
+}
+function normalize(a,source){
+var typField=String(a.typ||a.anmeldung_typ||'').toLowerCase().trim();
+var isFirmaSource=source==='firmen_anmeldungen';
+var isPrivatSource=source==='anmeldungen';
+var hasStrongFirmaFields=!!(a.mitarbeiter_vorname||a.mitarbeiter_nachname||a.ansprechpartner_vorname||a.ansprechpartner_nachname||a.firma_name);
+var typ='Privat';
+if(typField==='firma'||isFirmaSource||(typField===''&&!isPrivatSource&&hasStrongFirmaFields))typ='Firma';
+var tableName=isFirmaSource?'firmen_anmeldungen':(isPrivatSource?'anmeldungen':(typ==='Firma'?'firmen_anmeldungen':'anmeldungen'));
+var campName=a.camp_name||a.name||(a.camps&&a.camps.name)||'';
+var statusNorm=resolveStatus(a);
+// Firmen-/Mitarbeiter-Anmeldungen sollen nicht als "offen" geführt werden.
+if(typ==='Firma'&&statusNorm==='offen')statusNorm='bezahlt';
 return{
-id:a.id,__table:typ==='Firma'?'firmen_anmeldungen':'anmeldungen',__typ:typ,
-camp_id:a.camp_id,camps:campName?{name:campName}:null,
+id:a.id,__table:tableName,__typ:typ,
+camp_id:a.camp_id,camps:campName?{name:campName}:a.camps||null,
 vorname:a.kind_vorname||a.vorname||'',nachname:a.kind_nachname||a.nachname||'',
 geburtsdatum:a.kind_geburtsdatum||a.geburtsdatum||null,
 trikot_groesse:a.trikot_groesse||null,
-eltern_vorname:a.kontakt_vorname||a.mitarbeiter_vorname||a.eltern_vorname||'',
-eltern_nachname:a.kontakt_nachname||a.mitarbeiter_nachname||a.eltern_nachname||'',
+eltern_vorname:a.kontakt_vorname||a.mitarbeiter_vorname||a.eltern_vorname||a.ansprechpartner_vorname||'',
+eltern_nachname:a.kontakt_nachname||a.mitarbeiter_nachname||a.eltern_nachname||a.ansprechpartner_nachname||'',
 email:a.kontakt_email||a.mitarbeiter_email||a.email||a.firma_email||'',
 telefon:a.kontakt_telefon||a.mitarbeiter_telefon||a.telefon||a.firma_telefon||'',
 adresse:a.adresse||a.rechnungsadresse||'',
 erfahrung:a.erfahrung||null,allergien:a.allergien||null,notizen:a.notizen||null,
-zahlungsstatus:a.zahlungsstatus||a.status||'offen',
+zahlungsstatus:statusNorm,
+__paymentSignal:hasPaymentSignal(a),
 betrag_euro:a.betrag_euro||0,zahlung_am:a.zahlung_am||a.bezahlt_am||null,storniert_am:a.storniert_am||null,created_at:a.created_at,
 firma_name:a.firma_name||null
-}})
-.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at)});
-renderTable();
-return
-}
+}}
+var allDash=await apiGet('alle_anmeldungen_dashboard?select=*&order=created_at.desc');
+var all=await apiGet('alle_anmeldungen?select=*&order=created_at.desc');
 var priv=await apiGet('anmeldungen?select=*,camps(name,datum_von,datum_bis)&order=created_at.desc');
 var firm=await apiGet('firmen_anmeldungen?select=*,camps(name,datum_von,datum_bis)&order=created_at.desc');
-var p=Array.isArray(priv)?priv:[];
-var f=Array.isArray(firm)?firm:[];
-var nPriv=p.map(function(a){return Object.assign({},a,{__table:'anmeldungen',__typ:'Privat',zahlungsstatus:a.zahlungsstatus||a.status||'offen'})});
-var nFirm=f.map(function(a){return{
-id:a.id,__table:'firmen_anmeldungen',__typ:'Firma',
-camp_id:a.camp_id,camps:a.camps||null,
-vorname:a.kind_vorname,nachname:a.kind_nachname,geburtsdatum:a.kind_geburtsdatum,
-trikot_groesse:a.trikot_groesse||null,
-eltern_vorname:a.mitarbeiter_vorname,eltern_nachname:a.mitarbeiter_nachname,
-email:a.mitarbeiter_email||a.firma_email||'',telefon:a.mitarbeiter_telefon||a.firma_telefon||'',
-adresse:a.rechnungsadresse||'',erfahrung:a.erfahrung||null,allergien:a.allergien||null,notizen:a.notizen||null,
-zahlungsstatus:a.status||'offen',betrag_euro:a.betrag_euro,zahlung_am:a.bezahlt_am||null,storniert_am:a.storniert_am||null,created_at:a.created_at,
-firma_name:a.firma_name||null
-}});
-allAnmeldungen=nPriv.concat(nFirm).sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at)});
-renderTable()
+var rows=[];
+if(Array.isArray(allDash)&&allDash.length)rows=rows.concat(allDash.map(function(a){return normalize(a,'alle_anmeldungen_dashboard')}));
+else if(Array.isArray(all)&&all.length)rows=rows.concat(all.map(function(a){return normalize(a,'alle_anmeldungen')}));
+if(Array.isArray(priv))rows=rows.concat(priv.map(function(a){return normalize(a,'anmeldungen')}));
+if(Array.isArray(firm))rows=rows.concat(firm.map(function(a){return normalize(a,'firmen_anmeldungen')}));
+var merged={};
+rows.forEach(function(a){
+var k=(a.__table||'')+':'+a.id;
+if(!merged[k])merged[k]=a;
+else merged[k]=preferRow(merged[k],a);
+});
+allAnmeldungen=Object.keys(merged).map(function(k){return merged[k]})
+.map(function(a){a.__effectiveStatus=getEffectiveStatus(a);return a})
+.sort(function(a,b){return new Date(b.created_at||0)-new Date(a.created_at||0)});
+renderTable();
 }
 
 function updateStats(){
 var aktive=allCamps.filter(function(c){return c.status==='aktiv'});
-var gesamt=allAnmeldungen.filter(function(a){return a.zahlungsstatus!=='storniert'});
-var bezahlt=allAnmeldungen.filter(function(a){return a.zahlungsstatus==='bezahlt'});
-var offen=allAnmeldungen.filter(function(a){return a.zahlungsstatus==='offen'});
+var gesamt=allAnmeldungen.filter(function(a){return a.__effectiveStatus!=='storniert'});
+var bezahlt=allAnmeldungen.filter(function(a){return a.__effectiveStatus==='bezahlt'&&a.__typ!=='Firma'});
+var offen=allAnmeldungen.filter(function(a){return isActuallyOpen(a)});
 var umsatz=bezahlt.reduce(function(s,a){return s+Number(a.betrag_euro||0)},0);
 var umsatzO=offen.reduce(function(s,a){return s+Number(a.betrag_euro||0)},0);
 var tp=aktive.reduce(function(s,c){return s+c.max_plaetze},0);
@@ -184,13 +254,28 @@ document.getElementById('statAnmeldungen').textContent=gesamt.length;
 var firmenCount=allAnmeldungen.filter(function(a){return a.__typ==='Firma'}).length;
 document.getElementById('statAnmeldungenSub').textContent=firmenCount+' Firmen · '+allAnmeldungen.length+' gesamt';
 document.getElementById('statBezahlt').textContent=bezahlt.length;
-document.getElementById('statBezahltSub').textContent=umsatz.toLocaleString('de-DE')+' € Umsatz';
+document.getElementById('statBezahltSub').textContent=umsatz.toLocaleString('de-DE')+' € Umsatz (Stripe)';
 document.getElementById('statOffen').textContent=offen.length;
-document.getElementById('statOffenSub').textContent=umsatzO.toLocaleString('de-DE')+' € ausstehend';
+document.getElementById('statOffenSub').textContent=umsatzO.toLocaleString('de-DE')+' € ausstehend (privat)';
 document.getElementById('statUmsatz').textContent=umsatz.toLocaleString('de-DE')+' €';
-document.getElementById('statUmsatzSub').textContent=umsatzO>0?'+ '+umsatzO.toLocaleString('de-DE')+' € offen':'Keine offenen';
+document.getElementById('statUmsatzSub').textContent=umsatzO>0?'+ '+umsatzO.toLocaleString('de-DE')+' € offen (privat)':'Keine offenen';
 document.getElementById('statAuslastung').textContent=ausl+'%';
 document.getElementById('statAuslastungSub').textContent=bp+' / '+tp+' Plätze'}
+
+function hasPaidTwin(openRow){
+if(openRow.__effectiveStatus!=='offen')return false;
+var key=[openRow.__typ,openRow.camp_id||'',String(openRow.vorname||'').toLowerCase(),String(openRow.nachname||'').toLowerCase(),String(openRow.email||'').toLowerCase(),Number(openRow.betrag_euro||0)].join('|');
+return allAnmeldungen.some(function(r){
+if(r.id===openRow.id)return false;
+if(r.__effectiveStatus!=='bezahlt')return false;
+var rk=[r.__typ,r.camp_id||'',String(r.vorname||'').toLowerCase(),String(r.nachname||'').toLowerCase(),String(r.email||'').toLowerCase(),Number(r.betrag_euro||0)].join('|');
+return rk===key
+})
+}
+
+function isActuallyOpen(a){
+return a.__effectiveStatus==='offen'&&!hasPaidTwin(a)
+}
 
 function renderCamps(){var c=document.getElementById('campCards');if(allCamps.length===0){c.innerHTML='<div class="empty-state"><div class="icon">📋</div>Keine Camps</div>';return}
 var em={ostern:'🐣',sommer:'☀️',herbst:'🍂',winter:'❄️'};
@@ -227,33 +312,45 @@ u.fruehbucher_preis=fp?parseFloat(fp):null;u.fruehbucher_bis=fb||null;
 var r=await apiPatch('camps',id,u);if(r&&r.ok){closeCampModal();showToast('Camp gespeichert ✓');await loadAll()}else{showToast('Fehler beim Speichern',true)}}
 
 function renderTable(){var tb=document.getElementById('tableBody'),f=getFiltered();
-document.getElementById('resultCount').textContent=f.length+' Anmeldung'+(f.length!==1?'en':'')+' gefunden';
+var baseCount=f.length+' Anmeldung'+(f.length!==1?'en':'')+' gefunden';
+if(document.getElementById('filterStatus').value==='offen'){
+var sumOpen=f.reduce(function(s,a){return s+Number(a.betrag_euro||0)},0);
+document.getElementById('resultCount').textContent=baseCount+' · Offen gesamt: '+sumOpen.toLocaleString('de-DE')+' €';
+}else{
+document.getElementById('resultCount').textContent=baseCount;
+}
 if(f.length===0){tb.innerHTML='<tr><td colspan="10" class="empty-state"><div class="icon">📭</div>Keine Anmeldungen</td></tr>';return}
 tb.innerHTML=f.map(function(a){var cn=a.camps?a.camps.name:'–';var d=new Date(a.created_at);var ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+var statusText=a.__typ==='Firma'?'FIRMA':a.zahlungsstatus;
+var statusClass=a.__typ==='Firma'?'bezahlt':a.__effectiveStatus;
+if(a.__typ!=='Firma')statusText=a.__effectiveStatus;
 return '<tr class="clickable" ondblclick="openDetail(\''+a.id+'\')">'+'<td>'+cn+'</td><td><strong>'+a.vorname+' '+a.nachname+'</strong>'+(a.allergien?' <span title="Hat Allergien/Hinweise" class="badge-allergy">⚠️</span>':'')+'</td>'+
 '<td>'+getAge(a.geburtsdatum)+'</td><td>'+a.eltern_vorname+' '+a.eltern_nachname+'</td>'+
 '<td><a href="mailto:'+a.email+'" class="text-red" onclick="event.stopPropagation()">'+a.email+'</a></td>'+
 '<td><a href="tel:'+a.telefon+'" class="link-gray" onclick="event.stopPropagation()">'+a.telefon+'</a></td>'+
-'<td><span class="status-badge status-'+a.zahlungsstatus+'">'+a.zahlungsstatus+'</span></td>'+
+'<td><span class="status-badge status-'+statusClass+'">'+statusText+'</span></td>'+
 '<td>'+(a.betrag_euro||'–')+' €</td><td>'+ds+'</td>'+
 '<td onclick="event.stopPropagation()">'+actBtns(a)+'</td></tr>'}).join('')}
 
-function actBtns(a){var h='';if(a.zahlungsstatus==='offen'){h+='<button class="action-btn action-pay" onclick="setStatus(\''+a.id+'\',\'bezahlt\')">✓ Bezahlt</button> <button class="action-btn action-cancel" onclick="setStatus(\''+a.id+'\',\'storniert\')">✕</button>'}
-else if(a.zahlungsstatus==='bezahlt'){h+='<button class="action-btn action-cancel" onclick="setStatus(\''+a.id+'\',\'erstattet\')">↩</button>'}
-h+=' <button class="action-btn" class="action-btn-view" onclick="openDetail(\''+a.id+'\')">👁</button>';return h}
+function actBtns(a){if(a.__typ==='Firma')return ' <button class="action-btn" class="action-btn-view" onclick="openDetail(\''+a.id+'\')">👁</button> <button class="action-btn action-cancel" onclick="deleteAnmeldung(\''+a.id+'\')">🗑</button>';
+var h='';if(a.__effectiveStatus==='offen'){h+='<button class="action-btn action-pay" onclick="setStatus(\''+a.id+'\',\'bezahlt\')">✓ Bezahlt</button> <button class="action-btn action-cancel" onclick="setStatus(\''+a.id+'\',\'storniert\')">✕</button>'}
+else if(a.__effectiveStatus==='bezahlt'){h+='<button class="action-btn action-cancel" onclick="setStatus(\''+a.id+'\',\'erstattet\')">↩</button>'}
+h+=' <button class="action-btn" class="action-btn-view" onclick="openDetail(\''+a.id+'\')">👁</button>';
+h+=' <button class="action-btn action-cancel" onclick="deleteAnmeldung(\''+a.id+'\')">🗑</button>';
+return h}
 
 function openDetail(id){var a=allAnmeldungen.find(function(x){return x.id===id});if(!a)return;
 var cn=a.camps?a.camps.name:'–';document.getElementById('detailTitle').textContent=a.vorname+' '+a.nachname;
 var h='<div class="detail-section"><h3>Kind</h3>'+rw('Vorname',a.vorname)+rw('Nachname',a.nachname)+rw('Geburtsdatum',fD(a.geburtsdatum)+' ('+getAge(a.geburtsdatum)+' Jahre)')+rw('Trikotgröße',a.trikot_groesse||'–')+'</div>';
 h+='<div class="detail-section"><h3>Eltern & Kontakt</h3>'+rw('Elternteil',a.eltern_vorname+' '+a.eltern_nachname)+rw('E-Mail','<a href="mailto:'+a.email+'" class="text-red">'+a.email+'</a>')+rw('Telefon','<a href="tel:'+a.telefon+'" class="link-gray">'+a.telefon+'</a>')+rw('Adresse',a.adresse||'–')+'</div>';
-h+='<div class="detail-section"><h3>Camp & Zahlung</h3>'+rw('Camp',cn)+rw('Status','<span class="status-badge status-'+a.zahlungsstatus+'">'+a.zahlungsstatus+'</span>')+rw('Betrag',(a.betrag_euro||'–')+' €')+rw('Angemeldet',fDT(a.created_at))+rw('Bezahlt am',a.zahlung_am?fDT(a.zahlung_am):'–')+rw('Storniert am',a.storniert_am?fDT(a.storniert_am):'–')+'</div>';
+h+='<div class="detail-section"><h3>Camp & Zahlung</h3>'+rw('Camp',cn)+rw('Status','<span class="status-badge status-'+a.__effectiveStatus+'">'+a.__effectiveStatus+'</span>')+rw('Betrag',(a.betrag_euro||'–')+' €')+rw('Angemeldet',fDT(a.created_at))+rw('Bezahlt am',a.zahlung_am?fDT(a.zahlung_am):'–')+rw('Storniert am',a.storniert_am?fDT(a.storniert_am):'–')+'</div>';
 if(a.erfahrung||a.allergien||a.notizen){h+='<div class="detail-section"><h3>Zusätzliche Infos</h3>';
 if(a.erfahrung)h+='<div class="detail-info-block"><div class="detail-info-label">ERFAHRUNG</div><div class="detail-notes">'+esc(a.erfahrung)+'</div></div>';
 if(a.allergien)h+='<div class="detail-info-block"><div class="detail-info-label--warning">⚠️ ALLERGIEN / BESONDERHEITEN</div><div class="detail-notes" class="detail-notes--warning">'+esc(a.allergien)+'</div></div>';
 if(a.notizen)h+='<div class="detail-info-block"><div class="detail-info-label">NOTIZEN</div><div class="detail-notes">'+esc(a.notizen)+'</div></div>';h+='</div>'}
 h+='<div class="detail-actions">';
-if(a.zahlungsstatus==='offen'){h+='<button class="detail-action-btn btn-mark-paid" onclick="setStatus(\''+a.id+'\',\'bezahlt\')">✓ Als bezahlt markieren</button><button class="detail-action-btn btn-storno" onclick="setStatus(\''+a.id+'\',\'storniert\')">✕ Stornieren</button>'}
-else if(a.zahlungsstatus==='bezahlt'){h+='<button class="detail-action-btn btn-erstattung" onclick="setStatus(\''+a.id+'\',\'erstattet\')">↩ Erstatten</button>'}
+if(a.__effectiveStatus==='offen'){h+='<button class="detail-action-btn btn-mark-paid" onclick="setStatus(\''+a.id+'\',\'bezahlt\')">✓ Als bezahlt markieren</button><button class="detail-action-btn btn-storno" onclick="setStatus(\''+a.id+'\',\'storniert\')">✕ Stornieren</button>'}
+else if(a.__effectiveStatus==='bezahlt'){h+='<button class="detail-action-btn btn-erstattung" onclick="setStatus(\''+a.id+'\',\'erstattet\')">↩ Erstatten</button>'}
 var waMsg='Hallo '+a.eltern_vorname+', hier ist die Fußballschule TALENTEXPERTE. ';
 var waNum=a.telefon.replace(/[^0-9]/g,'').replace(/^0/,'');
 h+='<a class="detail-action-btn btn-wa" href="https://wa.me/49'+waNum+'?text='+encodeURIComponent(waMsg)+'" target="_blank" rel="noopener">💬 WhatsApp</a>';
@@ -265,14 +362,20 @@ function closeDetail(){document.getElementById('detailOverlay').classList.remove
 function rw(l,v){return '<div class="detail-row"><span class="label">'+l+'</span><span class="value">'+v+'</span></div>'}
 
 function getFiltered(){var s=document.getElementById('searchInput').value.toLowerCase(),cf=document.getElementById('filterCamp').value,sf=document.getElementById('filterStatus').value;
-var l=allAnmeldungen.filter(function(a){if(cf&&a.camp_id!==cf)return false;if(sf&&a.zahlungsstatus!==sf)return false;
+var l=allAnmeldungen.filter(function(a){if(cf&&a.camp_id!==cf)return false;
+if(onlyMitarbeiter&&a.__typ!=='Firma')return false;
+if(sf==='offen'){if(!isActuallyOpen(a))return false}
+else if(sf&&a.__effectiveStatus!==sf)return false;
 if(s){var h=(a.vorname+' '+a.nachname+' '+a.eltern_vorname+' '+a.eltern_nachname+' '+a.email+' '+a.telefon).toLowerCase();if(h.indexOf(s)===-1)return false}return true});
 l.sort(function(a,b){var va,vb;switch(currentSort.field){case'camp':va=(a.camps?a.camps.name:'');vb=(b.camps?b.camps.name:'');break;case'kind':va=a.nachname;vb=b.nachname;break;
 case'alter':va=getAge(a.geburtsdatum);vb=getAge(b.geburtsdatum);break;case'eltern':va=a.eltern_nachname;vb=b.eltern_nachname;break;case'email':va=a.email;vb=b.email;break;
-case'telefon':va=a.telefon;vb=b.telefon;break;case'status':va=a.zahlungsstatus;vb=b.zahlungsstatus;break;case'betrag':va=Number(a.betrag_euro||0);vb=Number(b.betrag_euro||0);break;
+case'telefon':va=a.telefon;vb=b.telefon;break;case'status':va=a.__effectiveStatus;vb=b.__effectiveStatus;break;case'betrag':va=Number(a.betrag_euro||0);vb=Number(b.betrag_euro||0);break;
 default:va=a.created_at;vb=b.created_at}if(va<vb)return currentSort.dir==='asc'?-1:1;if(va>vb)return currentSort.dir==='asc'?1:-1;return 0});return l}
 
 function filterTable(){renderTable()}
+function toggleMitarbeiterFilter(){onlyMitarbeiter=!onlyMitarbeiter;updateMitarbeiterBtn();renderTable()}
+function updateMitarbeiterBtn(){var b=document.getElementById('filterMitarbeiterBtn');if(!b)return;b.style.borderColor=onlyMitarbeiter?'rgba(229,0,0,.45)':'rgba(255,255,255,.15)';b.style.color=onlyMitarbeiter?'#fff':'#cfcfcf';b.style.background=onlyMitarbeiter?'rgba(229,0,0,.24)':'transparent'}
+function bindQuickFilters(){var c=document.getElementById('statCardOffen');if(!c||c.dataset.bound==='1')return;c.dataset.bound='1';c.addEventListener('click',function(){switchTab('anmeldungen',document.querySelector('[data-tab="anmeldungen"]'));document.getElementById('filterStatus').value='offen';filterTable()})}
 function sortTable(f){if(currentSort.field===f){currentSort.dir=currentSort.dir==='asc'?'desc':'asc'}else{currentSort.field=f;currentSort.dir='asc'}renderTable()}
 function populateCampFilter(){var s=document.getElementById('filterCamp'),c=s.value;s.innerHTML='<option value="">Alle Camps</option>';allCamps.forEach(function(x){s.innerHTML+='<option value="'+x.id+'">'+x.name+'</option>'});s.value=c}
 
@@ -287,14 +390,31 @@ if(st==='bezahlt')u.bezahlt_am=new Date().toISOString();
 if(st==='storniert')u.storniert_am=new Date().toISOString();
 }else{
 u.zahlungsstatus=st;
+u.status=st;
 if(st==='bezahlt')u.zahlung_am=new Date().toISOString();
 if(st==='storniert')u.storniert_am=new Date().toISOString();
 }
 var r=await apiPatch(table,id,u);if(r&&r.ok){showToast('Status: '+st+' ✓');closeDetail();await loadAll()}else{showToast('Fehler',true)}}
 
+async function deleteAnmeldung(id){
+var a=allAnmeldungen.find(function(x){return x.id===id});
+if(!a){showToast('Eintrag nicht gefunden',true);return}
+var name=(a.vorname||'')+' '+(a.nachname||'');
+if(!confirm('Anmeldung von '+name.trim()+' wirklich löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.'))return;
+var tables=[(a.__table)||'anmeldungen'];
+var alt=(tables[0]==='anmeldungen')?'firmen_anmeldungen':'anmeldungen';
+if(tables.indexOf(alt)===-1)tables.push(alt);
+for(var i=0;i<tables.length;i++){await apiDelete(tables[i],id)}
+closeDetail();
+await loadAll();
+var stillThere=allAnmeldungen.some(function(x){return x.id===id});
+if(stillThere)showToast('Nicht gelöscht (RLS/Policy oder falsche Quelle)',true);
+else showToast('Anmeldung gelöscht ✓');
+}
+
 function exportCSV(){var f=getFiltered();if(f.length===0){alert('Keine Daten.');return}
 var h=['Camp','Vorname Kind','Nachname Kind','Geburtsdatum','Alter','Trikotgroesse','Vorname Eltern','Nachname Eltern','E-Mail','Telefon','Adresse','Erfahrung','Allergien','Notizen','Status','Betrag','Angemeldet am','Bezahlt am'];
-var rows=f.map(function(a){return[a.camps?a.camps.name:'',a.vorname,a.nachname,a.geburtsdatum,getAge(a.geburtsdatum),a.trikot_groesse||'',a.eltern_vorname,a.eltern_nachname,a.email,a.telefon,a.adresse||'',a.erfahrung||'',a.allergien||'',a.notizen||'',a.zahlungsstatus,a.betrag_euro||'',a.created_at?new Date(a.created_at).toLocaleDateString('de-DE'):'',a.zahlung_am?new Date(a.zahlung_am).toLocaleDateString('de-DE'):''].map(function(v){return '"'+String(v).replace(/"/g,'""')+'"'}).join(';')});
+var rows=f.map(function(a){return[a.camps?a.camps.name:'',a.vorname,a.nachname,a.geburtsdatum,getAge(a.geburtsdatum),a.trikot_groesse||'',a.eltern_vorname,a.eltern_nachname,a.email,a.telefon,a.adresse||'',a.erfahrung||'',a.allergien||'',a.notizen||'',a.__effectiveStatus,a.betrag_euro||'',a.created_at?new Date(a.created_at).toLocaleDateString('de-DE'):'',a.zahlung_am?new Date(a.zahlung_am).toLocaleDateString('de-DE'):''].map(function(v){return '"'+String(v).replace(/"/g,'""')+'"'}).join(';')});
 var csv='\uFEFF'+h.join(';')+'\n'+rows.join('\n');var b=new Blob([csv],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='talentexperte-'+new Date().toISOString().slice(0,10)+'.csv';a.click();showToast('CSV exportiert ✓')}
 
 function switchTab(n,btn){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active')});

@@ -1,126 +1,120 @@
-# www.talentexperte.de -- Website Repository
+# www.talentexperte.de - Projekt-Dokumentation
 
 ## Überblick
+Dieses Repository enthält den statischen Code für `www.talentexperte.de` (HTML/CSS/JS, Assets, PDFs).
 
-Dieses Repository enthält den vollständigen **statischen Website-Code**
-von:
-
-**www.talentexperte.de**
-
-Die Seite besteht aus:
-
--   HTML-Dokumenten\
--   CSS-Stylesheets\
--   Bildern & Fonts\
--   PDFs und statischen Assets
-
-Es werden **keine Build-Tools, kein CMS und kein Node-Stack** verwendet.
-
-------------------------------------------------------------------------
+- Kein Build-Tool
+- Kein Framework
+- Kein CMS
 
 ## Projektstruktur
+```text
+repo/
+├── *.html
+├── css/
+├── images/
+├── fonts/
+├── pdf/
+├── favicon/
+├── ci/
+│   └── deploy.sh
+├── README.md
+└── AGENTS.md
+```
 
-    repo/
-    ├── *.html
-    ├── css/
-    ├── images/
-    ├── fonts/
-    ├── pdf/
-    ├── favicon/
-    ├── ci/
-    │   └── deploy.sh
-    └── .gitignore
+## Kernseiten und Zweck
+- `anmeldung.html`: normale Eltern-Anmeldung (zahlungspflichtig)
+- `firmen-anmeldung.html`: Mitarbeiter-/Firmen-Anmeldung (nicht zahlungspflichtig für Elternteil)
+- `bestaetigung.html`: Bestätigung normaler Anmeldung + FAQ-PDF
+- `bestaetigung-firma.html`: kurze Bestätigung Firmenanmeldung + PDF-Download mit Logo/Fußzeile + FAQ-Mitarbeiter-PDF
+- `admin.html`: Admin-Dashboard (Camps, Anmeldungen, Status, Umsatz, Löschen)
 
-**Nicht im Repository enthalten:**
+## Supabase Datenfluss (Ist-Stand)
+### Tabellen
+- `anmeldungen`: private/Eltern-Anmeldungen
+- `firmen_anmeldungen`: Mitarbeiter-/Firmen-Anmeldungen
+- Views wie `alle_anmeldungen` / `alle_anmeldungen_dashboard` können zusätzliche/aggregierte Felder liefern
 
--   Rohdaten & Design-Dateien → `../assets/`
--   Dokumentation & Notizen → `../notes/`
+### Dashboard-Logik
+- `Bezahlt/Umsatz`: basiert auf **Privat-Anmeldungen**, nicht auf Mitarbeiter/Firma
+- `Offen`: zeigt nur tatsächlich offene, zahlungspflichtige Einträge
+- Mitarbeiter-Anmeldungen werden im Status im Dashboard als `FIRMA` dargestellt und nicht als offener Zahlungsfall geführt
 
-------------------------------------------------------------------------
+### Status-Felder (wichtig)
+Je nach Quelle können Felder variieren. Relevante Felder im Projektcode:
+- `zahlungsstatus` (Enum, z. B. `offen`, `bezahlt`, `storniert`, `erstattet`)
+- optionale Zahlungssignale: `stripe_payment_id`, `zahlung_am`, weitere `stripe_*` / `payment_*` Felder je View
 
-## Lokale Entwicklung
+## Admin-Dashboard Funktionen
+- Camp-Übersicht und Anmeldungs-Tabelle
+- Filter: Camp, Status, Mitarbeiter
+- Schnellfilter über Karte `Offen`
+- Status-Aktionen: bezahlt / storniert / erstattet
+- **Löschen**: `🗑` in der Tabelle, mit Bestätigung und Reload-Verifikation
 
+Hinweis zu Löschen:
+- Erfolgreiches Löschen hängt von RLS-`DELETE`-Policies in Supabase ab
+- Falls Einträge nicht verschwinden: Policies für `anmeldungen` und `firmen_anmeldungen` prüfen
+
+## Bestätigungsseiten und PDFs
+- `bestaetigung-firma.html` wurde auf kurze, klare Bestätigung reduziert
+- PDF-Layout enthält Logo `ci/logo.png` und professionelle Fußzeile
+- PDF-Downloads:
+  - Normal: `/pdf/faq-camps.pdf`
+  - Mitarbeiter: `/pdf/faq-camps-mitarbeiter.pdf`
+
+## Lokales Testen
 Projektpfad:
+```text
+/Users/alejandromedina/PROJEKTENTWICKLUNG/www.talentexperte.de/repo
+```
 
-    /Users/alejandromedina/PROJEKTENTWICKLUNG/www.talentexperte.de/repo
-
-Änderungen testen direkt lokal im Browser durch Öffnen der HTML-Dateien.
-
-------------------------------------------------------------------------
-
-## Git-Workflow
-
-### Änderungen committen
-
-    git add .
-    git commit -m "Kurzbeschreibung der Änderung"
-    git push
-
-### Auf anderem Rechner weiterarbeiten
-
-    git pull
-
-------------------------------------------------------------------------
+Einfach per lokalem HTTP-Server testen, z. B.:
+```bash
+python3 -m http.server 8080 --bind 127.0.0.1
+```
 
 ## Deployment
-
-Deploy-Script:
-
-    ci/deploy.sh
-
-### Deploy-Ablauf
-
-1.  Automatisches **Remote-Backup** (tar.gz, timestamped)\
-2.  Synchronisation per **rsync --delete**\
-3.  Ausschluss von:
-    -   `.git`
-    -   `.DS_Store`
-    -   `ci/`
-
-### Deploy ausführen
-
-    ./ci/deploy.sh
-
-------------------------------------------------------------------------
-
-## Server-Informationen
-
--   **Host:** r20.hostingwerk.de\
--   **User:** medina-82\
--   **Document Root:**
-
-```{=html}
-<!-- -->
+Script:
+```bash
+./ci/deploy.sh
 ```
-    /srv/www/medina-82/public/talentexperte
 
-Backups liegen unter:
+Ablauf:
+1. Server-Backup
+2. `rsync --delete` Deployment
+3. Ausschlüsse (`.git`, `.DS_Store`, `ci/`)
 
-    /srv/www/medina-82/backups/talentexperte/
-
-------------------------------------------------------------------------
-
-## Sicherheit
-
--   SSH-Key-Authentifizierung (kein Passwort-Login)
--   Alias in `~/.ssh/config`:
-
-```{=html}
-<!-- -->
+## Git-Workflow
+```bash
+git add .
+git commit -m "Kurzbeschreibung"
+git push
 ```
-    Host talentexperte
 
-------------------------------------------------------------------------
+## Troubleshooting
+### Fall: Dashboard zeigt `Bezahlt = 0` trotz eingegangener Zahlungen
+1. Prüfen, ob in `anmeldungen` bezahlte Einträge markiert sind:
+```sql
+select
+  count(*) as total,
+  count(*) filter (where zahlungsstatus = 'bezahlt') as status_bezahlt,
+  count(*) filter (where stripe_payment_id is not null or zahlung_am is not null) as payment_signal
+from public.anmeldungen;
+```
+2. Falls nötig, Status nachziehen:
+```sql
+update public.anmeldungen
+set
+  zahlungsstatus = 'bezahlt',
+  zahlung_am = coalesce(zahlung_am, now())
+where
+  (stripe_payment_id is not null or zahlung_am is not null)
+  and zahlungsstatus is distinct from 'bezahlt';
+```
 
-## Ziel des Setups
-
-Dieses Repository folgt einer **minimalen, wartbaren
-Agentur-Architektur**:
-
--   statische, performante Website\
--   versionierter Quellcode\
--   reproduzierbares Deployment\
--   automatische Backups\
--   klare Trennung von Code, Assets und Dokumentation
-
-Damit ist das Projekt **skalierbar, sicher und langfristig wartbar**.
+## Server
+- Host: `r20.hostingwerk.de`
+- User: `medina-82`
+- Document Root: `/srv/www/medina-82/public/talentexperte`
+- Backup-Pfad: `/srv/www/medina-82/backups/talentexperte/`
