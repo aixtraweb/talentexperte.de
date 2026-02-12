@@ -3,19 +3,17 @@
 .AppleDouble
 .LSOverride
 ._*
-
-# Finder / Spotlight / Trash
 .Spotlight-V100
 .Trashes
 
 # Logs
 *.log
 
-# Editor / IDE
+# Editor
 .vscode/
 .idea/
 
-# Temp / Backups
-*~ 
+# Temp
+*~
 *.bak
 *.tmp
