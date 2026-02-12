@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Finder / Spotlight / Trash
+.Spotlight-V100
+.Trashes
+
+# Logs
+*.log
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Temp / Backups
+*~ 
+*.bak
+*.tmp
