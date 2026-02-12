@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TALENTEXPERTE ❖ Fußball-Feriencamps in Aachen – Seit 2005</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/main.css">
+<meta name="description" content="Fußball-Feriencamps in Aachen für Kinder von 5-14 Jahren. Über 100 Camps, über 4.000 begeisterte Kinder. Seit 2005. Jetzt Platz sichern!">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg" />
+<link rel="shortcut icon" href="favicon/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="TALENTEXPERTE" />
+<link rel="manifest" href="favicon/site.webmanifest" />
+</head>
+<body>
+
+<nav class="nav" id="nav"><div class="container">
+  <a href="#" class="nav-logo"><img src="ci/logo.png" alt="TALENTEXPERTE Logo" loading="eager"><span class="nav-brand">TALENT<span>EXPERTE</span></span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#camps">Camps</a></li><li><a href="#about">Über uns</a></li><li><a href="#reviews">Bewertungen</a></li><li><a href="#faq">FAQ</a></li><li><a href="#standorte">Standort</a></li>
+    <li><a href="#camps" class="btn btn-red nav-cta">Jetzt anmelden</a></li>
+  </ul>
+  <button class="nav-mobile-btn" id="navToggle" aria-label="Menü">☰</button>
+</div></nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg"><img src="images/hero.jpg" alt="Kinder beim Fußballcamp" loading="eager"></div>
+  <div class="hero-overlay"></div>
+  <div class="container hero-content">
+    <div class="hero-badge">⭐ Seit 2005 — Über 20 Jahre Erfahrung</div>
+    <h1>FUSSBALL<br><span class="accent">FERIEN</span><span class="outline-text">CAMPS</span><br>IN AACHEN</h1>
+    <p class="hero-text">Vier Tage voller Fußball, Freundschaften und unvergesslicher Momente. Anspruchsvolles und effektives Training für alle Kinder – vom Anfänger bis zum Vereinsspieler.</p>
+    <div class="hero-buttons">
+      <a href="#camps" class="btn btn-red">Platz sichern <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      <a href="#about" class="btn btn-outline">Mehr erfahren</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="hero-stat-num">4.000+</div><div class="hero-stat-label">Begeisterte Kinder</div></div>
+      <div><div class="hero-stat-num">100+</div><div class="hero-stat-label">Feriencamps</div></div>
+      <div><div class="hero-stat-num">20</div><div class="hero-stat-label">Jahre Erfahrung</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PHOTO STRIP -->
+<div class="photo-strip"><div class="photo-strip-inner">
+  <img src="images/jubel.jpg" alt="Jubel" loading="lazy"><img src="images/training.jpg" alt="Training" loading="lazy"><img src="images/freunde.jpg" alt="Freunde" loading="lazy"><img src="images/spielszene1.jpg" alt="Spielszene" loading="lazy"><img src="images/mittagessen.jpg" alt="Mittagessen" loading="lazy"><img src="images/atmosphaere.jpg" alt="Atmosphäre" loading="lazy">
+  <img src="images/jubel.jpg" alt="Jubel" loading="lazy"><img src="images/training.jpg" alt="Training" loading="lazy"><img src="images/freunde.jpg" alt="Freunde" loading="lazy"><img src="images/spielszene1.jpg" alt="Spielszene" loading="lazy"><img src="images/mittagessen.jpg" alt="Mittagessen" loading="lazy"><img src="images/atmosphaere.jpg" alt="Atmosphäre" loading="lazy">
+</div></div>
+
+<!-- ABOUT -->
+<section class="about section-pad" id="about"><div class="container"><div class="about-grid">
+  <div class="about-image reveal"><img src="images/about.jpg" alt="Trainer mit Kindern" loading="lazy"></div>
+  <div class="about-content">
+    <div class="section-label reveal">Über uns</div>
+    <h2 class="section-title reveal reveal-delay-1">Jedes Kind<br>verdient <span class="text-red">gutes Training</span></h2>
+    <p class="highlight-text reveal reveal-delay-2">Verbesserungen sofort sichtbar. Gezielte Korrekturen. Herzliche Motivation.</p>
+    <p class="reveal reveal-delay-3">In der Fußballschule TALENTEXPERTE bieten wir allen Kindern, die besser werden möchten, ein professionelles und effektives Training. Unsere Camps sind anspruchsvoll, innovativ und machen vor allem eines: riesigen Spaß.</p>
+    <p class="reveal reveal-delay-3">Seit 2005 haben über 4.000 Kinder in mehr als 100 Feriencamps mit uns trainiert – in Aachen-Burtscheid.</p>
+    <div class="about-values reveal reveal-delay-4">
+      <div class="about-value"><div class="about-value-icon">🎯</div><div><h4>Individuell</h4><p>Jedes Kind wird dort abgeholt, wo es steht</p></div></div>
+      <div class="about-value"><div class="about-value-icon">⚡</div><div><h4>Top-Trainer-Team</h4><p>Anspruchsvolle und innovative Übungen</p></div></div>
+      <div class="about-value"><div class="about-value-icon">❤️</div><div><h4>Mit Herz</h4><p>Spaß und Leidenschaft stehen im Vordergrund</p></div></div>
+      <div class="about-value"><div class="about-value-icon">🤝</div><div><h4>Gemeinschaft</h4><p>Freundschaften fürs Leben schließen</p></div></div>
+    </div>
+  </div>
+</div></div></section>
+
+<!-- REVIEWS GOOGLE -->
+<section class="reviews section-pad" id="reviews"><div class="container">
+  <div class="text-center">
+    <div class="section-label section-label--center reveal">Bewertungen</div>
+    <h2 class="section-title reveal reveal-delay-1">Das sagen <span class="text-red">die Eltern</span></h2>
+    <p class="section-subtitle reveal reveal-delay-2" style="margin: 0 auto;">Echte Stimmen von Eltern, deren Kinder bei uns trainiert haben.</p>
+  </div>
+  <div class="reviews-feed reveal reveal-delay-3" style="margin-top: 40px;">
+    <script src="https://elfsightcdn.com/platform.js" async></script>
+    <div class="elfsight-app-b91dc3a0-0919-4ce5-8bbb-e9ac2dadb00c" data-elfsight-app-lazy></div>
+  </div>
+</div></section>
+
+<!-- INCLUDED -->
+<section class="included section-pad" id="leistungen"><div class="container">
+  <div class="section-label reveal">Alles inklusive</div>
+  <h2 class="section-title reveal reveal-delay-1">Das steckt in <span class="text-red">jedem Camp</span></h2>
+  <div class="included-grid">
+    <div class="included-list">
+      <div class="included-item reveal"><div class="included-icon">⚽</div><div><h4>4 Tage Fußball-Spaß pur</h4><p>WM-Turnier, Torschuss-Lasermessung, Leo-Messi-Parcour, Technik- und Dribblingübungen</p></div></div>
+      <div class="included-item reveal reveal-delay-1"><div class="included-icon">🍽️</div><div><h4>Mittagessen, Getränke & Obst</h4><p>Warmes Mittagessen, Getränke und frisches Obst für den ganzen Tag</p></div></div>
+      <div class="included-item reveal reveal-delay-2"><div class="included-icon">🏆</div><div><h4>Urkunde, Foto & Medaille</h4><p>Jedes Kind geht mit Urkunde, Erinnerungsfoto und Medaille nach Hause</p></div></div>
+      <div class="included-item reveal reveal-delay-3"><div class="included-icon">⏰</div><div><h4>Täglich 09:00 – 15:00 Uhr</h4><p>09:00 – 10:00 Aufnahme und Freispiel unter Aufsicht<br>10:00 – 12:00 Erste Einheit<br>12:00 – 13:00 Mittagessen / Pause<br>13:00 – 15:00 Zweite Einheit</p></div></div>
+    </div>
+    <div class="included-photos reveal reveal-delay-2">
+      <img src="images/trainer.jpg" alt="TALENTEXPERTE Trainer" loading="lazy">
+      <img src="images/mittagessen.jpg" alt="Mittagessen" loading="lazy">
+      <img src="images/freunde.jpg" alt="Freundschaften" loading="lazy">
+    </div>
+  </div>
+</div></section>
+
+<!-- CAMPS -->
+<section class="camps section-pad" id="camps"><div class="container">
+  <div class="section-label reveal">Termine 2026</div>
+  <h2 class="section-title reveal reveal-delay-1">Finde dein <span class="text-red">Camp</span></h2>
+  <p class="section-subtitle reveal reveal-delay-2">Alle Camps finden auf Kunstrasen statt. Täglich von 09:00 – 15:00 Uhr, inklusive Mittagessen, Getränke &amp; Obst.</p>
+  <div class="camps-grid">
+    <div class="camp-card reveal"><div class="camp-card-header"><span class="camp-season">🐣 Ostercamp I</span><span class="camp-spots available">✓ Plätze frei</span></div><div class="camp-card-body"><h3 class="camp-name">Ostercamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>30.03. – 02.04.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="anmeldung.html" class="btn btn-red camp-btn">Anmelden</a></div></div></div>
+    <div class="camp-card reveal reveal-delay-1"><div class="camp-card-header"><span class="camp-season">🐣 Ostercamp II</span><span class="camp-spots available">✓ Plätze frei</span></div><div class="camp-card-body"><h3 class="camp-name">Ostercamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>07.04. – 10.04.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="anmeldung.html" class="btn btn-red camp-btn">Anmelden</a></div></div></div>
+    <div class="camp-card reveal reveal-delay-2"><div class="camp-card-header"><span class="camp-season">☀️ Sommercamp I</span><span class="camp-spots available">✓ Plätze frei</span></div><div class="camp-card-body"><h3 class="camp-name">Sommercamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>20.07. – 23.07.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="anmeldung.html" class="btn btn-red camp-btn">Anmelden</a></div></div></div>
+    <div class="camp-card reveal"><div class="camp-card-header"><span class="camp-season">☀️ Sommercamp II</span><span class="camp-spots available">✓ Plätze frei</span></div><div class="camp-card-body"><h3 class="camp-name">Sommercamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>24.08. – 27.08.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="anmeldung.html" class="btn btn-red camp-btn">Anmelden</a></div></div></div>
+    <div class="camp-card reveal reveal-delay-1"><div class="camp-card-header"><span class="camp-season">🍂 Herbstcamp I</span><span class="camp-spots available">✓ Plätze frei</span></div><div class="camp-card-body"><h3 class="camp-name">Herbstcamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>19.10. – 22.10.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="anmeldung.html" class="btn btn-red camp-btn">Anmelden</a></div></div></div>
+    <div class="camp-card reveal reveal-delay-2"><div class="camp-card-header"><span class="camp-season">🍂 Herbstcamp II</span><span class="camp-spots available">✓ Plätze frei</span></div><div class="camp-card-body"><h3 class="camp-name">Herbstcamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>26.10. – 29.10.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="anmeldung.html" class="btn btn-red camp-btn">Anmelden</a></div></div></div>
+  </div>
+</div></section>
+
+<!-- STEPS -->
+<section class="steps section-pad"><div class="container">
+  <div class="text-center"><div class="section-label section-label--center reveal">So funktioniert's</div><h2 class="section-title reveal reveal-delay-1">In 3 Schritten <span class="text-red">dabei</span></h2></div>
+  <div class="steps-grid">
+    <div class="step reveal"><div class="step-num">1</div><h3>Camp auswählen</h3><p>Wähle den passenden Termin und melde dein Kind über unser Formular an.</p></div>
+    <div class="step reveal reveal-delay-1"><div class="step-num">2</div><h3>Online bezahlen</h3><p>Sichere den Platz mit einer sicheren Online-Zahlung über Stripe.</p></div>
+    <div class="step reveal reveal-delay-2"><div class="step-num">3</div><h3>Fertig!</h3><p>Du erhältst eine Bestätigung per E-Mail. Am Camp-Tag einfach vorbeikommen.</p></div>
+  </div>
+</div></section>
+
+<!-- GROUP PHOTO -->
+<div class="group-banner"><img src="images/gruppenfoto.jpg" alt="Alle Camp-Teilnehmer" loading="lazy"><div class="group-banner-overlay"></div></div>
+
+<!-- INSTAGRAM -->
+<section class="insta section-pad" id="instagram"><div class="container">
+  <div class="text-center">
+    <div class="section-label section-label--center reveal">Folge uns</div>
+    <h2 class="section-title reveal reveal-delay-1">Wir halten Sie auf dem <span class="text-red">Laufenden</span></h2>
+    <p class="section-subtitle reveal reveal-delay-2">Bitte teilen Sie unsere Posts und unterstützen Sie damit unsere Fußballschule.</p>
+  </div>
+  <div class="insta-feed reveal reveal-delay-3">
+    <script src="https://elfsightcdn.com/platform.js" async></script>
+    <div class="elfsight-app-53f9643a-8f40-4f11-917b-7ec3410b68bd" data-elfsight-app-lazy></div>
+  </div>
+  <div class="insta-cta reveal reveal-delay-3">
+    <a href="https://instagram.com/talentexperte" target="_blank" rel="noopener" class="btn btn-outline insta-btn">
+      <span class="insta-btn-icon">📷</span> @talentexperte folgen
+    </a>
+  </div>
+</div></section>
+
+<!-- FAQ -->
+<section class="faq section-pad" id="faq"><div class="container">
+  <div class="text-center"><div class="section-label section-label--center reveal">Häufige Fragen</div><h2 class="section-title reveal reveal-delay-1">Noch <span class="text-red">Fragen?</span></h2></div>
+  <div class="faq-list">
+    <div class="faq-item reveal"><button class="faq-question">Für welches Alter sind die Camps geeignet?<span class="faq-icon">+</span></button><div class="faq-answer"><p>Unsere Feriencamps sind für Kinder von 5 bis 14 Jahren geeignet – unabhängig von der Spielstärke. Ob Anfänger oder Vereinsspieler, jedes Kind wird individuell gefördert und in passende Gruppen eingeteilt.</p></div></div>
+    <div class="faq-item reveal reveal-delay-1"><button class="faq-question">Was ist im Preis enthalten?<span class="faq-icon">+</span></button><div class="faq-answer"><p>Im Camp-Preis sind vier Tage anspruchsvolles Training, Mittagessen, Getränke und Obst, sowie eine Urkunde, ein Erinnerungsfoto und eine Medaille enthalten.</p></div></div>
+    <div class="faq-item reveal reveal-delay-2"><button class="faq-question">Wie sind die Trainingszeiten?<span class="faq-icon">+</span></button><div class="faq-answer"><p>Die Camps finden täglich von 09:00 bis 15:00 Uhr statt. Bitte bringen Sie Ihr Kind bis spätestens 8:45 Uhr zum Sportplatz. Abholung ist um 15:00 Uhr.</p></div></div>
+    <div class="faq-item reveal"><button class="faq-question">Was passiert bei schlechtem Wetter?<span class="faq-icon">+</span></button><div class="faq-answer"><p>Unsere Camps finden auf Kunstrasen statt und werden bei jedem Wetter durchgeführt. Bitte achten Sie auf wetterfeste Kleidung. Nur bei extremen Wetterbedingungen wird das Programm angepasst.</p></div></div>
+    <div class="faq-item reveal reveal-delay-1"><button class="faq-question">Kann ich stornieren oder umbuchen?<span class="faq-icon">+</span></button><div class="faq-answer"><p>Bei Rücktritt erhalten Sie einen Gutschein über die volle oder anteilige Teilnahmegebühr. Dieser ist unbefristet gültig und übertragbar. Bei Auszahlung werden 35€ Bearbeitungsgebühr einbehalten.</p></div></div>
+    <div class="faq-item reveal reveal-delay-2"><button class="faq-question">Muss mein Kind bereits im Verein spielen?<span class="faq-icon">+</span></button><div class="faq-answer"><p>Nein! Unsere Camps sind für alle Kinder offen – ob Vereinsspieler, Hobbykicker oder Anfänger. Wir bilden altersgerechte Gruppen, damit jedes Kind auf seinem Niveau gefordert und gefördert wird.</p></div></div>
+  </div>
+  <div class="faq-download reveal reveal-delay-3">
+    <div class="faq-download-box">
+      <div class="faq-download-icon">📋</div>
+      <div class="faq-download-content">
+        <h4>Alle Fragen auf einen Blick</h4>
+        <p>In unserer vollständigen FAQ finden Sie alle wichtigen Informationen rund um die Camps – von Anmeldung bis Ausrüstung.</p>
+      </div>
+      <a href="pdf/faq-camps.pdf" target="_blank" rel="noopener" class="btn btn-red faq-download-btn">FAQ herunterladen <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></a>
+    </div>
+  </div>
+</div></section>
+
+<!-- MAP -->
+<section class="locations section-pad" id="standorte"><div class="container">
+  <div class="section-label reveal">Standort</div>
+  <h2 class="section-title reveal reveal-delay-1">Unser <span class="text-red">Spielort</span></h2>
+  <p class="section-subtitle reveal reveal-delay-2">Alle Camps finden auf dem modernen Kunstrasenplatz in Aachen-Burtscheid, Branderhofer Weg 15 – 52066 Aachen, statt.</p>
+  <div id="map" class="reveal reveal-delay-3"></div>
+</div></section>
+
+<!-- CTA -->
+<section class="cta-banner section-pad"><div class="container">
+  <h2 class="reveal">Bereit für das<br>beste Camp-Erlebnis?</h2>
+  <p class="reveal reveal-delay-1">Sichere jetzt den Platz für dein Kind – bevor die Camps ausgebucht sind.</p>
+  <a href="#camps" class="btn btn-white reveal reveal-delay-2">Jetzt Platz sichern <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+</div></section>
+
+<!-- FOOTER -->
+<footer class="footer" id="kontakt"><div class="container">
+  <div class="footer-grid">
+    <div class="footer-brand"><a href="#" class="nav-logo footer-brand-link"><img src="ci/logo.png" alt="Logo" class="footer-logo-img"><span class="nav-brand">TALENT<span class="text-red">EXPERTE</span></span></a><p>Fußball-Feriencamps in Aachen seit 2005. Anspruchsvolles und effektives Training für alle Kinder, die besser werden möchten.</p></div>
+    <div><h4>Navigation</h4><ul class="footer-links"><li><a href="#camps">Camps 2026</a></li><li><a href="#about">Über uns</a></li><li><a href="#reviews">Bewertungen</a></li><li><a href="#faq">FAQ</a></li><li><a href="#standorte">Standort</a></li></ul></div>
+    <div><h4>Rechtliches</h4><ul class="footer-links"><li><a href="impressum.html">Impressum</a></li><li><a href="datenschutz.html">Datenschutz</a></li><li><a href="agb.html">AGB</a></li></ul></div>
+    <div><h4>Kontakt</h4><div class="footer-contact-item">📧 <a id="email-link" class="footer-email-link">wird geladen…</a></div><div class="footer-contact-item">📱 +49 1523 4678108</div><div class="footer-contact-item">📍 Aachen, NRW</div><div class="footer-social-wrap"><a href="https://instagram.com/talentexperte" target="_blank" rel="noopener" class="footer-social-link">📷</a><a href="https://wa.me/4915234678108" target="_blank" rel="noopener" class="footer-social-link">💬</a></div></div>
+  </div>
+  <div class="footer-bottom"><span>© 2005–2026 Fußballschule TALENTEXPERTE</span><div class="footer-legal"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><a href="agb.html">AGB</a></div></div>
+</div></footer>
+
+<a href="https://wa.me/4915234678108?text=Hallo%2C%20ich%20habe%20eine%20Frage%20zu%20den%20Feriencamps" target="_blank" rel="noopener" class="whatsapp-fab" aria-label="WhatsApp"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* Email-Schutz gegen Cloudflare-Obfuskierung */
+(function(){var e='kontakt'+'@'+'talentexperte'+'.de';var a=document.getElementById('email-link');if(a){a.href='mai'+'lto:'+e;a.textContent=e}})();
+
+/* Navigation */
+const nav=document.getElementById('nav');window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>60)});
+const navToggle=document.getElementById('navToggle'),navLinks=document.getElementById('navLinks');
+navToggle.addEventListener('click',function(){navLinks.classList.toggle('open');navToggle.textContent=navLinks.classList.contains('open')?'✕':'☰'});
+navLinks.querySelectorAll('a').forEach(function(l){l.addEventListener('click',function(){navLinks.classList.remove('open');navToggle.textContent='☰'})});
+
+/* Reveal Animationen */
+var obs=new IntersectionObserver(function(entries){entries.forEach(function(el){if(el.isIntersecting){el.target.classList.add('visible')}})},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el)});
+
+/* FAQ Accordion */
+document.querySelectorAll('.faq-question').forEach(function(btn){btn.addEventListener('click',function(){var item=btn.closest('.faq-item');var wasOpen=item.classList.contains('open');document.querySelectorAll('.faq-item').forEach(function(i){i.classList.remove('open')});if(!wasOpen){item.classList.add('open')}})});
+
+/* Leaflet Karte */
+var map=L.map('map',{zoomControl:false,dragging:false,touchZoom:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,tap:false,attributionControl:false}).setView([50.7624155,6.1042797],15);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'OpenStreetMap | CARTO'}).addTo(map);
+L.control.attribution({prefix:false}).addTo(map).addAttribution('OpenStreetMap | CARTO');
+var pulse=L.divIcon({className:'pulse',iconSize:[20,20],iconAnchor:[10,10]});
+L.marker([50.7624155,6.1042797],{icon:pulse}).addTo(map);
+var popupOffset=0.008;
+L.marker([50.7624155+popupOffset,6.1042797],{icon:L.divIcon({className:'custom-popup-container',html:'<div class="custom-popup-content"><div class="popup-title">TALENTEXPERTE ❖ JSC BW Aachen</div><div class="popup-address">Branderhofer Weg<br>52066 Aachen</div></div>',iconSize:[250,null],iconAnchor:[125,70]})}).addTo(map);
+setTimeout(function(){map.setView([50.7624155,6.1042797],15)},100);
+window.addEventListener('resize',function(){map.invalidateSize()});
+
+/* Smooth Scroll */
+document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener('click',function(e){var target=document.querySelector(a.getAttribute('href'));if(target){e.preventDefault();target.scrollIntoView({behavior:'smooth',block:'start'})}})});
+</script>
+</body>
+</html>
