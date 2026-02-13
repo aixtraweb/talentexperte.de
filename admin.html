@@ -126,6 +126,7 @@ async function apiDelete(t,id){var r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?id
 
 function hasPaymentSignal(a){
 if(!a)return false;
+if(a.is_paid===true||a.paid===true||a.bezahlt===true)return true;
 if(a.zahlung_am||a.bezahlt_am||a.zahlungsdatum||
    a.stripe_payment_id||a.stripe_session_id||a.stripe_checkout_session_id||
    a.payment_intent_id||a.stripe_payment_intent||a.checkout_session_id||
@@ -155,13 +156,16 @@ var sNorm=mapStatus(a&&a.zahlungsstatus);
 var sRaw=mapStatus(a&&a.__raw_status);
 var sRawZ=mapStatus(a&&a.__raw_zahlungsstatus);
 var sRawP=mapStatus(a&&a.__raw_payment_status);
+var sRawZU=mapStatus(a&&a.__raw_zahlungs_status);
+var sRawPS=mapStatus(a&&a.__raw_paymentState);
+var sRawPs=mapStatus(a&&a.__raw_paymentstate);
 if(a&&a.__typ==='Firma'){
-if(sNorm==='storniert'||sNorm==='erstattet'||sRaw==='storniert'||sRaw==='erstattet'||sRawZ==='storniert'||sRawZ==='erstattet')return sNorm==='erstattet'||sRaw==='erstattet'||sRawZ==='erstattet'?'erstattet':'storniert';
+if(sNorm==='storniert'||sNorm==='erstattet'||sRaw==='storniert'||sRaw==='erstattet'||sRawZ==='storniert'||sRawZ==='erstattet'||sRawZU==='storniert'||sRawZU==='erstattet')return sNorm==='erstattet'||sRaw==='erstattet'||sRawZ==='erstattet'||sRawZU==='erstattet'?'erstattet':'storniert';
 return 'bezahlt';
 }
-if(sNorm==='erstattet'||sRaw==='erstattet'||sRawZ==='erstattet')return 'erstattet';
-if(sNorm==='storniert'||sRaw==='storniert'||sRawZ==='storniert')return 'storniert';
-if(sNorm==='bezahlt'||sRaw==='bezahlt'||sRawZ==='bezahlt'||sRawP==='bezahlt'||hasPaymentSignal(a)||a&&a.__paymentSignal||a&&a.zahlung_am)return 'bezahlt';
+if(sNorm==='erstattet'||sRaw==='erstattet'||sRawZ==='erstattet'||sRawZU==='erstattet'||sRawPS==='erstattet'||sRawPs==='erstattet')return 'erstattet';
+if(sNorm==='storniert'||sRaw==='storniert'||sRawZ==='storniert'||sRawZU==='storniert'||sRawPS==='storniert'||sRawPs==='storniert')return 'storniert';
+if(sNorm==='bezahlt'||sRaw==='bezahlt'||sRawZ==='bezahlt'||sRawP==='bezahlt'||sRawZU==='bezahlt'||sRawPS==='bezahlt'||sRawPs==='bezahlt'||hasPaymentSignal(a)||a&&a.__paymentSignal||a&&a.zahlung_am)return 'bezahlt';
 return 'offen'
 }
 function statusRank(s){
@@ -193,13 +197,20 @@ function resolveStatus(a){
 var s1=normalizeStatus(a&&a.status);
 var s2=normalizeStatus(a&&a.zahlungsstatus);
 var s3=normalizeStatus(a&&a.payment_status);
+var s4=normalizeStatus(a&&a.zahlungs_status);
+var s5=normalizeStatus(a&&a.paymentState);
+var s6=normalizeStatus(a&&a.paymentstate);
+if(a&&(a.is_paid===true||a.paid===true||a.bezahlt===true))return 'bezahlt';
 if(s3==='bezahlt')return 'bezahlt';
+if(s4==='bezahlt'||s5==='bezahlt'||s6==='bezahlt')return 'bezahlt';
 if(s1===s2)return s1;
 if(s1==='erstattet'||s2==='erstattet')return 'erstattet';
 if(s1==='storniert'||s2==='storniert')return 'storniert';
 if(s1==='bezahlt'||s2==='bezahlt')return 'bezahlt';
-if(s1==='offen'||s2==='offen')return 'offen';
-return s1||s2||'offen'
+if(s4==='erstattet'||s5==='erstattet'||s6==='erstattet')return 'erstattet';
+if(s4==='storniert'||s5==='storniert'||s6==='storniert')return 'storniert';
+if(s1==='offen'||s2==='offen'||s4==='offen'||s5==='offen'||s6==='offen')return 'offen';
+return s1||s2||s3||s4||s5||s6||'offen'
 }
 function normalize(a,source){
 var typField=String(a.typ||a.anmeldung_typ||'').toLowerCase().trim();
@@ -229,6 +240,9 @@ zahlungsstatus:statusNorm,
 __raw_status:a.status||null,
 __raw_zahlungsstatus:a.zahlungsstatus||null,
 __raw_payment_status:a.payment_status||null,
+__raw_zahlungs_status:a.zahlungs_status||null,
+__raw_paymentState:a.paymentState||null,
+__raw_paymentstate:a.paymentstate||null,
 __paymentSignal:hasPaymentSignal(a),
 betrag_euro:a.betrag_euro||0,zahlung_am:a.zahlung_am||a.bezahlt_am||null,storniert_am:a.storniert_am||null,created_at:a.created_at,
 firma_name:a.firma_name||null
