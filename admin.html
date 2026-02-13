@@ -181,7 +181,7 @@ return new Date(b.created_at||0)>new Date(a.created_at||0)?b:a
 async function loadAll(){await Promise.all([loadCamps(),loadAnmeldungen(),loadPrivateKpis()]);updateStats()}
 async function loadCamps(){var d=await apiGet('camp_verfuegbarkeit?order=datum_von.asc');if(!d)return;allCamps=d;renderCamps();populateCampFilter()}
 async function loadPrivateKpis(){
-var rows=await apiGet('anmeldungen?select=id,betrag_euro,status,zahlungsstatus,payment_status,zahlungs_status,zahlung_am,bezahlt_am,zahlungsdatum,is_paid,paid,bezahlt');
+var rows=await apiGet('anmeldungen?select=*&order=created_at.desc');
 if(!Array.isArray(rows)){privateKpi=null;return}
 var paidCount=0,openCount=0,paidAmount=0,openAmount=0;
 rows.forEach(function(r){
