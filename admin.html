@@ -100,6 +100,7 @@ var SUPABASE_URL='https://yxygwwoocsdnneqykiym.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
 var accessToken=null,allCamps=[],allAnmeldungen=[],currentSort={field:'datum',dir:'desc'},onlyMitarbeiter=false;
 var KNOWN_STATUS={offen:true,bezahlt:true,storniert:true,erstattet:true};
+function statusToken(v){var s=String(v||'').toLowerCase().trim();if(s==='paid'||s==='zahlung_erfolgt'||s==='bezahlt')return 'bezahlt';if(s==='cancelled'||s==='storniert')return 'storniert';if(s==='refunded'||s==='erstattet')return 'erstattet';if(s==='open'||s==='offen'||s==='pending')return 'offen';return ''}
 
 function updateClock(){var e=document.getElementById('dashTime');if(e)e.textContent=new Date().toLocaleString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}
 setInterval(updateClock,30000);
@@ -144,29 +145,23 @@ return false
 }
 
 function getEffectiveStatus(a){
-function mapStatus(v){
-var s=String(v||'').toLowerCase().trim();
-if(s==='paid'||s==='zahlung_erfolgt'||s==='bezahlt')return 'bezahlt';
-if(s==='cancelled'||s==='storniert')return 'storniert';
-if(s==='refunded'||s==='erstattet')return 'erstattet';
-if(s==='open'||s==='offen'||s==='pending')return 'offen';
-return ''
-}
-var sNorm=mapStatus(a&&a.zahlungsstatus);
-var sRaw=mapStatus(a&&a.__raw_status);
-var sRawZ=mapStatus(a&&a.__raw_zahlungsstatus);
-var sRawP=mapStatus(a&&a.__raw_payment_status);
-var sRawZU=mapStatus(a&&a.__raw_zahlungs_status);
-var sRawPS=mapStatus(a&&a.__raw_paymentState);
-var sRawPs=mapStatus(a&&a.__raw_paymentstate);
-if(a&&a.__typ==='Firma'){
-if(sNorm==='storniert'||sNorm==='erstattet'||sRaw==='storniert'||sRaw==='erstattet'||sRawZ==='storniert'||sRawZ==='erstattet'||sRawZU==='storniert'||sRawZU==='erstattet')return sNorm==='erstattet'||sRaw==='erstattet'||sRawZ==='erstattet'||sRawZU==='erstattet'?'erstattet':'storniert';
+if(!a)return 'offen';
+if(a.__effectiveStatus&&KNOWN_STATUS[a.__effectiveStatus])return a.__effectiveStatus;
+var states=[
+statusToken(a.zahlungsstatus),statusToken(a.status),statusToken(a.payment_status),statusToken(a.zahlungs_status),
+statusToken(a.__raw_status),statusToken(a.__raw_zahlungsstatus),statusToken(a.__raw_payment_status),
+statusToken(a.__raw_zahlungs_status),statusToken(a.__raw_paymentState),statusToken(a.__raw_paymentstate)
+];
+if(a.__typ==='Firma'){
+if(states.indexOf('erstattet')!==-1)return 'erstattet';
+if(states.indexOf('storniert')!==-1)return 'storniert';
 return 'bezahlt';
 }
-if(sNorm==='erstattet'||sRaw==='erstattet'||sRawZ==='erstattet'||sRawZU==='erstattet'||sRawPS==='erstattet'||sRawPs==='erstattet')return 'erstattet';
-if(sNorm==='storniert'||sRaw==='storniert'||sRawZ==='storniert'||sRawZU==='storniert'||sRawPS==='storniert'||sRawPs==='storniert')return 'storniert';
-if(sNorm==='bezahlt'||sRaw==='bezahlt'||sRawZ==='bezahlt'||sRawP==='bezahlt'||sRawZU==='bezahlt'||sRawPS==='bezahlt'||sRawPs==='bezahlt'||hasPaymentSignal(a)||a&&a.__paymentSignal||a&&a.zahlung_am)return 'bezahlt';
-return 'offen'
+if(states.indexOf('erstattet')!==-1)return 'erstattet';
+if(states.indexOf('storniert')!==-1)return 'storniert';
+if(states.indexOf('bezahlt')!==-1)return 'bezahlt';
+if(hasPaymentSignal(a)||a.__paymentSignal||a.zahlung_am||a.bezahlt_am||a.zahlungsdatum||a.is_paid===true||a.paid===true||a.bezahlt===true)return 'bezahlt';
+return 'offen';
 }
 function statusRank(s){
 if(s==='erstattet')return 4;
@@ -271,8 +266,9 @@ renderTable();
 function updateStats(){
 var aktive=allCamps.filter(function(c){return c.status==='aktiv'});
 var gesamt=allAnmeldungen.filter(function(a){return a.__effectiveStatus!=='storniert'});
-var bezahlt=allAnmeldungen.filter(function(a){return a.__effectiveStatus==='bezahlt'&&a.__typ!=='Firma'});
-var offen=allAnmeldungen.filter(function(a){return isActuallyOpen(a)});
+var privat=allAnmeldungen.filter(function(a){return a.__typ!=='Firma'});
+var bezahlt=privat.filter(function(a){return getEffectiveStatus(a)==='bezahlt'});
+var offen=privat.filter(function(a){return getEffectiveStatus(a)==='offen'&&isActuallyOpen(a)});
 var umsatz=bezahlt.reduce(function(s,a){return s+Number(a.betrag_euro||0)},0);
 var umsatzO=offen.reduce(function(s,a){return s+Number(a.betrag_euro||0)},0);
 var tp=aktive.reduce(function(s,c){return s+c.max_plaetze},0);
