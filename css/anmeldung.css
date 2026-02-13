@@ -171,6 +171,6 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}button{fon
   margin-top: 2px;
 }
 
-@media(min-width:700px){
+@media(min-width:560px){
   .camp-grid{grid-template-columns:1fr 1fr}
 }
