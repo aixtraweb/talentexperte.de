@@ -275,11 +275,12 @@ document.getElementById('statCampsSub').textContent=allCamps.length+' insgesamt'
 document.getElementById('statAnmeldungen').textContent=gesamt.length;
 var firmenCount=allAnmeldungen.filter(function(a){return a.__typ==='Firma'}).length;
 document.getElementById('statAnmeldungenSub').textContent=firmenCount+' Firmen · '+allAnmeldungen.length+' gesamt';
-document.getElementById('statBezahlt').textContent=bezahlt.length;
-document.getElementById('statBezahltSub').textContent=umsatz.toLocaleString('de-DE')+' € Umsatz (Stripe)';
+document.getElementById('statBezahlt').textContent=umsatz.toLocaleString('de-DE')+' €';
+document.getElementById('statBezahltSub').textContent='';
+document.getElementById('statBezahltSub').style.display='none';
 document.getElementById('statOffen').textContent=offen.length;
 document.getElementById('statOffenSub').textContent=umsatzO.toLocaleString('de-DE')+' € ausstehend (privat)';
-document.getElementById('statUmsatz').textContent=umsatzO.toLocaleString('de-DE')+' €';
+document.getElementById('statUmsatz').textContent=umsatz.toLocaleString('de-DE')+' €';
 document.getElementById('statUmsatzSub').textContent=umsatzO>0?'+ '+umsatzO.toLocaleString('de-DE')+' € offen (privat)':'Keine offenen';
 document.getElementById('statAuslastung').textContent=ausl+'%';
 document.getElementById('statAuslastungSub').textContent=bp+' / '+tp+' Plätze'}
