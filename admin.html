@@ -143,14 +143,25 @@ return false
 }
 
 function getEffectiveStatus(a){
-var s=String(a&&a.zahlungsstatus||'').toLowerCase().trim();
-if(!KNOWN_STATUS[s])s='offen';
+function mapStatus(v){
+var s=String(v||'').toLowerCase().trim();
+if(s==='paid'||s==='zahlung_erfolgt'||s==='bezahlt')return 'bezahlt';
+if(s==='cancelled'||s==='storniert')return 'storniert';
+if(s==='refunded'||s==='erstattet')return 'erstattet';
+if(s==='open'||s==='offen'||s==='pending')return 'offen';
+return ''
+}
+var sNorm=mapStatus(a&&a.zahlungsstatus);
+var sRaw=mapStatus(a&&a.__raw_status);
+var sRawZ=mapStatus(a&&a.__raw_zahlungsstatus);
+var sRawP=mapStatus(a&&a.__raw_payment_status);
 if(a&&a.__typ==='Firma'){
-if(s==='storniert'||s==='erstattet')return s;
+if(sNorm==='storniert'||sNorm==='erstattet'||sRaw==='storniert'||sRaw==='erstattet'||sRawZ==='storniert'||sRawZ==='erstattet')return sNorm==='erstattet'||sRaw==='erstattet'||sRawZ==='erstattet'?'erstattet':'storniert';
 return 'bezahlt';
 }
-if(s==='storniert'||s==='erstattet')return s;
-if(s==='bezahlt'||hasPaymentSignal(a)||a&&a.__paymentSignal)return 'bezahlt';
+if(sNorm==='erstattet'||sRaw==='erstattet'||sRawZ==='erstattet')return 'erstattet';
+if(sNorm==='storniert'||sRaw==='storniert'||sRawZ==='storniert')return 'storniert';
+if(sNorm==='bezahlt'||sRaw==='bezahlt'||sRawZ==='bezahlt'||sRawP==='bezahlt'||hasPaymentSignal(a)||a&&a.__paymentSignal||a&&a.zahlung_am)return 'bezahlt';
 return 'offen'
 }
 function statusRank(s){
@@ -215,6 +226,9 @@ telefon:a.kontakt_telefon||a.mitarbeiter_telefon||a.telefon||a.firma_telefon||''
 adresse:a.adresse||a.rechnungsadresse||'',
 erfahrung:a.erfahrung||null,allergien:a.allergien||null,notizen:a.notizen||null,
 zahlungsstatus:statusNorm,
+__raw_status:a.status||null,
+__raw_zahlungsstatus:a.zahlungsstatus||null,
+__raw_payment_status:a.payment_status||null,
 __paymentSignal:hasPaymentSignal(a),
 betrag_euro:a.betrag_euro||0,zahlung_am:a.zahlung_am||a.bezahlt_am||null,storniert_am:a.storniert_am||null,created_at:a.created_at,
 firma_name:a.firma_name||null
