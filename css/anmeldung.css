@@ -29,7 +29,7 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}button{fon
 .camp-select{margin-bottom:48px}
 .camp-select h2{font-family:var(--font-display);font-size:1.4rem;letter-spacing:.08em;margin-bottom:20px;display:flex;align-items:center;gap:10px}
 .camp-select h2::before{content:'';width:24px;height:2px;background:var(--red)}
-.camp-grid{display:grid;gap:12px}
+.camp-grid{display:grid;gap:12px;grid-template-columns:1fr}
 .camp-option{position:relative;background:var(--black-card);border:2px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:20px 24px;cursor:pointer;transition:all .3s;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px}
 .camp-option:hover{border-color:rgba(229,0,0,.2);background:rgba(229,0,0,.02)}
 .camp-option.selected{border-color:var(--red);background:rgba(229,0,0,.06);box-shadow:0 0 30px rgba(229,0,0,.08)}
@@ -169,4 +169,8 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}button{fon
   font-size: .68rem;
   color: #22c55e;
   margin-top: 2px;
+}
+
+@media(min-width:900px){
+  .camp-grid{grid-template-columns:1fr 1fr}
 }

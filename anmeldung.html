@@ -286,7 +286,7 @@
       </div>
       <div class="field">
         <label>Geburtsdatum <span class="req">*</span></label>
-        <input type="date" id="geburtsdatum" name="geburtsdatum" required>
+        <input type="text" id="geburtsdatum" name="geburtsdatum" inputmode="numeric" autocomplete="bday" placeholder="dd.mm.yyyy" maxlength="10" required>
         <span class="error-msg">Bitte Geburtsdatum eingeben</span>
       </div>
     </div>
@@ -537,11 +537,46 @@ function updateSummary() {
 // ============================================================
 const requiredFields = ['vorname','nachname','geburtsdatum','eltern_vorname','eltern_nachname','email','telefon'];
 
+function parseGermanDate(value) {
+  var v = (value || '').trim();
+  var m = v.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (!m) return null;
+
+  var day = parseInt(m[1], 10);
+  var month = parseInt(m[2], 10);
+  var year = parseInt(m[3], 10);
+  if (year < 1900 || year > 2100) return null;
+
+  var date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) return null;
+
+  return year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+}
+
+function applyGermanDateMask(id) {
+  var input = document.getElementById(id);
+  if (!input) return;
+
+  input.addEventListener('input', function() {
+    var digits = input.value.replace(/\D/g, '').slice(0, 8);
+    var parts = [];
+    if (digits.length > 0) parts.push(digits.slice(0, 2));
+    if (digits.length > 2) parts.push(digits.slice(2, 4));
+    if (digits.length > 4) parts.push(digits.slice(4, 8));
+    input.value = parts.join('.');
+  });
+}
+
 function checkFormReady() {
   const allFilled = requiredFields.every(id => document.getElementById(id).value.trim());
   const agbChecked = document.getElementById('agb').checked;
   const campSelected = selectedCampIds.length > 0;
-  document.getElementById('submitBtn').disabled = !(allFilled && agbChecked && campSelected);
+  const geburtsdatumValid = !!parseGermanDate(document.getElementById('geburtsdatum').value);
+  document.getElementById('submitBtn').disabled = !(allFilled && agbChecked && campSelected && geburtsdatumValid);
 }
 
 // Live-Validation
@@ -562,7 +597,7 @@ function validateForm() {
   requiredFields.forEach(id => {
     const field = document.getElementById(id);
     const parent = field.closest('.field');
-    if (!field.value.trim()) {
+    if (!field.value.trim() || (id === 'geburtsdatum' && !parseGermanDate(field.value))) {
       parent.classList.add('error');
       valid = false;
     } else {
@@ -611,7 +646,7 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
   const formData = {
     vorname: document.getElementById('vorname').value,
     nachname: document.getElementById('nachname').value,
-    geburtsdatum: document.getElementById('geburtsdatum').value,
+    geburtsdatum: parseGermanDate(document.getElementById('geburtsdatum').value),
     eltern_vorname: document.getElementById('eltern_vorname').value,
     eltern_nachname: document.getElementById('eltern_nachname').value,
     email: document.getElementById('email').value,
@@ -664,7 +699,7 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
       localStorage.setItem('te_eltern_name', formData.eltern_vorname + ' ' + formData.eltern_nachname);
       localStorage.setItem('te_email', formData.email);
       localStorage.setItem('te_telefon', formData.telefon);
-      localStorage.setItem('te_geburtsdatum', formData.geburtsdatum);
+      localStorage.setItem('te_geburtsdatum', document.getElementById('geburtsdatum').value.trim());
       localStorage.setItem('te_camp_id', selectedCampIds[0]);
       localStorage.setItem('te_camp_ids', JSON.stringify(selectedCampIds));
       localStorage.setItem('te_camp_count', results.length);
@@ -709,6 +744,7 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
 // ============================================================
 // INIT
 // ============================================================
+applyGermanDateMask('geburtsdatum');
 loadCamps();
 </script>
 </body>

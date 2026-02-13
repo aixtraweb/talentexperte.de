@@ -116,7 +116,7 @@
       </div>
       <div class="field">
         <label>Geburtsdatum <span class="req">*</span></label>
-        <input type="date" name="kind_geburtsdatum" required>
+        <input type="text" name="kind_geburtsdatum" inputmode="numeric" autocomplete="bday" placeholder="dd.mm.yyyy" maxlength="10" required>
         <span class="error-msg">Bitte Geburtsdatum eingeben</span>
       </div>
     </div>
@@ -189,6 +189,40 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let selectedCamp = null;
 let camps = [];
+
+function parseGermanDate(value) {
+  const v = (value || '').trim();
+  const m = v.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (!m) return null;
+
+  const day = parseInt(m[1], 10);
+  const month = parseInt(m[2], 10);
+  const year = parseInt(m[3], 10);
+  if (year < 1900 || year > 2100) return null;
+
+  const date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) return null;
+
+  return year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+}
+
+function applyGermanDateMask(selector) {
+  const input = document.querySelector(selector);
+  if (!input) return;
+
+  input.addEventListener('input', () => {
+    const digits = input.value.replace(/\D/g, '').slice(0, 8);
+    const parts = [];
+    if (digits.length > 0) parts.push(digits.slice(0, 2));
+    if (digits.length > 2) parts.push(digits.slice(2, 4));
+    if (digits.length > 4) parts.push(digits.slice(4, 8));
+    input.value = parts.join('.');
+  });
+}
 
 // Camps laden
 async function loadCamps() {
@@ -315,6 +349,28 @@ async function mirrorToLegacyAnmeldungen(payload) {
 // Form Submit
 document.getElementById('firmenForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+
+  const form = e.target;
+  let hasError = false;
+
+  form.querySelectorAll('[required]').forEach(field => {
+    const fieldWrap = field.closest('.field');
+    const isDateField = field.name === 'kind_geburtsdatum';
+    const empty = !field.value || !field.value.trim();
+    const invalidDate = isDateField && !parseGermanDate(field.value);
+
+    if (empty || invalidDate) {
+      fieldWrap?.classList.add('error');
+      hasError = true;
+    } else {
+      fieldWrap?.classList.remove('error');
+    }
+  });
+
+  if (hasError) {
+    alert('Bitte Pflichtfelder korrekt ausfüllen (Geburtsdatum: dd.mm.yyyy).');
+    return;
+  }
   
   if (!selectedCamp) {
     alert('Bitte wähle ein Camp aus.');
@@ -329,6 +385,7 @@ document.getElementById('firmenForm').addEventListener('submit', async (e) => {
   try {
     const formData = new FormData(e.target);
     const raw = Object.fromEntries(formData);
+    const kindGeburtsdatumIso = parseGermanDate(raw.kind_geburtsdatum);
     const selectedCampData = camps.find(c => c.id === selectedCamp);
     const preis = Number(selectedCampData?.aktueller_preis ?? selectedCampData?.preis_euro ?? 0);
 
@@ -344,7 +401,7 @@ document.getElementById('firmenForm').addEventListener('submit', async (e) => {
 
       kind_vorname: raw.kind_vorname?.trim(),
       kind_nachname: raw.kind_nachname?.trim(),
-      kind_geburtsdatum: raw.kind_geburtsdatum || null,
+      kind_geburtsdatum: kindGeburtsdatumIso,
 
       erfahrung: raw.erfahrung || null,
       allergien: raw.allergien?.trim() || null,
@@ -396,7 +453,7 @@ document.getElementById('firmenForm').addEventListener('submit', async (e) => {
       mitarbeiter_telefon: data.mitarbeiter_telefon,
       kind_vorname: data.kind_vorname,
       kind_nachname: data.kind_nachname,
-      kind_geburtsdatum: data.kind_geburtsdatum,
+      kind_geburtsdatum: raw.kind_geburtsdatum,
       rechnungsadresse: data.rechnungsadresse,
       betrag_euro: data.betrag_euro,
       camp_name: selectedCampData?.name || 'Camp',
@@ -454,6 +511,7 @@ document.getElementById('firmenForm').querySelectorAll('[required]').forEach(fie
 });
 
 window.addEventListener('DOMContentLoaded', loadCamps);
+applyGermanDateMask('input[name="kind_geburtsdatum"]');
 })();
 </script>
 
