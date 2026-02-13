@@ -37,7 +37,7 @@
       <div class="stat-card"><div class="stat-label">Camps aktiv</div><div class="stat-value" id="statCamps">–</div><div class="stat-sub" id="statCampsSub"></div></div>
       <div class="stat-card"><div class="stat-label">Anmeldungen</div><div class="stat-value red" id="statAnmeldungen">–</div><div class="stat-sub" id="statAnmeldungenSub"></div></div>
       <div class="stat-card"><div class="stat-label">Bezahlt</div><div class="stat-value green" id="statBezahlt">–</div><div class="stat-sub" id="statBezahltSub"></div></div>
-      <div class="stat-card" id="statCardOffen" style="cursor:pointer;"><div class="stat-label">Offen</div><div class="stat-value yellow" id="statOffen">–</div><div class="stat-sub" id="statOffenSub"></div></div>
+      <div class="stat-card" id="statCardOffen" style="cursor:pointer;"><div class="stat-label">Bezahlt</div><div class="stat-value yellow" id="statOffen">–</div><div class="stat-sub" id="statOffenSub"></div></div>
       <div class="stat-card"><div class="stat-label">Umsatz (bezahlt)</div><div class="stat-value green" id="statUmsatz">–</div><div class="stat-sub" id="statUmsatzSub"></div></div>
       <div class="stat-card"><div class="stat-label">Auslastung ∅</div><div class="stat-value" id="statAuslastung">–</div><div class="stat-sub" id="statAuslastungSub"></div></div>
     </div>
@@ -278,7 +278,7 @@ document.getElementById('statAnmeldungenSub').textContent=firmenCount+' Firmen �
 document.getElementById('statBezahlt').textContent=bezahlt.length;
 document.getElementById('statBezahltSub').textContent=umsatz.toLocaleString('de-DE')+' € Umsatz (Stripe)';
 document.getElementById('statOffen').textContent=offen.length;
-document.getElementById('statOffenSub').textContent=umsatzO.toLocaleString('de-DE')+' € ausstehend (privat)';
+document.getElementById('statOffenSub').textContent=umsatzO.toLocaleString('de-DE')+' € bezahlt (privat)';
 document.getElementById('statUmsatz').textContent=umsatz.toLocaleString('de-DE')+' €';
 document.getElementById('statUmsatzSub').textContent=umsatzO>0?'+ '+umsatzO.toLocaleString('de-DE')+' € offen (privat)':'Keine offenen';
 document.getElementById('statAuslastung').textContent=ausl+'%';
