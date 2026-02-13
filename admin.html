@@ -242,13 +242,9 @@ __paymentSignal:hasPaymentSignal(a),
 betrag_euro:a.betrag_euro||0,zahlung_am:a.zahlung_am||a.bezahlt_am||null,storniert_am:a.storniert_am||null,created_at:a.created_at,
 firma_name:a.firma_name||null
 }}
-var allDash=await apiGet('alle_anmeldungen_dashboard?select=*&order=created_at.desc');
-var all=await apiGet('alle_anmeldungen?select=*&order=created_at.desc');
 var priv=await apiGet('anmeldungen?select=*,camps(name,datum_von,datum_bis)&order=created_at.desc');
 var firm=await apiGet('firmen_anmeldungen?select=*,camps(name,datum_von,datum_bis)&order=created_at.desc');
 var rows=[];
-if(Array.isArray(allDash)&&allDash.length)rows=rows.concat(allDash.map(function(a){return normalize(a,'alle_anmeldungen_dashboard')}));
-else if(Array.isArray(all)&&all.length)rows=rows.concat(all.map(function(a){return normalize(a,'alle_anmeldungen')}));
 if(Array.isArray(priv))rows=rows.concat(priv.map(function(a){return normalize(a,'anmeldungen')}));
 if(Array.isArray(firm))rows=rows.concat(firm.map(function(a){return normalize(a,'firmen_anmeldungen')}));
 var merged={};
@@ -268,7 +264,7 @@ var aktive=allCamps.filter(function(c){return c.status==='aktiv'});
 var gesamt=allAnmeldungen.filter(function(a){return a.__effectiveStatus!=='storniert'});
 var privat=allAnmeldungen.filter(function(a){return a.__typ!=='Firma'});
 var bezahlt=privat.filter(function(a){return getEffectiveStatus(a)==='bezahlt'});
-var offen=privat.filter(function(a){return getEffectiveStatus(a)==='offen'&&isActuallyOpen(a)});
+var offen=privat.filter(function(a){return getEffectiveStatus(a)==='offen'});
 var umsatz=bezahlt.reduce(function(s,a){return s+Number(a.betrag_euro||0)},0);
 var umsatzO=offen.reduce(function(s,a){return s+Number(a.betrag_euro||0)},0);
 var tp=aktive.reduce(function(s,c){return s+c.max_plaetze},0);
@@ -300,7 +296,7 @@ return rk===key
 }
 
 function isActuallyOpen(a){
-return a.__effectiveStatus==='offen'&&!hasPaidTwin(a)
+return getEffectiveStatus(a)==='offen'
 }
 
 function renderCamps(){var c=document.getElementById('campCards');if(allCamps.length===0){c.innerHTML='<div class="empty-state"><div class="icon">📋</div>Keine Camps</div>';return}
