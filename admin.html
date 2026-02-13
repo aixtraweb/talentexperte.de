@@ -136,7 +136,8 @@ var keys=Object.keys(a);
 for(var i=0;i<keys.length;i++){
 var k=String(keys[i]||'').toLowerCase();
 if(k.indexOf('link')!==-1)continue;
-if((k.indexOf('stripe_')===0||k.indexOf('payment_')===0||k.indexOf('_paid')!==-1||k.indexOf('paid_')===0||k.indexOf('zahlung')!==-1)&&a[keys[i]])return true;
+if(k==='status'||k==='zahlungsstatus'||k==='payment_status')continue;
+if((k.indexOf('stripe_')===0||k==='payment_id'||k==='payment_intent_id'||k==='transaction_id'||k==='paid_at'||k==='bezahlt_am'||k==='zahlung_am'||k==='checkout_session_id'||k==='stripe_payment_intent'||k==='stripe_session_id'||k==='stripe_checkout_session_id')&&a[keys[i]])return true;
 }
 return false
 }
