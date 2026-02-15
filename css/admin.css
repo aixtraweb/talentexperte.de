@@ -19,12 +19,12 @@ input,select,textarea{font-family:inherit}
 .login-error{color:var(--red);font-size:.82rem;margin-top:12px;display:none}
 
 .dashboard{display:none}
-.dash-nav{background:rgba(10,10,10,.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.05);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.dash-nav{background:rgba(10,10,10,.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.05);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
 .dash-nav-left{display:flex;align-items:center;gap:12px}
 .dash-nav h1{font-family:var(--font-display);font-size:1.2rem;letter-spacing:.1em}
 .dash-nav h1 span{color:var(--red)}
 .dash-nav-badge{font-size:.65rem;background:var(--red);padding:3px 8px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
-.dash-nav-right{display:flex;align-items:center;gap:12px}
+.dash-nav-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
 .dash-time{font-size:.75rem;color:var(--gray-500)}
 .dash-logout{background:none;color:var(--gray-500);font-size:.82rem;font-weight:600;transition:color .3s;padding:8px 16px;border-radius:8px}
 .dash-logout:hover{color:var(--red);background:rgba(255,255,255,.03)}
@@ -38,8 +38,8 @@ input,select,textarea{font-family:inherit}
 .stat-value.red{color:var(--red)}.stat-value.green{color:var(--green)}.stat-value.yellow{color:var(--yellow)}.stat-value.purple{color:var(--purple)}
 .stat-sub{font-size:.72rem;color:var(--gray-500);margin-top:6px}
 
-.tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.06)}
-.tab{padding:12px 24px;font-size:.85rem;font-weight:600;color:var(--gray-500);background:none;border-bottom:2px solid transparent;transition:all .3s;letter-spacing:.02em}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.06)}
+.tab{padding:12px 24px;font-size:.85rem;font-weight:600;color:var(--gray-500);background:none;border-bottom:2px solid transparent;transition:all .3s;letter-spacing:.02em;white-space:nowrap}
 .tab:hover{color:var(--gray-300)}.tab.active{color:var(--white);border-bottom-color:var(--red)}
 .tab-content{display:none}.tab-content.active{display:block}
 
@@ -138,8 +138,38 @@ tr.clickable{cursor:pointer}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:14px 24px;border-radius:var(--radius-sm);font-size:.85rem;font-weight:600;z-index:300;transform:translateY(100px);opacity:0;transition:all .3s}
 .toast.show{transform:translateY(0);opacity:1}.toast.error{background:var(--red)}
 
-@media(max-width:768px){.stats-grid{grid-template-columns:1fr 1fr}.camp-cards{grid-template-columns:1fr}.table-controls{flex-direction:column;align-items:stretch}.table-search{width:100%}.modal-row{grid-template-columns:1fr}.detail-panel{width:100%}}
-@media(max-width:480px){.stats-grid{grid-template-columns:1fr}.dash-content{padding:16px}}
+@media(max-width:900px){
+.dash-nav{padding:10px 16px}
+.dash-time{font-size:.7rem}
+.dash-logout{padding:8px 12px}
+.table-search{width:100%}
+}
+@media(max-width:768px){
+.stats-grid{grid-template-columns:1fr 1fr}
+.camp-cards{grid-template-columns:1fr}
+.table-controls{flex-direction:column;align-items:stretch}
+.table-filters{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.filter-select,.btn-sm{width:100%}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;border-bottom:none}
+.tab{padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-bottom-width:1px;border-radius:10px;text-align:center}
+.tab.active{border-color:rgba(229,0,0,.45);background:rgba(229,0,0,.08)}
+.modal-row{grid-template-columns:1fr}
+.detail-panel{width:100%}
+}
+@media(max-width:560px){
+.dash-nav-left,.dash-nav-right{width:100%;justify-content:space-between}
+.dash-time{display:none}
+.stat-card{padding:16px}
+.stat-value{font-size:1.9rem}
+th,td{padding:10px 12px}
+.modal-header,.modal-body,.modal-footer{padding-left:16px;padding-right:16px}
+}
+@media(max-width:480px){
+.stats-grid{grid-template-columns:1fr}
+.dash-content{padding:16px}
+.table-filters{grid-template-columns:1fr}
+.tabs{grid-template-columns:1fr}
+}
 
 /* Inline-Style Ersetzungen */
 .link-red { color: var(--red); }
