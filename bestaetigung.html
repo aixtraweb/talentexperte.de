@@ -355,9 +355,39 @@ async function lookupBooking() {
 }
 
 // ============================================================
+// HILFSFUNKTIONEN PDF
+// ============================================================
+
+// Logo als Base64 laden
+async function loadLogoBase64() {
+  try {
+    var res = await fetch('ci/logo.png');
+    var blob = await res.blob();
+    return new Promise(function(resolve) {
+      var reader = new FileReader();
+      reader.onloadend = function() { resolve(reader.result); };
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+// Umlaute für jsPDF-Helvetica sicherstellen (ISO-8859-1 kompatibel)
+function u(s) {
+  if (!s) return '–';
+  return String(s)
+    .replace(/\u00e4/g, '\xe4').replace(/\u00f6/g, '\xf6').replace(/\u00fc/g, '\xfc')
+    .replace(/\u00c4/g, '\xc4').replace(/\u00d6/g, '\xd6').replace(/\u00dc/g, '\xdc')
+    .replace(/\u00df/g, '\xdf');
+}
+
+// ============================================================
 // PDF DOWNLOAD
 // ============================================================
-function downloadPDF() {
+async function downloadPDF() {
+  var logoBase64 = await loadLogoBase64();
+
   var jsPDF = window.jspdf.jsPDF;
   var doc = new jsPDF('p', 'mm', 'a4');
   var w = 210;
@@ -367,35 +397,41 @@ function downloadPDF() {
 
   // Header-Balken rot
   doc.setFillColor(229, 0, 0);
-  doc.rect(0, 0, w, 35, 'F');
+  doc.rect(0, 0, w, 40, 'F');
 
-  // Logo-Text
+  // Logo
+  if (logoBase64) {
+    doc.addImage(logoBase64, 'PNG', margin, 8, 22, 22);
+  }
+
+  // Header-Text neben Logo
+  var textX = logoBase64 ? margin + 28 : margin;
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(22);
-  doc.text('TALENTEXPERTE', margin, 16);
-  doc.setFontSize(10);
+  doc.setFontSize(20);
+  doc.text('TALENTEXPERTE', textX, 18);
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text('Fussballschule seit 2005 | Anmeldebestaetigung', margin, 24);
+  doc.text(u('Fußballschule seit 2005 | Anmeldebestätigung'), textX, 26);
 
   // Buchungsnr rechts
-  doc.setFontSize(9);
-  doc.text('Buchungs-Nr: ' + (regData.anmeldung_id ? regData.anmeldung_id.slice(0, 8).toUpperCase() : '–'), w - margin, 16, { align: 'right' });
-  doc.text('Datum: ' + regData.datum, w - margin, 22, { align: 'right' });
+  doc.setFontSize(8);
+  doc.text('Buchungs-Nr: ' + (regData.anmeldung_id ? regData.anmeldung_id.slice(0, 8).toUpperCase() : '–'), w - margin, 18, { align: 'right' });
+  doc.text('Datum: ' + regData.datum, w - margin, 25, { align: 'right' });
 
-  y = 48;
+  y = 52;
 
   // Bestätigungstext
   doc.setTextColor(34, 34, 34);
-  doc.setFontSize(16);
+  doc.setFontSize(15);
   doc.setFont('helvetica', 'bold');
-  doc.text('Anmeldebestaetigung', margin, y);
-  y += 10;
+  doc.text(u('Anmeldebestätigung'), margin, y);
+  y += 9;
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  doc.text('Vielen Dank fuer die Anmeldung! Der Camp-Platz ist verbindlich reserviert.', margin, y);
+  doc.text(u('Vielen Dank für die Anmeldung! Der Camp-Platz ist verbindlich reserviert.'), margin, y);
   y += 14;
 
   // Teilnehmer-Box
@@ -410,18 +446,18 @@ function downloadPDF() {
   doc.setTextColor(100, 100, 100);
   var ly = y + 20;
   var rows1 = [
-    ['Kind:',         regData.kind],
+    ['Kind:',         u(regData.kind)],
     ['Geburtsdatum:', fmtDate(regData.geburtsdatum)],
-    ['Elternteil:',   regData.eltern],
-    ['E-Mail:',       regData.email],
-    ['Telefon:',      regData.telefon],
+    ['Elternteil:',   u(regData.eltern)],
+    ['E-Mail:',       u(regData.email)],
+    ['Telefon:',      u(regData.telefon)],
   ];
   rows1.forEach(function(r) {
     doc.setTextColor(120, 120, 120);
     doc.text(r[0], margin + 8, ly);
     doc.setTextColor(34, 34, 34);
     doc.setFont('helvetica', 'bold');
-    doc.text(r[1] || '–', margin + 45, ly);
+    doc.text(r[1], margin + 45, ly);
     doc.setFont('helvetica', 'normal');
     ly += 6;
   });
@@ -441,17 +477,17 @@ function downloadPDF() {
     ? fmtDate(regData.camp_datum_von) + ' - ' + fmtDate(regData.camp_datum_bis)
     : '–';
   var rows2 = [
-    ['Camp:',    regData.camp_name],
+    ['Camp:',     u(regData.camp_name)],
     ['Zeitraum:', zeitraum],
-    ['Uhrzeit:', regData.camp_uhrzeit_von + ' - ' + regData.camp_uhrzeit_bis + ' Uhr'],
-    ['Ort:',     regData.camp_ort + ', ' + regData.camp_adresse],
+    ['Uhrzeit:',  regData.camp_uhrzeit_von + ' - ' + regData.camp_uhrzeit_bis + ' Uhr'],
+    ['Ort:',      u(regData.camp_ort + ', ' + regData.camp_adresse)],
   ];
   rows2.forEach(function(r) {
     doc.setTextColor(120, 120, 120);
     doc.text(r[0], margin + 8, ly);
     doc.setTextColor(34, 34, 34);
     doc.setFont('helvetica', 'bold');
-    doc.text(r[1] || '–', margin + 45, ly);
+    doc.text(r[1], margin + 45, ly);
     doc.setFont('helvetica', 'normal');
     ly += 6;
   });
@@ -479,12 +515,12 @@ function downloadPDF() {
   doc.setFontSize(9);
   doc.setTextColor(80, 80, 80);
   var inkl = [
-    '4 Tage professionelles Fussballtraining',
-    'Mittagessen, Getraenke & Obst jeden Tag',
-    'Urkunde, Foto & Medaille',
-    'Betreuung durch lizenzierte Trainer',
+    u('4 Tage professionelles Fußballtraining'),
+    u('Mittagessen, Getränke & Obst jeden Tag'),
+    u('Urkunde, Foto & Medaille'),
+    u('Betreuung durch lizenzierte Trainer'),
   ];
-  inkl.forEach(function(t) { doc.text('  •  ' + t, margin, y); y += 6; });
+  inkl.forEach(function(t) { doc.text('  \u2022  ' + t, margin, y); y += 6; });
   y += 6;
 
   // Mitbringen
@@ -497,14 +533,14 @@ function downloadPDF() {
   doc.setFontSize(9);
   doc.setTextColor(80, 80, 80);
   var pack = [
-    ['Fussballschuhe (Kunstrasen)', 'Hallenschuhe (bei Regen)'],
-    ['Schienbeinschoner',           'Sportkleidung'],
-    ['Sonnencreme',                 'Trinkflasche'],
-    ['Kappe / Muetze',              'Rucksack'],
+    [u('Fußballschuhe (Kunstrasen)'), 'Hallenschuhe (bei Regen)'],
+    ['Schienbeinschoner',             'Sportkleidung'],
+    ['Sonnencreme',                   'Trinkflasche'],
+    [u('Kappe / Mütze'),              'Rucksack'],
   ];
   pack.forEach(function(row) {
-    doc.text('  •  ' + row[0], margin,      y);
-    doc.text('  •  ' + row[1], margin + 80, y);
+    doc.text('  \u2022  ' + row[0], margin,      y);
+    doc.text('  \u2022  ' + row[1], margin + 80, y);
     y += 6;
   });
   y += 8;
@@ -514,7 +550,7 @@ function downloadPDF() {
   doc.roundedRect(margin, y, col, 18, 3, 3, 'F');
   doc.setTextColor(120, 100, 0);
   doc.setFontSize(8);
-  doc.text('Bitte am ersten Tag 15 Minuten frueher da sein (8:45 Uhr) fuer die Begruessung.', margin + 8, y + 8);
+  doc.text(u('Bitte am ersten Tag 15 Minuten früher da sein (8:45 Uhr) für die Begrüßung.'), margin + 8, y + 8);
   doc.text('Bei Fragen: kontakt@talentexperte.de | +49 1523 4678108 | WhatsApp', margin + 8, y + 14);
 
   // Footer
@@ -522,10 +558,10 @@ function downloadPDF() {
   doc.rect(0, 287, w, 10, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(7);
-  doc.text('Fussballschule TALENTEXPERTE | Alejandro Medina | kontakt@talentexperte.de | www.talentexperte.de', w / 2, 293, { align: 'center' });
+  doc.text(u('Fußballschule TALENTEXPERTE | Alejandro Medina | kontakt@talentexperte.de | www.talentexperte.de'), w / 2, 293, { align: 'center' });
 
   // PDF speichern
-  var kindSlug = (regData.kind || 'Anmeldung').replace(/\s+/g, '-');
+  var kindSlug = (regData.kind || 'Anmeldung').replace(/\s+/g, '-').replace(/[^a-zA-Z0-9\-]/g, '');
   doc.save('Anmeldebestaetigung-TALENTEXPERTE-' + kindSlug + '.pdf');
 }
 

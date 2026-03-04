@@ -728,10 +728,17 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
       if (firstResult.stripe_link) {
         payBtn.href = firstResult.stripe_link;
         payBtn.style.display = 'inline-flex';
-        // Bei mehreren Camps Hinweis auf Menge
         if (results.length > 1) {
           payBtn.textContent = totalBetrag + '€ bezahlen (' + results.length + '× Camp) →';
         }
+
+        // Auto-PDF beim Stripe-Klick: PDF speichern, dann weiterleiten
+        payBtn.onclick = async function(e) {
+          e.preventDefault();
+          var stripeUrl = firstResult.stripe_link;
+          try { await downloadRegistrationPDF(); } catch (ex) {}
+          setTimeout(function() { window.location.href = stripeUrl; }, 800);
+        };
       } else {
         payBtn.style.display = 'none';
       }
@@ -755,13 +762,37 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
 });
 
 // ============================================================
+// HILFSFUNKTIONEN PDF
+// ============================================================
+
+async function loadLogoBase64() {
+  try {
+    var res = await fetch('ci/logo.png');
+    var blob = await res.blob();
+    return new Promise(function(resolve) {
+      var reader = new FileReader();
+      reader.onloadend = function() { resolve(reader.result); };
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) { return null; }
+}
+
+function u(s) {
+  if (!s) return '–';
+  return String(s)
+    .replace(/\u00e4/g, '\xe4').replace(/\u00f6/g, '\xf6').replace(/\u00fc/g, '\xfc')
+    .replace(/\u00c4/g, '\xc4').replace(/\u00d6/g, '\xd6').replace(/\u00dc/g, '\xdc')
+    .replace(/\u00df/g, '\xdf');
+}
+
+// ============================================================
 // PDF DOWNLOAD (vorläufige Anmeldebestätigung vor Zahlung)
 // ============================================================
-function downloadRegistrationPDF() {
-  if (!window.jspdf) {
-    alert('PDF-Bibliothek wird noch geladen. Bitte einen Moment warten und erneut versuchen.');
-    return;
-  }
+async function downloadRegistrationPDF() {
+  if (!window.jspdf) return;
+
+  var logoBase64 = await loadLogoBase64();
+
   var kindName   = (localStorage.getItem('te_kind_name') || '').trim();
   var elternName = (localStorage.getItem('te_eltern_name') || '').trim();
   var email      = (localStorage.getItem('te_email') || '').trim();
@@ -786,39 +817,44 @@ function downloadRegistrationPDF() {
 
   // Header
   doc.setFillColor(229, 0, 0);
-  doc.rect(0, 0, w, 35, 'F');
+  doc.rect(0, 0, w, 40, 'F');
+
+  if (logoBase64) {
+    doc.addImage(logoBase64, 'PNG', margin, 8, 22, 22);
+  }
+  var textX = logoBase64 ? margin + 28 : margin;
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(22);
-  doc.text('TALENTEXPERTE', margin, 16);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Fussballschule seit 2005 | Anmeldung eingegangen', margin, 24);
+  doc.setFontSize(20);
+  doc.text('TALENTEXPERTE', textX, 18);
   doc.setFontSize(9);
-  doc.text('Buchungs-Nr: ' + (anmId ? anmId.slice(0, 8).toUpperCase() : '–'), w - margin, 16, { align: 'right' });
-  doc.text('Datum: ' + heute, w - margin, 22, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.text(u('Fußballschule seit 2005 | Anmeldung eingegangen'), textX, 26);
+  doc.setFontSize(8);
+  doc.text('Buchungs-Nr: ' + (anmId ? anmId.slice(0, 8).toUpperCase() : '–'), w - margin, 18, { align: 'right' });
+  doc.text('Datum: ' + heute, w - margin, 25, { align: 'right' });
 
-  y = 48;
+  y = 52;
 
-  // Status-Hinweis (Zahlung ausstehend)
+  // Status-Hinweis
   doc.setFillColor(255, 248, 220);
   doc.roundedRect(margin, y, col, 14, 3, 3, 'F');
   doc.setTextColor(160, 100, 0);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text('HINWEIS: Anmeldung eingegangen – Platz wird nach Zahlungseingang verbindlich reserviert.', margin + 6, y + 9);
+  doc.text(u('HINWEIS: Anmeldung eingegangen – Platz wird nach Zahlungseingang verbindlich reserviert.'), margin + 6, y + 9);
   y += 22;
 
   // Titel
   doc.setTextColor(34, 34, 34);
-  doc.setFontSize(16);
+  doc.setFontSize(15);
   doc.setFont('helvetica', 'bold');
-  doc.text('Anmeldebestaetigung (vorlaeutig)', margin, y);
-  y += 10;
+  doc.text(u('Anmeldebestätigung (vorläufig)'), margin, y);
+  y += 9;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  doc.text('Deine Anmeldung ist eingegangen. Der Platz wird nach Zahlungseingang bestaetigt.', margin, y);
+  doc.text(u('Deine Anmeldung ist eingegangen. Der Platz wird nach Zahlungseingang bestätigt.'), margin, y);
   y += 14;
 
   // Teilnehmer-Box
@@ -832,18 +868,18 @@ function downloadRegistrationPDF() {
   doc.setFontSize(9);
   var ly = y + 20;
   var rows1 = [
-    ['Kind:',         kindName],
+    ['Kind:',         u(kindName)],
     ['Geburtsdatum:', fmtD(geburt)],
-    ['Elternteil:',   elternName],
-    ['E-Mail:',       email],
-    ['Telefon:',      telefon],
+    ['Elternteil:',   u(elternName)],
+    ['E-Mail:',       u(email)],
+    ['Telefon:',      u(telefon)],
   ];
   rows1.forEach(function(r) {
     doc.setTextColor(120, 120, 120);
     doc.text(r[0], margin + 8, ly);
     doc.setTextColor(34, 34, 34);
     doc.setFont('helvetica', 'bold');
-    doc.text(r[1] || '–', margin + 45, ly);
+    doc.text(r[1], margin + 45, ly);
     doc.setFont('helvetica', 'normal');
     ly += 6;
   });
@@ -862,7 +898,7 @@ function downloadRegistrationPDF() {
   doc.text('Camp:', margin + 8, y + 17);
   doc.setTextColor(34, 34, 34);
   doc.setFont('helvetica', 'bold');
-  doc.text(campName || '–', margin + 45, y + 17);
+  doc.text(u(campName) || '–', margin + 45, y + 17);
   y += 30;
 
   // Betrag-Box (gelb = ausstehend)
@@ -882,9 +918,9 @@ function downloadRegistrationPDF() {
   doc.rect(0, 287, w, 10, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(7);
-  doc.text('Fussballschule TALENTEXPERTE | kontakt@talentexperte.de | www.talentexperte.de | +49 1523 4678108', w / 2, 293, { align: 'center' });
+  doc.text(u('Fußballschule TALENTEXPERTE | kontakt@talentexperte.de | www.talentexperte.de | +49 1523 4678108'), w / 2, 293, { align: 'center' });
 
-  var kindSlug = (kindName || 'Anmeldung').replace(/\s+/g, '-');
+  var kindSlug = (kindName || 'Anmeldung').replace(/\s+/g, '-').replace(/[^a-zA-Z0-9\-]/g, '');
   doc.save('Anmeldung-TALENTEXPERTE-' + kindSlug + '.pdf');
 }
 
