@@ -374,7 +374,13 @@
     <div class="overlay-icon success">🎉</div>
     <h2>Anmeldung erfolgreich!</h2>
     <p id="successMessage">Die Anmeldung wurde gespeichert. Bitte bezahle jetzt, um den Platz verbindlich zu reservieren.</p>
+    <div id="bookingIdBox" style="margin:12px 0;padding:10px 16px;background:rgba(255,255,255,.07);border-radius:8px;font-size:.85rem;color:#aaa;display:none;">
+      Buchungs-Nr.: <strong id="overlayBookingId" style="color:#fff;letter-spacing:.08em;"></strong>
+      <br><span style="font-size:.75rem;">Notiere diese Nummer – du kannst damit deine Bestätigung jederzeit erneut abrufen.</span>
+    </div>
     <a href="#" class="btn-overlay btn-pay" id="payBtn">Jetzt bezahlen →</a>
+    <br>
+    <button class="btn-overlay btn-back" onclick="downloadRegistrationPDF()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#ddd;cursor:pointer;margin-bottom:8px;">📥 Anmeldedaten als PDF speichern</button>
     <br>
     <a href="index.html" class="btn-overlay btn-back">Zurück zur Startseite</a>
   </div>
@@ -704,6 +710,13 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
       localStorage.setItem('te_camp_ids', JSON.stringify(selectedCampIds));
       localStorage.setItem('te_camp_count', results.length);
 
+      // Buchungsnummer anzeigen
+      var shortId = firstResult.anmeldung_id ? firstResult.anmeldung_id.slice(0, 8).toUpperCase() : '';
+      if (shortId) {
+        document.getElementById('overlayBookingId').textContent = shortId;
+        document.getElementById('bookingIdBox').style.display = 'block';
+      }
+
       // Erfolgsmeldung
       var successMsg = formData.vorname + ' wurde erfolgreich zu ' + results.length + ' Camp' + (results.length > 1 ? 's' : '') + ' angemeldet (' + campNames.join(', ') + ')! Bitte bezahle jetzt ' + totalBetrag + '€, um die Plätze verbindlich zu reservieren.';
       if (results.length === 1) {
@@ -742,8 +755,150 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
 });
 
 // ============================================================
+// PDF DOWNLOAD (vorläufige Anmeldebestätigung vor Zahlung)
+// ============================================================
+function downloadRegistrationPDF() {
+  if (!window.jspdf) {
+    alert('PDF-Bibliothek wird noch geladen. Bitte einen Moment warten und erneut versuchen.');
+    return;
+  }
+  var kindName   = (localStorage.getItem('te_kind_name') || '').trim();
+  var elternName = (localStorage.getItem('te_eltern_name') || '').trim();
+  var email      = (localStorage.getItem('te_email') || '').trim();
+  var telefon    = (localStorage.getItem('te_telefon') || '').trim();
+  var geburt     = (localStorage.getItem('te_geburtsdatum') || '').trim();
+  var campName   = (localStorage.getItem('te_camp_name') || '').trim();
+  var betrag     = localStorage.getItem('te_betrag') || '0';
+  var campCount  = localStorage.getItem('te_camp_count') || '1';
+  var anmId      = localStorage.getItem('te_anmeldung_id') || '';
+  var heute      = new Date().toLocaleDateString('de-DE');
+
+  function fmtD(s) {
+    if (!s) return '–';
+    if (s.match(/^\d{2}\.\d{2}\.\d{4}$/)) return s;
+    var d = new Date(s + 'T00:00:00');
+    return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF('p', 'mm', 'a4');
+  var w = 210, margin = 25, col = w - 2 * margin, y = 0;
+
+  // Header
+  doc.setFillColor(229, 0, 0);
+  doc.rect(0, 0, w, 35, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.text('TALENTEXPERTE', margin, 16);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Fussballschule seit 2005 | Anmeldung eingegangen', margin, 24);
+  doc.setFontSize(9);
+  doc.text('Buchungs-Nr: ' + (anmId ? anmId.slice(0, 8).toUpperCase() : '–'), w - margin, 16, { align: 'right' });
+  doc.text('Datum: ' + heute, w - margin, 22, { align: 'right' });
+
+  y = 48;
+
+  // Status-Hinweis (Zahlung ausstehend)
+  doc.setFillColor(255, 248, 220);
+  doc.roundedRect(margin, y, col, 14, 3, 3, 'F');
+  doc.setTextColor(160, 100, 0);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('HINWEIS: Anmeldung eingegangen – Platz wird nach Zahlungseingang verbindlich reserviert.', margin + 6, y + 9);
+  y += 22;
+
+  // Titel
+  doc.setTextColor(34, 34, 34);
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Anmeldebestaetigung (vorlaeutig)', margin, y);
+  y += 10;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(80, 80, 80);
+  doc.text('Deine Anmeldung ist eingegangen. Der Platz wird nach Zahlungseingang bestaetigt.', margin, y);
+  y += 14;
+
+  // Teilnehmer-Box
+  doc.setFillColor(245, 245, 245);
+  doc.roundedRect(margin, y, col, 52, 3, 3, 'F');
+  doc.setTextColor(34, 34, 34);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('Teilnehmer', margin + 8, y + 10);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  var ly = y + 20;
+  var rows1 = [
+    ['Kind:',         kindName],
+    ['Geburtsdatum:', fmtD(geburt)],
+    ['Elternteil:',   elternName],
+    ['E-Mail:',       email],
+    ['Telefon:',      telefon],
+  ];
+  rows1.forEach(function(r) {
+    doc.setTextColor(120, 120, 120);
+    doc.text(r[0], margin + 8, ly);
+    doc.setTextColor(34, 34, 34);
+    doc.setFont('helvetica', 'bold');
+    doc.text(r[1] || '–', margin + 45, ly);
+    doc.setFont('helvetica', 'normal');
+    ly += 6;
+  });
+  y += 60;
+
+  // Camp-Box
+  doc.setFillColor(245, 245, 245);
+  doc.roundedRect(margin, y, col, 22, 3, 3, 'F');
+  doc.setTextColor(34, 34, 34);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('Camp', margin + 8, y + 10);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(120, 120, 120);
+  doc.text('Camp:', margin + 8, y + 17);
+  doc.setTextColor(34, 34, 34);
+  doc.setFont('helvetica', 'bold');
+  doc.text(campName || '–', margin + 45, y + 17);
+  y += 30;
+
+  // Betrag-Box (gelb = ausstehend)
+  doc.setFillColor(251, 191, 36);
+  doc.roundedRect(margin, y, col, 16, 3, 3, 'F');
+  doc.setTextColor(80, 50, 0);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  var betragLabel = betrag + ',00 EUR';
+  if (parseInt(campCount) > 1) betragLabel += ' (' + campCount + ' Camps)';
+  doc.text('Betrag: ' + betragLabel, margin + 8, y + 11);
+  doc.text('Status: ZAHLUNG AUSSTEHEND', w - margin - 8, y + 11, { align: 'right' });
+  y += 26;
+
+  // Footer
+  doc.setFillColor(229, 0, 0);
+  doc.rect(0, 287, w, 10, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(7);
+  doc.text('Fussballschule TALENTEXPERTE | kontakt@talentexperte.de | www.talentexperte.de | +49 1523 4678108', w / 2, 293, { align: 'center' });
+
+  var kindSlug = (kindName || 'Anmeldung').replace(/\s+/g, '-');
+  doc.save('Anmeldung-TALENTEXPERTE-' + kindSlug + '.pdf');
+}
+
+// ============================================================
 // INIT
 // ============================================================
+// jsPDF für Pre-Payment-Download laden
+(function() {
+  var s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  s.async = true;
+  document.head.appendChild(s);
+})();
+
 applyGermanDateMask('geburtsdatum');
 loadCamps();
 </script>

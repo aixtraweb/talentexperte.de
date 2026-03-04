@@ -25,6 +25,50 @@
 <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
 <meta name="apple-mobile-web-app-title" content="TALENTEXPERTE" />
 <link rel="manifest" href="favicon/site.webmanifest" />
+<style>
+/* Buchungsnummer-Lookup */
+.lookup-card {
+  background: #161616;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 28px 32px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.lookup-card h2 {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: .06em;
+  margin-bottom: 10px;
+}
+.lookup-card p { color: #888; font-size: .9rem; margin-bottom: 20px; }
+.lookup-row { display: flex; gap: 10px; max-width: 400px; margin: 0 auto; }
+.lookup-input {
+  flex: 1;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #fff;
+  font-size: .9rem;
+  outline: none;
+}
+.lookup-input:focus { border-color: #e50000; }
+.lookup-btn {
+  background: #e50000;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  color: #fff;
+  font-weight: 600;
+  font-size: .9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .2s;
+}
+.lookup-btn:hover { background: #c00; }
+.lookup-error { color: #ef4444; font-size: .85rem; margin-top: 10px; display: none; }
+</style>
 </head>
 <body>
 
@@ -39,8 +83,19 @@
     <p id="headerText">Vielen Dank! Der Camp-Platz ist jetzt verbindlich reserviert.</p>
   </div>
 
+  <!-- LOOKUP (nur wenn keine Daten vorhanden) -->
+  <div class="lookup-card" id="lookupCard" style="display:none;">
+    <h2>🔍 Buchungsbestätigung abrufen</h2>
+    <p>Gib deine Buchungsnummer ein, um deine Anmeldedaten erneut anzuzeigen.</p>
+    <div class="lookup-row">
+      <input type="text" class="lookup-input" id="lookupInput" placeholder="z.B. A1B2C3D4" maxlength="36">
+      <button class="lookup-btn" onclick="lookupBooking()">Abrufen</button>
+    </div>
+    <p class="lookup-error" id="lookupError">Buchungsnummer nicht gefunden. Bitte prüfe die Eingabe.</p>
+  </div>
+
   <!-- ANMELDEDATEN -->
-  <div class="info-card">
+  <div class="info-card" id="mainData">
     <h2>📋 Anmeldebestätigung</h2>
     <div class="info-row"><span class="info-label">Teilnehmer</span><span class="info-value" id="dKind">–</span></div>
     <div class="info-row"><span class="info-label">Geburtsdatum</span><span class="info-value" id="dGeb">–</span></div>
@@ -65,8 +120,8 @@
     <h2>🎁 Im Camp enthalten</h2>
     <ul class="checklist">
       <li><span class="icon">✅</span>4 Tage professionelles Fußballtraining</li>
-      <li><span class="icon">✅</span>Mittagessen, Getränke & Obst jeden Tag</li>
-      <li><span class="icon">✅</span>Urkunde, Foto & Medaille</li>
+      <li><span class="icon">✅</span>Mittagessen, Getränke &amp; Obst jeden Tag</li>
+      <li><span class="icon">✅</span>Urkunde, Foto &amp; Medaille</li>
       <li><span class="icon">✅</span>Betreuung durch lizenzierte Trainer</li>
     </ul>
   </div>
@@ -103,7 +158,7 @@
     <div class="contact-bar">
       <a href="https://wa.me/4915234678108?text=Hallo%2C%20ich%20habe%20gerade%20ein%20Feriencamp%20gebucht%20und%20habe%20eine%20Frage." class="contact-link wa" target="_blank" rel="noopener">💬 WhatsApp</a>
       <a href="tel:+4915234678108" class="contact-link">📱 +49 1523 4678108</a>
-      <a href="/cdn-cgi/l/email-protection#4d262223392c26390d392c2128233928353d283f3928632928" class="contact-link">📧 E-Mail</a>
+      <a href="mailto:kontakt@talentexperte.de" class="contact-link">📧 E-Mail</a>
     </div>
   </div>
 
@@ -119,7 +174,7 @@
   <div>© 2005–2026 Fußballschule TALENTEXPERTE · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a> · <a href="agb.html">AGB</a></div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ============================================================
 // CONFIG
 // ============================================================
@@ -127,20 +182,20 @@ var SUPABASE_URL = 'https://yxygwwoocsdnneqykiym.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
 
 // ============================================================
-// DATEN LADEN
+// DATEN LADEN (localStorage + URL-Parameter als Fallback)
 // ============================================================
 var regData = {
-  kind: localStorage.getItem('te_kind_name') || '',
-  eltern: localStorage.getItem('te_eltern_name') || '',
-  email: localStorage.getItem('te_email') || '',
-  telefon: localStorage.getItem('te_telefon') || '',
-  geburtsdatum: localStorage.getItem('te_geburtsdatum') || '',
-  camp_name: localStorage.getItem('te_camp_name') || '',
-  betrag: localStorage.getItem('te_betrag') || '',
-  camp_count: localStorage.getItem('te_camp_count') || '1',
-  anmeldung_id: localStorage.getItem('te_anmeldung_id') || '',
-  camp_id: localStorage.getItem('te_camp_id') || '',
-  camp_ids: JSON.parse(localStorage.getItem('te_camp_ids') || '[]'),
+  kind: '',
+  eltern: '',
+  email: '',
+  telefon: '',
+  geburtsdatum: '',
+  camp_name: '',
+  betrag: '',
+  camp_count: '1',
+  anmeldung_id: '',
+  camp_id: '',
+  camp_ids: [],
   camp_datum_von: '',
   camp_datum_bis: '',
   camp_uhrzeit_von: '09:00',
@@ -149,6 +204,29 @@ var regData = {
   camp_adresse: 'Branderhofer Weg, 52066 Aachen',
   datum: new Date().toLocaleDateString('de-DE')
 };
+
+function loadFromStorage() {
+  regData.kind         = localStorage.getItem('te_kind_name') || '';
+  regData.eltern       = localStorage.getItem('te_eltern_name') || '';
+  regData.email        = localStorage.getItem('te_email') || '';
+  regData.telefon      = localStorage.getItem('te_telefon') || '';
+  regData.geburtsdatum = localStorage.getItem('te_geburtsdatum') || '';
+  regData.camp_name    = localStorage.getItem('te_camp_name') || '';
+  regData.betrag       = localStorage.getItem('te_betrag') || '';
+  regData.camp_count   = localStorage.getItem('te_camp_count') || '1';
+  regData.anmeldung_id = localStorage.getItem('te_anmeldung_id') || '';
+  regData.camp_id      = localStorage.getItem('te_camp_id') || '';
+  regData.camp_ids     = JSON.parse(localStorage.getItem('te_camp_ids') || '[]');
+}
+
+// URL-Parameter auslesen (z.B. ?id=xxx von Stripe-Redirect)
+function getUrlParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+function hasData() {
+  return !!(regData.kind || regData.anmeldung_id);
+}
 
 function fmtDate(s) {
   if (!s) return '–';
@@ -164,21 +242,25 @@ function fmtDateShort(s) {
 
 // Seite befüllen
 function fillPage() {
-  document.getElementById('dKind').textContent = regData.kind || '–';
-  document.getElementById('dGeb').textContent = fmtDate(regData.geburtsdatum);
-  document.getElementById('dEltern').textContent = regData.eltern || '–';
-  document.getElementById('dEmail').textContent = regData.email || '–';
+  document.getElementById('dKind').textContent    = regData.kind    || '–';
+  document.getElementById('dGeb').textContent     = fmtDate(regData.geburtsdatum);
+  document.getElementById('dEltern').textContent  = regData.eltern  || '–';
+  document.getElementById('dEmail').textContent   = regData.email   || '–';
   document.getElementById('dTelefon').textContent = regData.telefon || '–';
-  document.getElementById('dNr').textContent = regData.anmeldung_id ? regData.anmeldung_id.slice(0, 8).toUpperCase() : '–';
-  document.getElementById('dCamp').textContent = regData.camp_name || '–';
+  document.getElementById('dNr').textContent      = regData.anmeldung_id
+    ? regData.anmeldung_id.slice(0, 8).toUpperCase() : '–';
+  document.getElementById('dCamp').textContent    = regData.camp_name || '–';
+
   var betragNum = parseInt(regData.betrag) || 0;
-  document.getElementById('dBetrag').textContent = betragNum > 0 ? betragNum + ',00 € ✓' : '–';
   if (parseInt(regData.camp_count) > 1) {
     document.getElementById('dBetrag').textContent = betragNum + ',00 € (' + regData.camp_count + ' Camps) ✓';
+  } else {
+    document.getElementById('dBetrag').textContent = betragNum > 0 ? betragNum + ',00 € ✓' : '–';
   }
 
   if (regData.kind) {
-    document.getElementById('headerText').textContent = 'Vielen Dank! Der Camp-Platz für ' + regData.kind + ' ist jetzt verbindlich reserviert.';
+    document.getElementById('headerText').textContent =
+      'Vielen Dank! Der Camp-Platz für ' + regData.kind + ' ist jetzt verbindlich reserviert.';
   }
 }
 
@@ -193,24 +275,84 @@ async function loadCampDetails() {
     var data = await res.json();
     if (data && data.length > 0) {
       var c = data[0];
-      regData.camp_datum_von = c.datum_von;
-      regData.camp_datum_bis = c.datum_bis;
-      regData.camp_uhrzeit_von = (c.uhrzeit_von || '09:00:00').slice(0, 5);
-      regData.camp_uhrzeit_bis = (c.uhrzeit_bis || '15:00:00').slice(0, 5);
-      regData.camp_ort = c.ort || regData.camp_ort;
-      regData.camp_adresse = c.adresse || regData.camp_adresse;
+      regData.camp_datum_von    = c.datum_von;
+      regData.camp_datum_bis    = c.datum_bis;
+      regData.camp_uhrzeit_von  = (c.uhrzeit_von || '09:00:00').slice(0, 5);
+      regData.camp_uhrzeit_bis  = (c.uhrzeit_bis || '15:00:00').slice(0, 5);
+      regData.camp_ort          = c.ort     || regData.camp_ort;
+      regData.camp_adresse      = c.adresse || regData.camp_adresse;
 
-      document.getElementById('dZeitraum').textContent = fmtDateShort(c.datum_von) + ' – ' + fmtDateShort(c.datum_bis);
-      document.getElementById('dUhrzeit').textContent = regData.camp_uhrzeit_von + ' – ' + regData.camp_uhrzeit_bis + ' Uhr';
-      document.getElementById('dOrt').textContent = regData.camp_ort + ', ' + regData.camp_adresse;
+      document.getElementById('dZeitraum').textContent =
+        fmtDateShort(c.datum_von) + ' – ' + fmtDateShort(c.datum_bis);
+      document.getElementById('dUhrzeit').textContent =
+        regData.camp_uhrzeit_von + ' – ' + regData.camp_uhrzeit_bis + ' Uhr';
+      document.getElementById('dOrt').textContent =
+        regData.camp_ort + ', ' + regData.camp_adresse;
     }
   } catch (e) {
     console.log('Camp-Details konnten nicht geladen werden:', e);
   }
 }
 
-fillPage();
-loadCampDetails();
+// Anmeldung per Buchungsnummer aus Supabase laden
+async function loadFromSupabase(anmeldungId) {
+  try {
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/anmeldungen?id=eq.' + encodeURIComponent(anmeldungId) +
+      '&select=id,vorname,nachname,geburtsdatum,eltern_vorname,eltern_nachname,email,telefon,camp_id,betrag_euro',
+      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY } }
+    );
+    if (!res.ok) return false;
+    var data = await res.json();
+    if (!data || data.length === 0) return false;
+    var r = data[0];
+    regData.anmeldung_id = r.id;
+    regData.kind         = (r.vorname || '') + ' ' + (r.nachname || '');
+    regData.geburtsdatum = r.geburtsdatum || '';
+    regData.eltern       = (r.eltern_vorname || '') + ' ' + (r.eltern_nachname || '');
+    regData.email        = r.email   || '';
+    regData.telefon      = r.telefon || '';
+    regData.camp_id      = r.camp_id || '';
+    regData.betrag       = r.betrag_euro || '';
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ============================================================
+// BUCHUNGSNUMMER LOOKUP (wenn localStorage leer)
+// ============================================================
+async function lookupBooking() {
+  var val = (document.getElementById('lookupInput').value || '').trim();
+  if (!val) return;
+  var errEl = document.getElementById('lookupError');
+  errEl.style.display = 'none';
+  var btn = document.querySelector('.lookup-btn');
+  btn.textContent = '…';
+  btn.disabled = true;
+
+  // Versuche vollständige UUID oder 8-Zeichen-Kürzel
+  var found = false;
+  if (val.length === 36) {
+    found = await loadFromSupabase(val);
+  } else {
+    // Kurzsuche (first 8 chars of UUID) - nicht direkt filterbar, daher Info anzeigen
+    found = false;
+  }
+
+  btn.textContent = 'Abrufen';
+  btn.disabled = false;
+
+  if (found) {
+    document.getElementById('lookupCard').style.display = 'none';
+    fillPage();
+    loadCampDetails();
+  } else {
+    errEl.style.display = 'block';
+    errEl.textContent = 'Buchungsnummer nicht gefunden. Bitte prüfe die Eingabe oder wende dich an uns.';
+  }
+}
 
 // ============================================================
 // PDF DOWNLOAD
@@ -268,11 +410,11 @@ function downloadPDF() {
   doc.setTextColor(100, 100, 100);
   var ly = y + 20;
   var rows1 = [
-    ['Kind:', regData.kind],
+    ['Kind:',         regData.kind],
     ['Geburtsdatum:', fmtDate(regData.geburtsdatum)],
-    ['Elternteil:', regData.eltern],
-    ['E-Mail:', regData.email],
-    ['Telefon:', regData.telefon],
+    ['Elternteil:',   regData.eltern],
+    ['E-Mail:',       regData.email],
+    ['Telefon:',      regData.telefon],
   ];
   rows1.forEach(function(r) {
     doc.setTextColor(120, 120, 120);
@@ -295,12 +437,14 @@ function downloadPDF() {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   ly = y + 20;
-  var zeitraum = regData.camp_datum_von && regData.camp_datum_bis ? fmtDate(regData.camp_datum_von) + ' - ' + fmtDate(regData.camp_datum_bis) : '–';
+  var zeitraum = regData.camp_datum_von && regData.camp_datum_bis
+    ? fmtDate(regData.camp_datum_von) + ' - ' + fmtDate(regData.camp_datum_bis)
+    : '–';
   var rows2 = [
-    ['Camp:', regData.camp_name],
+    ['Camp:',    regData.camp_name],
     ['Zeitraum:', zeitraum],
     ['Uhrzeit:', regData.camp_uhrzeit_von + ' - ' + regData.camp_uhrzeit_bis + ' Uhr'],
-    ['Ort:', regData.camp_ort + ', ' + regData.camp_adresse],
+    ['Ort:',     regData.camp_ort + ', ' + regData.camp_adresse],
   ];
   rows2.forEach(function(r) {
     doc.setTextColor(120, 120, 120);
@@ -354,12 +498,12 @@ function downloadPDF() {
   doc.setTextColor(80, 80, 80);
   var pack = [
     ['Fussballschuhe (Kunstrasen)', 'Hallenschuhe (bei Regen)'],
-    ['Schienbeinschoner', 'Sportkleidung'],
-    ['Sonnencreme', 'Trinkflasche'],
-    ['Kappe / Muetze', 'Rucksack'],
+    ['Schienbeinschoner',           'Sportkleidung'],
+    ['Sonnencreme',                 'Trinkflasche'],
+    ['Kappe / Muetze',              'Rucksack'],
   ];
   pack.forEach(function(row) {
-    doc.text('  •  ' + row[0], margin, y);
+    doc.text('  •  ' + row[0], margin,      y);
     doc.text('  •  ' + row[1], margin + 80, y);
     y += 6;
   });
@@ -380,5 +524,36 @@ function downloadPDF() {
   doc.setFontSize(7);
   doc.text('Fussballschule TALENTEXPERTE | Alejandro Medina | kontakt@talentexperte.de | www.talentexperte.de', w / 2, 293, { align: 'center' });
 
-  // Download
-  v
+  // PDF speichern
+  var kindSlug = (regData.kind || 'Anmeldung').replace(/\s+/g, '-');
+  doc.save('Anmeldebestaetigung-TALENTEXPERTE-' + kindSlug + '.pdf');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+(async function init() {
+  loadFromStorage();
+
+  // Fallback: URL-Parameter ?id=xxx (z.B. von Stripe-Redirect mit custom success_url)
+  if (!hasData()) {
+    var urlId = getUrlParam('id');
+    if (urlId) {
+      var ok = await loadFromSupabase(urlId);
+      if (!ok) {
+        document.getElementById('lookupCard').style.display = 'block';
+        return;
+      }
+    } else {
+      // Keine Daten und kein URL-Parameter → Lookup anzeigen
+      document.getElementById('lookupCard').style.display = 'block';
+      return;
+    }
+  }
+
+  fillPage();
+  loadCampDetails();
+})();
+</script>
+</body>
+</html>
