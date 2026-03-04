@@ -269,6 +269,95 @@ function formatDate(dateValue) {
 }
 
 // ============================================================
+// KOMPLETT-RESYNC (alte Kontakte löschen + neu einlesen)
+// ============================================================
+
+/**
+ * Führt einen vollständigen Resync durch:
+ * 1. Alle Kontakte mit Label "TALENTEXPERTE" aus Google Kontakten löschen
+ * 2. Spalte "Synced" im Sheet zurücksetzen
+ * 3. Alle Zeilen neu synchronisieren
+ *
+ * ACHTUNG: Löscht alle bisherigen TALENTEXPERTE-Kontakte unwiderruflich.
+ * Danach werden alle Zeilen mit dem neuen Format (Kind = Name, Eltern = Unternehmen) neu angelegt.
+ */
+function fullResync() {
+  Logger.log('🔄 Starte vollständigen Resync...');
+
+  // Schritt 1: Alte Kontakte löschen
+  const deleted = deleteAllTalentexperteContacts();
+  Logger.log('🗑️ ' + deleted + ' Kontakte gelöscht.');
+
+  // Schritt 2: Synced-Spalte zurücksetzen
+  resetSyncedColumn();
+  Logger.log('🔁 Synced-Spalte zurückgesetzt.');
+
+  // Schritt 3: Neu einlesen
+  syncToGoogleContacts();
+  Logger.log('✅ Resync abgeschlossen.');
+}
+
+/**
+ * Löscht alle Google-Kontakte mit dem Label "TALENTEXPERTE".
+ * Gibt die Anzahl gelöschter Kontakte zurück.
+ */
+function deleteAllTalentexperteContacts() {
+  let deleted = 0;
+
+  try {
+    // Label-ID ermitteln
+    const labelId = getOrCreateContactLabel(CONTACT_LABEL);
+    if (!labelId) {
+      Logger.log('⚠️ Label nicht gefunden, nichts zu löschen.');
+      return 0;
+    }
+
+    // Alle Kontakte des Labels laden (max. 1000)
+    const groupResponse = People.ContactGroups.get(labelId, {
+      maxMembers: 1000
+    });
+    const members = (groupResponse.memberResourceNames || []);
+
+    if (members.length === 0) {
+      Logger.log('ℹ️ Keine Kontakte im Label gefunden.');
+      return 0;
+    }
+
+    Logger.log('🗑️ Lösche ' + members.length + ' Kontakte...');
+
+    // Stapelweise löschen (max. 500 pro Request)
+    const chunkSize = 500;
+    for (let i = 0; i < members.length; i += chunkSize) {
+      const chunk = members.slice(i, i + chunkSize);
+      People.People.batchDeleteContacts({ resourceNames: chunk });
+      deleted += chunk.length;
+      Utilities.sleep(500); // kurze Pause zwischen Stapeln
+    }
+
+  } catch (error) {
+    Logger.log('❌ Fehler beim Löschen: ' + error.message);
+  }
+
+  return deleted;
+}
+
+/**
+ * Setzt alle "JA"-Einträge in der Synced-Spalte auf leer,
+ * damit der nächste Sync-Lauf alle Zeilen neu verarbeitet.
+ */
+function resetSyncedColumn() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (!sheet) return;
+
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][16] === 'JA' || data[i][16] === 'YES') {
+      sheet.getRange(i + 1, SYNCED_COLUMN).setValue('');
+    }
+  }
+}
+
+// ============================================================
 // MANUELLE TEST-FUNKTION
 // ============================================================
 
