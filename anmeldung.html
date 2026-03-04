@@ -836,25 +836,16 @@ async function downloadRegistrationPDF() {
 
   y = 52;
 
-  // Status-Hinweis
-  doc.setFillColor(255, 248, 220);
-  doc.roundedRect(margin, y, col, 14, 3, 3, 'F');
-  doc.setTextColor(160, 100, 0);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'bold');
-  doc.text(u('HINWEIS: Anmeldung eingegangen – Platz wird nach Zahlungseingang verbindlich reserviert.'), margin + 6, y + 9);
-  y += 22;
-
   // Titel
   doc.setTextColor(34, 34, 34);
   doc.setFontSize(15);
   doc.setFont('helvetica', 'bold');
-  doc.text(u('Anmeldebestätigung (vorläufig)'), margin, y);
+  doc.text(u('Anmeldebestätigung'), margin, y);
   y += 9;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  doc.text(u('Deine Anmeldung ist eingegangen. Der Platz wird nach Zahlungseingang bestätigt.'), margin, y);
+  doc.text(u('Ihre Anmeldung ist eingegangen \u2013 ein Platz wird nach Zahlungseingang verbindlich reserviert.'), margin, y);
   y += 14;
 
   // Teilnehmer-Box
@@ -910,7 +901,6 @@ async function downloadRegistrationPDF() {
   var betragLabel = betrag + ',00 EUR';
   if (parseInt(campCount) > 1) betragLabel += ' (' + campCount + ' Camps)';
   doc.text('Betrag: ' + betragLabel, margin + 8, y + 11);
-  doc.text('Status: ZAHLUNG AUSSTEHEND', w - margin - 8, y + 11, { align: 'right' });
   y += 26;
 
   // Footer
