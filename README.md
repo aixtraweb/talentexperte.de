@@ -57,11 +57,21 @@ Hinweis zu Löschen:
 - Falls Einträge nicht verschwinden: Policies für `anmeldungen` und `firmen_anmeldungen` prüfen
 
 ## Bestätigungsseiten und PDFs
-- `bestaetigung-firma.html` wurde auf kurze, klare Bestätigung reduziert
-- PDF-Layout enthält Logo `ci/logo.png` und professionelle Fußzeile
-- PDF-Downloads:
-  - Normal: `/pdf/faq-camps.pdf`
-  - Mitarbeiter: `/pdf/faq-camps-mitarbeiter.pdf`
+- `bestaetigung.html`: Bestätigung nach Zahlung, PDF mit Logo + Umlauten + Buchungsnr.
+- `bestaetigung-firma.html`: kurze Bestätigung Firmenanmeldung + PDF
+- PDF-Workflow:
+  - Vor Zahlung: `downloadRegistrationPDF()` in `anmeldung.html` — Status „ZAHLUNG AUSSTEHEND"
+  - Auto-PDF: wird beim Klick auf „Jetzt bezahlen" automatisch gespeichert
+  - Nach Zahlung: `downloadPDF()` in `bestaetigung.html` — Status „BEZAHLT"
+  - FAQ Normal: `/pdf/faq-camps.pdf`
+  - FAQ Mitarbeiter: `/pdf/faq-camps-mitarbeiter.pdf`
+- Buchungsnummer-Lookup: `bestaetigung.html?id=<uuid>` falls localStorage leer
+
+## Google Kontakte Sync
+- Script: `code.gs` (Google Apps Script, im Google Sheet hinterlegt)
+- Läuft automatisch alle 5 Minuten via Trigger
+- Kontakt-Format: **Kind = Name**, **Elternteil = Unternehmen**, Details in Notizen
+- Resync aller Kontakte: Funktion `fullResync()` im Apps Script ausführen
 
 ## Lokales Testen
 Projektpfad:
