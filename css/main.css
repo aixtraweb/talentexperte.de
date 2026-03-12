@@ -69,6 +69,8 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}button{fon
 .photo-strip-inner img{width:280px;height:180px;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;filter:brightness(.85);transition:filter .3s}
 .photo-strip-inner img:hover{filter:brightness(1)}
 @keyframes scroll-strip{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@media(max-width:768px){.photo-strip{padding:24px 0}.photo-strip-inner{gap:8px}.photo-strip-inner img{width:180px;height:120px}}
+@media(prefers-reduced-motion:reduce){.photo-strip-inner{animation:none;overflow-x:auto;-webkit-overflow-scrolling:touch}}
 
 /* ABOUT */
 .about{background:var(--black-soft)}.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
