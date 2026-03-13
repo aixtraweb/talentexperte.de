@@ -174,3 +174,56 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}button{fon
 @media(min-width:560px){
   .camp-grid{grid-template-columns:1fr 1fr}
 }
+@media(min-width:720px){
+  .camp-grid{grid-template-columns:1fr 1fr 1fr}
+}
+
+/* ==========================================
+   ENHANCEMENTS — anmeldung.html v2
+   ========================================== */
+
+/* PROGRESS STEPPER */
+.form-stepper{background:var(--black-soft);border-bottom:1px solid rgba(255,255,255,.05);padding:14px var(--side-pad);position:sticky;top:57px;z-index:50}
+.stepper-inner{display:flex;align-items:center;justify-content:center;gap:0;max-width:480px;margin:0 auto}
+.stepper-step{display:flex;flex-direction:column;align-items:center;gap:4px}
+.stepper-num{width:32px;height:32px;border-radius:50%;background:var(--black-card);border:2px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:.9rem;color:var(--gray-500);transition:all .3s}
+.stepper-step.active .stepper-num{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 16px rgba(229,0,0,.3)}
+.stepper-step.done .stepper-num{background:rgba(34,197,94,.15);border-color:#22c55e;color:#22c55e}
+.stepper-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gray-500);white-space:nowrap}
+.stepper-step.active .stepper-label{color:var(--red)}
+.stepper-step.done .stepper-label{color:#22c55e}
+.stepper-line{flex:1;height:2px;background:rgba(255,255,255,.06);margin:0 6px;margin-bottom:18px;max-width:60px;transition:background .3s}
+.stepper-step.done~.stepper-line,.stepper-step.done+.stepper-line{background:rgba(34,197,94,.3)}
+
+/* FORM STEP BADGES */
+.form-step-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;font-family:var(--font-body);font-size:.85rem;font-weight:700;flex-shrink:0}
+.form-section h2::before,.camp-select h2::before{display:none}
+
+/* FORM REVEAL */
+.form-reveal{opacity:0;transform:translateY(20px);transition:opacity .5s ease,transform .5s ease}
+.form-reveal.visible{opacity:1;transform:translateY(0)}
+
+/* DESKTOP LAYOUT WITH SIDEBAR */
+@media(min-width:960px){
+  .main{max-width:1100px;display:grid;grid-template-columns:1fr 300px;gap:40px;align-items:start}
+  .form-column{min-width:0}
+  .summary-sidebar{display:block}
+}
+.summary-sidebar{display:none}
+.sidebar-card{background:var(--black-card);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:24px;position:sticky;top:120px}
+.sidebar-card h3{font-family:var(--font-display);font-size:.9rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:16px;color:var(--gray-300)}
+.sidebar-empty{font-size:.85rem;color:var(--gray-500)}
+.sidebar-camp-item{font-size:.85rem;color:var(--gray-200);padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.sidebar-camp-item:last-child{border-bottom:none}
+.sidebar-total{font-family:var(--font-display);font-size:2rem;color:var(--red);margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-trust{margin-top:16px;display:flex;flex-direction:column;gap:6px}
+.sidebar-trust p{font-size:.75rem;color:var(--gray-500)}
+
+/* ANIMATED SVG CHECKMARK */
+.overlay-icon.success{background:transparent}
+.checkmark-svg{width:64px;height:64px}
+.checkmark-circle{stroke:#22c55e;stroke-width:2;stroke-dasharray:166;stroke-dashoffset:166;animation:checkCircle .6s ease forwards}
+.checkmark-check{stroke:#22c55e;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:48;stroke-dashoffset:48;animation:checkPath .4s .5s ease forwards}
+@keyframes checkCircle{to{stroke-dashoffset:0}}
+@keyframes checkPath{to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.checkmark-circle,.checkmark-check{animation:none;stroke-dashoffset:0}}
