@@ -377,9 +377,7 @@
   </div><!-- /form-column -->
 
   <aside class="summary-sidebar" id="summarySidebar">
-    <div class="sidebar-card">
-      <h3>Deine Auswahl</h3>
-      <div id="sidebarContent"><p class="sidebar-empty">Noch kein Camp gewählt.</p></div>
+    <div class="sidebar-card" style="text-align:center">
       <div class="sidebar-total" id="sidebarTotal"></div>
       <div class="sidebar-trust">
         <p>🔒 Sichere Zahlung via Stripe</p>
@@ -431,7 +429,7 @@
 
 <!-- FOOTER -->
 <footer class="footer-mini">
-  <div>© 2005–2026 Fußballschule TALENTEXPERTE · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a> · <a href="agb.html">AGB</a></div>
+  <div>© 2005–2026 FUSSBALLSCHULE TALENTEXPERTE · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a> · <a href="agb.html">AGB</a></div>
 </footer>
 
 <script>
@@ -1039,16 +1037,12 @@ loadFormDraft();
 var _origUpdateSummary=updateSummary;
 updateSummary=function(){
   _origUpdateSummary();
-  var sidebar=document.getElementById('sidebarContent');
   var sidebarTotal=document.getElementById('sidebarTotal');
-  if(!sidebar)return;
   if(selectedCampIds.length>0){
     var sel=camps.filter(function(c){return selectedCampIds.indexOf(c.id)>-1});
     var total=sel.reduce(function(s,c){return s+(c.aktueller_preis||c.preis_euro);},0);
-    sidebar.innerHTML=sel.map(function(c){return '<div class="sidebar-camp-item">'+c.name+'</div>';}).join('');
     sidebarTotal.textContent=total+'€';
   }else{
-    sidebar.innerHTML='<p class="sidebar-empty">Noch kein Camp gewählt.</p>';
     sidebarTotal.textContent='';
   }
 };
