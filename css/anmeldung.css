@@ -23,7 +23,8 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}button{fon
 .hero-mini p{font-size:clamp(.95rem,1.4vw,1.1rem);color:var(--gray-300);max-width:550px;margin:0 auto;line-height:1.7}
 
 /* MAIN LAYOUT */
-.main{max-width:var(--max-w);margin:0 auto;padding:0 var(--side-pad) 80px}
+.main{max-width:var(--max-w);margin:0 auto;padding:0 var(--side-pad) 80px;display:flex;flex-direction:column;align-items:center}
+.main>*{width:100%}
 
 /* CAMP SELECTION */
 .camp-select{margin-bottom:48px}
@@ -207,19 +208,20 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}button{fon
 .form-section,.agb-check,.submit-area{max-width:620px;margin-left:auto;margin-right:auto}
 
 /* FORM COLUMN ZENTRIERT */
-.form-column{width:100%;max-width:620px;margin-left:auto;margin-right:auto}
+.form-column{width:100%;max-width:620px;margin-left:auto;margin-right:auto;display:flex;flex-direction:column;align-items:center}
+.form-column>*{width:100%}
 
 /* CAMP AUSWAHL ZENTRIERT */
-.camp-select{max-width:900px;margin-left:auto;margin-right:auto}
+.camp-select{max-width:900px;margin-left:auto;margin-right:auto;width:100%}
 
 /* CAMP GRID ZENTRIERT */
-.camp-grid{justify-items:center}
-.camp-option{width:100%;max-width:420px}
+.camp-grid{justify-items:center;justify-content:center}
+.camp-option{width:100%;max-width:400px}
 
 /* DESKTOP LAYOUT WITH SIDEBAR */
 @media(min-width:960px){
   .main{max-width:1200px;display:grid;grid-template-columns:1fr 320px;gap:60px;align-items:start;justify-content:center}
-  .form-column{min-width:0;max-width:620px;justify-self:end}
+  .form-column{min-width:0;max-width:620px;justify-self:end;display:block}
   .summary-sidebar{display:block;justify-self:start}
 }
 .summary-sidebar{display:none}
