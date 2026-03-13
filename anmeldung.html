@@ -240,7 +240,7 @@
 
 <!-- NAV -->
 <nav class="nav"><div class="container">
-  <a href="index.html" class="nav-logo"><img src="ci/logo.webp" alt="Logo"><span class="nav-brand">TALENT<span>EXPERTE</span></span></a>
+  <a href="index.html" class="nav-logo"><img src="ci/logo.png" alt="TALENTEXPERTE Logo" loading="eager" width="88" height="88"></a>
   <a href="index.html" class="nav-back">← Zurück zur Startseite</a>
 </div></nav>
 
@@ -251,12 +251,26 @@
   <p>In 2 Minuten zum Camp-Platz. Wähle dein Camp, fülle das Formular aus und sichere den Platz mit einer Online-Zahlung.</p>
 </div></section>
 
+<!-- PROGRESS STEPPER -->
+<div class="form-stepper" id="formStepper">
+  <div class="stepper-inner">
+    <div class="stepper-step active" data-step="1"><div class="stepper-num">1</div><div class="stepper-label">Camp</div></div>
+    <div class="stepper-line"></div>
+    <div class="stepper-step" data-step="2"><div class="stepper-num">2</div><div class="stepper-label">Kind</div></div>
+    <div class="stepper-line"></div>
+    <div class="stepper-step" data-step="3"><div class="stepper-num">3</div><div class="stepper-label">Eltern</div></div>
+    <div class="stepper-line"></div>
+    <div class="stepper-step" data-step="4"><div class="stepper-num">4</div><div class="stepper-label">Abschluss</div></div>
+  </div>
+</div>
+
 <!-- FORM -->
 <div class="main">
+  <div class="form-column">
 
   <!-- CAMP AUSWAHL -->
-  <div class="camp-select">
-    <h2>1. Camp auswählen</h2>
+  <div class="camp-select form-reveal" id="stepSection1">
+    <h2><span class="form-step-badge">1</span> Camp auswählen</h2>
     <p class="camp-select-hint">Mehrere Camps wählbar – Preisberechnung erfolgt automatisch</p>
     <div class="camp-grid" id="campGrid">
       <div class="camp-loading"><div class="spinner"></div>Camps werden geladen…</div>
@@ -271,8 +285,8 @@
 
   <!-- KIND -->
   <form id="registrationForm" novalidate>
-  <div class="form-section">
-    <h2>2. Daten des Kindes</h2>
+  <div class="form-section form-reveal" id="stepSection2">
+    <h2><span class="form-step-badge">2</span> Daten des Kindes</h2>
     <div class="form-grid">
       <div class="field">
         <label>Vorname <span class="req">*</span></label>
@@ -293,8 +307,8 @@
   </div>
 
   <!-- ELTERN -->
-  <div class="form-section">
-    <h2>3. Eltern & Kontakt</h2>
+  <div class="form-section form-reveal" id="stepSection3">
+    <h2><span class="form-step-badge">3</span> Eltern &amp; Kontakt</h2>
     <div class="form-grid">
       <div class="field">
         <label>Vorname Elternteil <span class="req">*</span></label>
@@ -324,8 +338,8 @@
   </div>
 
   <!-- ZUSATZINFOS -->
-  <div class="form-section">
-    <h2>4. Zusätzliche Infos</h2>
+  <div class="form-section form-reveal" id="stepSection4">
+    <h2><span class="form-step-badge">4</span> Zusätzliche Infos</h2>
     <div class="form-grid">
       <div class="field form-full">
         <label>Fußball-Erfahrung</label>
@@ -360,6 +374,20 @@
     <p class="submit-note">Nach der Anmeldung wirst du zur sicheren Bezahlung über Stripe weitergeleitet.<br>Der Platz wird erst nach Zahlungseingang verbindlich reserviert.</p>
   </div>
   </form>
+  </div><!-- /form-column -->
+
+  <aside class="summary-sidebar" id="summarySidebar">
+    <div class="sidebar-card">
+      <h3>Deine Auswahl</h3>
+      <div id="sidebarContent"><p class="sidebar-empty">Noch kein Camp gewählt.</p></div>
+      <div class="sidebar-total" id="sidebarTotal"></div>
+      <div class="sidebar-trust">
+        <p>🔒 Sichere Zahlung via Stripe</p>
+        <p>✓ Platz wird nach Zahlung reserviert</p>
+        <p>↩ Stornierung möglich (lt. AGB)</p>
+      </div>
+    </div>
+  </aside>
 </div>
 
 <!-- SUMMARY BAR (mobile) -->
@@ -371,7 +399,12 @@
 <!-- SUCCESS OVERLAY -->
 <div class="overlay" id="successOverlay">
   <div class="overlay-card">
-    <div class="overlay-icon success">🎉</div>
+    <div class="overlay-icon success">
+      <svg class="checkmark-svg" viewBox="0 0 52 52" aria-hidden="true">
+        <circle class="checkmark-circle" cx="26" cy="26" r="24" fill="none"/>
+        <path class="checkmark-check" fill="none" d="M14 26l9 9 16-16"/>
+      </svg>
+    </div>
     <h2>Anmeldung erfolgreich!</h2>
     <p id="successMessage">Die Anmeldung wurde gespeichert. Bitte bezahle jetzt, um den Platz verbindlich zu reservieren.</p>
     <div id="bookingIdBox" style="margin:12px 0;padding:10px 16px;background:rgba(255,255,255,.07);border-radius:8px;font-size:.85rem;color:#aaa;display:none;">
@@ -709,6 +742,7 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
       localStorage.setItem('te_camp_id', selectedCampIds[0]);
       localStorage.setItem('te_camp_ids', JSON.stringify(selectedCampIds));
       localStorage.setItem('te_camp_count', results.length);
+      try{localStorage.removeItem('te_form_draft');}catch(e){}
 
       // Buchungsnummer anzeigen
       var shortId = firstResult.anmeldung_id ? firstResult.anmeldung_id.slice(0, 8).toUpperCase() : '';
@@ -926,6 +960,99 @@ async function downloadRegistrationPDF() {
 })();
 
 applyGermanDateMask('geburtsdatum');
+
+// ============================================================
+// FORM REVEAL ANIMATIONS
+// ============================================================
+(function(){
+  if(!('IntersectionObserver' in window))return;
+  var fObs=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible')});
+  },{threshold:0.08});
+  document.querySelectorAll('.form-reveal').forEach(function(el){fObs.observe(el)});
+})();
+
+// ============================================================
+// PROGRESS STEPPER
+// ============================================================
+(function(){
+  var sections=['stepSection1','stepSection2','stepSection3','stepSection4'];
+  var steps=document.querySelectorAll('.stepper-step');
+  if(!steps.length||!('IntersectionObserver' in window))return;
+  function setActive(idx){
+    steps.forEach(function(s,i){
+      s.classList.toggle('active',i===idx);
+      s.classList.toggle('done',i<idx);
+    });
+  }
+  var stepObs=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        var id=e.target.id;
+        var idx=sections.indexOf(id);
+        if(idx>-1)setActive(idx);
+      }
+    });
+  },{threshold:0.3,rootMargin:'-100px 0px -40% 0px'});
+  sections.forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)stepObs.observe(el);
+  });
+})();
+
+// ============================================================
+// AUTO-SAVE FORM DRAFT
+// ============================================================
+var _draftTimer=null;
+function saveFormDraft(){
+  var draft={};
+  ['vorname','nachname','geburtsdatum','eltern_vorname','eltern_nachname','email','telefon','adresse','erfahrung'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)draft[id]=el.value;
+  });
+  try{localStorage.setItem('te_form_draft',JSON.stringify(draft));}catch(e){}
+}
+function loadFormDraft(){
+  try{
+    var raw=localStorage.getItem('te_form_draft');
+    if(!raw)return;
+    var draft=JSON.parse(raw);
+    Object.keys(draft).forEach(function(id){
+      var el=document.getElementById(id);
+      if(el&&draft[id])el.value=draft[id];
+    });
+    checkFormReady();
+  }catch(e){}
+}
+['vorname','nachname','geburtsdatum','eltern_vorname','eltern_nachname','email','telefon','adresse','erfahrung'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(el)el.addEventListener('input',function(){
+    clearTimeout(_draftTimer);
+    _draftTimer=setTimeout(saveFormDraft,500);
+  });
+});
+loadFormDraft();
+
+// ============================================================
+// SIDEBAR UPDATE
+// ============================================================
+var _origUpdateSummary=updateSummary;
+updateSummary=function(){
+  _origUpdateSummary();
+  var sidebar=document.getElementById('sidebarContent');
+  var sidebarTotal=document.getElementById('sidebarTotal');
+  if(!sidebar)return;
+  if(selectedCampIds.length>0){
+    var sel=camps.filter(function(c){return selectedCampIds.indexOf(c.id)>-1});
+    var total=sel.reduce(function(s,c){return s+(c.aktueller_preis||c.preis_euro);},0);
+    sidebar.innerHTML=sel.map(function(c){return '<div class="sidebar-camp-item">'+c.name+'</div>';}).join('');
+    sidebarTotal.textContent=total+'€';
+  }else{
+    sidebar.innerHTML='<p class="sidebar-empty">Noch kein Camp gewählt.</p>';
+    sidebarTotal.textContent='';
+  }
+};
+
 loadCamps();
 </script>
 </body>
