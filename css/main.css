@@ -32,12 +32,10 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}button{fon
 .nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:16px 0;transition:all .4s}
 .nav.scrolled{background:rgba(10,10,10,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:10px 0;box-shadow:0 2px 30px rgba(0,0,0,.5)}
 .nav .container{display:flex;align-items:center;justify-content:space-between}
-.nav-logo{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.45);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.12);padding:5px 16px 5px 5px;border-radius:50px;transition:all .3s}
-.nav-logo:hover{background:rgba(0,0,0,.6);border-color:rgba(229,0,0,.35)}
-.nav-logo img{height:42px;width:42px;border-radius:50%;object-fit:cover;object-position:center;flex-shrink:0;transition:transform .3s}
-.nav-logo:hover img{transform:scale(1.06)}
-.nav.scrolled .nav-logo{background:transparent;border-color:transparent;padding:0;gap:12px}
-.nav.scrolled .nav-logo img{height:40px;width:40px}
+.nav-logo{display:flex;align-items:center;transition:all .3s}
+.nav-logo img{height:52px;width:52px;border-radius:50%;object-fit:cover;object-position:center;flex-shrink:0;transition:transform .3s,box-shadow .3s;box-shadow:0 0 0 3px rgba(255,255,255,.7),0 4px 20px rgba(0,0,0,.6)}
+.nav-logo:hover img{transform:scale(1.08);box-shadow:0 0 0 3px #fff,0 0 0 5px rgba(229,0,0,.5),0 4px 24px rgba(0,0,0,.7)}
+.nav.scrolled .nav-logo img{height:44px;width:44px;box-shadow:0 0 0 2px rgba(229,0,0,.6),0 2px 12px rgba(0,0,0,.5)}
 .nav-brand{font-family:var(--font-display);font-size:1.3rem;letter-spacing:.1em;white-space:nowrap}
 .nav-brand span{color:var(--red)}
 @media(max-width:400px){.nav-brand{font-size:1.05rem;letter-spacing:.06em}}
@@ -214,7 +212,7 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}button{fon
 .text-red { color: var(--red); }
 .text-center { text-align: center; }
 .section-label--center { justify-content: center; }
-.footer-logo-img { height: 48px; width: 48px; border-radius: 50%; object-fit: cover; object-position: center; border: 2px solid rgba(229,0,0,.2); }
+.footer-logo-img { height: 64px; width: 64px; border-radius: 50%; object-fit: cover; object-position: center; margin-bottom: 12px; }
 .footer-brand-link { margin-bottom: 4px; }
 .footer-email-link { color: var(--gray-500); }
 .footer-social-wrap { margin-top: 16px; }
