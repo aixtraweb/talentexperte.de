@@ -2,6 +2,16 @@
 
 ## 2026-03-19
 
+### UI-Fixes (index.html, css/main.css)
+- **Photo Strip mobil:** Bildgröße 140×94px → 200×133px, Animationsdauer 18s → 24s, Gap 6px → 8px
+- **Hero-Video-Overlay mobil:** Opacity-Werte von `.5/.85/.95` auf `.3/.62/.78` reduziert — Video ist deutlich besser sichtbar
+- **Galerie Lightbox deaktiviert:** Kein Vergrößern von Bildern per Klick; Zoom-Icon, Hover-Dunkeleffekt und Click-Handler entfernt; `cursor:default`
+
+### Deploy-Sicherheit (ci/deploy.sh)
+- `steuerberater/`, `.claude/`, `.agents/`, `.agent/`, `.orchids/`, `node_modules/`, `*.bak`, `*.bak2` von rsync-Auslieferung ausgeschlossen
+- Verhindert versehentliches Deployment von Stripe-Belegen, API-Keys und internen Werkzeugordnern
+- Hotfix: `steuerberater/` nach versehentlichem erstem Deployment manuell vom Server entfernt (`ssh rm -rf`)
+
 ### Steuerberater / Stripe-Belegarchiv
 
 - `steuerberater/stripe-sync.js` — wiederverwendbares Node.js-Script für den monatlichen Stripe-Datenexport
