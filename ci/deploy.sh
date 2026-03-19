@@ -26,6 +26,14 @@ rsync -avz --delete \
   --exclude ".git" \
   --exclude ".DS_Store" \
   --exclude "ci/" \
+  --exclude "steuerberater/" \
+  --exclude ".claude/" \
+  --exclude ".agents/" \
+  --exclude ".agent/" \
+  --exclude ".orchids/" \
+  --exclude "node_modules/" \
+  --exclude "*.bak" \
+  --exclude "*.bak2" \
   ./ "${USER}@${HOST}:${REMOTE_PATH}/"
 
 echo
