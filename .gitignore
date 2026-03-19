@@ -17,3 +17,9 @@
 *~
 *.bak
 *.tmp
+
+# Node
+node_modules/
+
+# Steuerberater / private Belege
+steuerberater/

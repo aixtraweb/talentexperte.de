@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-03-19
+
+### Steuerberater / Stripe-Belegarchiv
+
+- `steuerberater/stripe-sync.js` — wiederverwendbares Node.js-Script für den monatlichen Stripe-Datenexport
+  - Lädt Charges + Balance Transactions für einen beliebigen Monat oder Datumsbereich
+  - Erstellt pro Monat: `stripe-zahlungen-YYYY-MM.csv`, `stripe-kontoauszug-YYYY-MM.csv`, `ZUSAMMENFASSUNG-YYYY-MM.txt`, Einzelbelege als JSON
+  - Aufruf: `node stripe-sync.js` (Vormonat), `node stripe-sync.js 2025-06` (einzelner Monat), `node stripe-sync.js 2024-01 2024-12` (Bereich)
+- `steuerberater/.env` — STRIPE_SK (Secret Key, gitignored)
+- Historische Daten vollständig exportiert (Aug 2023 – März 2026): 289 Zahlungen, 33.725,00 € Bruttoumsatz, 674,50 € Stripe-Gebühren (als Betriebsausgaben absetzbar)
+- Crontab-Eintrag gesetzt: läuft am **1. jeden Monats um 02:07 Uhr**, lädt automatisch den Vormonat
+  - Log: `~/Library/Logs/stripe-sync.log`
+- `.gitignore` ergänzt: `steuerberater/` ausgeschlossen (keine Belege im Repo)
+
 ## 2026-03-05
 
 ### Bestätigung / PDF-Workflow (Eltern-Kommunikation)
