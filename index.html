@@ -654,9 +654,7 @@ document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener
   function close(){lb.classList.remove('open');document.body.style.overflow=''}
   function prev(){open((current-1+imgs.length)%imgs.length)}
   function next(){open((current+1)%imgs.length)}
-  document.querySelectorAll('.galerie-item').forEach(function(el){
-    el.addEventListener('click',function(){open(parseInt(el.dataset.index))});
-  });
+  /* Lightbox deaktiviert */
   document.getElementById('galerieLbClose').addEventListener('click',close);
   document.getElementById('galerieLbPrev').addEventListener('click',function(e){e.stopPropagation();prev()});
   document.getElementById('galerieLbNext').addEventListener('click',function(e){e.stopPropagation();next()});
