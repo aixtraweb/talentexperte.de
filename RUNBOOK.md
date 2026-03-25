@@ -47,6 +47,18 @@ where
   and zahlungsstatus is distinct from 'bezahlt';
 ```
 
+### Backfill aus Stripe (falls `payment_signal = status_bezahlt`, aber weitere Zahlungen in Stripe existieren)
+```bash
+node scripts/stripe-backfill-sync.mjs --from 2023-08-01
+```
+
+Prueft vergangene Stripe-Zahlungen gegen `public.anmeldungen` per `email + betrag_euro`.
+
+Echte Updates erst nach Dry Run:
+```bash
+MY_SUPABASE_URL=... MY_SUPABASE_SERVICE_ROLE_KEY=... node scripts/stripe-backfill-sync.mjs --from 2023-08-01 --apply
+```
+
 ## 3) Mitarbeiter-Anmeldungen erscheinen als offen
 ### Regel
 - Mitarbeiter/Firma sind **nicht zahlungspflichtig**.
@@ -66,6 +78,10 @@ limit 50;
 ## 4) Löschen im Dashboard klappt nicht
 ### Symptom
 - Meldung „gelöscht“, Eintrag bleibt sichtbar.
+
+## 5) Stripe / Supabase / Dashboard
+- Detaillierter Status und Aufgabenliste:
+  - `STRIPE-SUPABASE-STATUS.md`
 
 ### Check
 1. Nach Löschen Seite neu laden.

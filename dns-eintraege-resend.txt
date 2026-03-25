@@ -1,0 +1,47 @@
+Betreff: DNS-Einträge für talentexperte.de – E-Mail-Versand über Resend
+
+Sehr geehrte Damen und Herren,
+
+bitte richten Sie die folgenden DNS-Einträge für die Domain talentexperte.de ein.
+Sie dienen der Verifizierung und dem E-Mail-Versand über unseren E-Mail-Dienstleister Resend (Amazon SES, Region eu-west-1).
+
+
+=== 1) DKIM – Domain Verification ===
+
+Typ:      TXT
+Name:     resend._domainkey
+Inhalt:   p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDAK6SSCXnFV0cMhchiNeeujqfGhyeweFBANbN9opfOpBxQx/euYqZVhKB/fTvDx1BzxflQhvl8Wz7eNDikMffdW6Hx+TmUQ3f7nA4d+C32m5cV26ERWrUqzAMxlKAgWxBV3OZzbdgdJuoRdudSmdUtqrEeje/lF/a1A449S+GI2wIDAQAB
+TTL:      Auto (oder 3600)
+
+
+=== 2) SPF – MX-Eintrag ===
+
+Typ:      MX
+Name:     send
+Inhalt:   feedback-smtp.eu-west-1.amazonses.com
+Priorität: 10
+TTL:      Auto (oder 3600)
+
+
+=== 3) SPF – TXT-Eintrag ===
+
+Typ:      TXT
+Name:     send
+Inhalt:   v=spf1 include:amazonses.com ~all
+TTL:      Auto (oder 3600)
+
+
+=== 4) DMARC (optional, empfohlen) ===
+
+Typ:      TXT
+Name:     _dmarc
+Inhalt:   v=DMARC1; p=none;
+TTL:      Auto (oder 3600)
+
+
+Hinweis: Bitte achten Sie darauf, dass bei den TXT-Einträgen der Inhalt
+exakt so übernommen wird wie angegeben (keine zusätzlichen Leerzeichen oder Zeilenumbrüche).
+
+Bitte bestätigen Sie die Einrichtung, damit wir die Verifizierung abschließen können.
+
+

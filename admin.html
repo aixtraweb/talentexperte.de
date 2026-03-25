@@ -58,7 +58,16 @@
         </div>
       </div>
       <div class="result-count" id="resultCount"></div>
+      <div class="bulk-bar" id="bulkBar">
+        <span class="bulk-count" id="bulkCount">0 ausgewählt</span>
+        <button class="bulk-btn bulk-paid" onclick="bulkSetStatus('bezahlt')">✓ Bezahlt</button>
+        <button class="bulk-btn bulk-cancel" onclick="bulkSetStatus('storniert')">✕ Stornieren</button>
+        <button class="bulk-btn bulk-remind" onclick="bulkReminder()">📧 Zahlungserinnerung</button>
+        <button class="bulk-btn bulk-delete" onclick="bulkDelete()">🗑 Löschen</button>
+        <button class="bulk-btn bulk-deselect" onclick="deselectAll()">✕ Auswahl aufheben</button>
+      </div>
       <div class="table-wrap"><table><thead><tr>
+        <th class="th-check"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
         <th onclick="sortTable('camp')">Camp ↕</th><th onclick="sortTable('kind')">Kind ↕</th><th onclick="sortTable('alter')">Alter</th>
         <th onclick="sortTable('eltern')">Eltern</th><th onclick="sortTable('email')">E-Mail</th><th onclick="sortTable('telefon')">Telefon</th>
         <th onclick="sortTable('status')">Status ↕</th><th onclick="sortTable('betrag')">Betrag</th><th onclick="sortTable('datum')">Datum ↕</th><th>Aktionen</th>
@@ -99,6 +108,7 @@
 var SUPABASE_URL='https://yxygwwoocsdnneqykiym.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
 var accessToken=null,allCamps=[],allAnmeldungen=[],currentSort={field:'datum',dir:'desc'},onlyMitarbeiter=false;
+var selectedIds=new Set();
 var campReadMode='private';
 var allDashboardRows=[],privateKpi=null;
 var KNOWN_STATUS={offen:true,bezahlt:true,storniert:true,erstattet:true};
@@ -265,6 +275,7 @@ email:a.kontakt_email||a.mitarbeiter_email||a.email||a.firma_email||'',
 telefon:a.kontakt_telefon||a.mitarbeiter_telefon||a.telefon||a.firma_telefon||'',
 adresse:a.adresse||a.rechnungsadresse||'',
 erfahrung:a.erfahrung||null,allergien:a.allergien||null,notizen:a.notizen||null,
+erinnerung_gesendet_am:a.erinnerung_gesendet_am||null,
 zahlungsstatus:statusNorm,
 __raw_status:a.status||null,
 __raw_zahlungsstatus:a.zahlungsstatus||null,
@@ -407,18 +418,20 @@ document.getElementById('resultCount').textContent=baseCount+' · Offen gesamt: 
 }else{
 document.getElementById('resultCount').textContent=baseCount;
 }
-if(f.length===0){tb.innerHTML='<tr><td colspan="10" class="empty-state"><div class="icon">📭</div>Keine Anmeldungen</td></tr>';return}
+if(f.length===0){tb.innerHTML='<tr><td colspan="11" class="empty-state"><div class="icon">📭</div>Keine Anmeldungen</td></tr>';updateBulkBar();return}
 tb.innerHTML=f.map(function(a){var cn=a.camps?a.camps.name:'–';var d=new Date(a.created_at);var ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
 var statusText=a.__typ==='Firma'?'FIRMA':a.zahlungsstatus;
 var statusClass=a.__typ==='Firma'?'bezahlt':a.__effectiveStatus;
 if(a.__typ!=='Firma')statusText=a.__effectiveStatus;
-return '<tr class="clickable" ondblclick="openDetail(\''+a.id+'\')">'+'<td>'+cn+'</td><td><strong>'+a.vorname+' '+a.nachname+'</strong>'+(a.allergien?' <span title="Hat Allergien/Hinweise" class="badge-allergy">⚠️</span>':'')+'</td>'+
+var chk=selectedIds.has(a.id)?'checked':'';
+return '<tr class="clickable'+(chk?' row-selected':'')+'" ondblclick="openDetail(\''+a.id+'\')">'+'<td class="td-check" onclick="event.stopPropagation()"><input type="checkbox" class="row-check" data-id="'+a.id+'" '+chk+' onchange="toggleRow(this)"></td>'+'<td>'+cn+'</td><td><strong>'+a.vorname+' '+a.nachname+'</strong>'+(a.allergien?' <span title="Hat Allergien/Hinweise" class="badge-allergy">⚠️</span>':'')+'</td>'+
 '<td>'+getAge(a.geburtsdatum)+'</td><td>'+a.eltern_vorname+' '+a.eltern_nachname+'</td>'+
 '<td><a href="mailto:'+a.email+'" class="text-red" onclick="event.stopPropagation()">'+a.email+'</a></td>'+
 '<td><a href="tel:'+a.telefon+'" class="link-gray" onclick="event.stopPropagation()">'+a.telefon+'</a></td>'+
-'<td><span class="status-badge status-'+statusClass+'">'+statusText+'</span></td>'+
+'<td><span class="status-badge status-'+statusClass+'">'+statusText+'</span>'+(a.erinnerung_gesendet_am&&a.__effectiveStatus==='offen'?' <span class="badge-reminded" title="Erinnerung gesendet am '+fDT(a.erinnerung_gesendet_am)+'">📨</span>':'')+'</td>'+
 '<td>'+(a.betrag_euro||'–')+' €</td><td>'+ds+'</td>'+
-'<td onclick="event.stopPropagation()">'+actBtns(a)+'</td></tr>'}).join('')}
+'<td onclick="event.stopPropagation()">'+actBtns(a)+'</td></tr>'}).join('');
+updateBulkBar()}
 
 function actBtns(a){if(a.__typ==='Firma')return ' <button class="action-btn" class="action-btn-view" onclick="openDetail(\''+a.id+'\')">👁</button> <button class="action-btn action-cancel" onclick="deleteAnmeldung(\''+a.id+'\')">🗑</button>';
 var h='';if(a.__effectiveStatus==='offen'){h+='<button class="action-btn action-pay" onclick="setStatus(\''+a.id+'\',\'bezahlt\')">✓ Bezahlt</button> <button class="action-btn action-cancel" onclick="setStatus(\''+a.id+'\',\'storniert\')">✕</button>'}
@@ -431,7 +444,7 @@ function openDetail(id){var a=allAnmeldungen.find(function(x){return x.id===id})
 var cn=a.camps?a.camps.name:'–';document.getElementById('detailTitle').textContent=a.vorname+' '+a.nachname;
 var h='<div class="detail-section"><h3>Kind</h3>'+rw('Vorname',a.vorname)+rw('Nachname',a.nachname)+rw('Geburtsdatum',fD(a.geburtsdatum)+' ('+getAge(a.geburtsdatum)+' Jahre)')+rw('Trikotgröße',a.trikot_groesse||'–')+'</div>';
 h+='<div class="detail-section"><h3>Eltern & Kontakt</h3>'+rw('Elternteil',a.eltern_vorname+' '+a.eltern_nachname)+rw('E-Mail','<a href="mailto:'+a.email+'" class="text-red">'+a.email+'</a>')+rw('Telefon','<a href="tel:'+a.telefon+'" class="link-gray">'+a.telefon+'</a>')+rw('Adresse',a.adresse||'–')+'</div>';
-h+='<div class="detail-section"><h3>Camp & Zahlung</h3>'+rw('Camp',cn)+rw('Status','<span class="status-badge status-'+a.__effectiveStatus+'">'+a.__effectiveStatus+'</span>')+rw('Betrag',(a.betrag_euro||'–')+' €')+rw('Angemeldet',fDT(a.created_at))+rw('Bezahlt am',a.zahlung_am?fDT(a.zahlung_am):'–')+rw('Storniert am',a.storniert_am?fDT(a.storniert_am):'–')+'</div>';
+h+='<div class="detail-section"><h3>Camp & Zahlung</h3>'+rw('Camp',cn)+rw('Status','<span class="status-badge status-'+a.__effectiveStatus+'">'+a.__effectiveStatus+'</span>')+rw('Betrag',(a.betrag_euro||'–')+' €')+rw('Angemeldet',fDT(a.created_at))+rw('Bezahlt am',a.zahlung_am?fDT(a.zahlung_am):'–')+rw('Storniert am',a.storniert_am?fDT(a.storniert_am):'–')+rw('Erinnerung gesendet',a.erinnerung_gesendet_am?'📨 '+fDT(a.erinnerung_gesendet_am):'–')+'</div>';
 if(a.erfahrung||a.allergien||a.notizen){h+='<div class="detail-section"><h3>Zusätzliche Infos</h3>';
 if(a.erfahrung)h+='<div class="detail-info-block"><div class="detail-info-label">ERFAHRUNG</div><div class="detail-notes">'+esc(a.erfahrung)+'</div></div>';
 if(a.allergien)h+='<div class="detail-info-block"><div class="detail-info-label--warning">⚠️ ALLERGIEN / BESONDERHEITEN</div><div class="detail-notes" class="detail-notes--warning">'+esc(a.allergien)+'</div></div>';
@@ -515,6 +528,108 @@ function fD(s){if(!s)return '–';return new Date(s+'T00:00:00').toLocaleDateStr
 function fDT(s){if(!s)return '–';var d=new Date(s);return d.toLocaleDateString('de-DE')+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}
 function getAge(s){if(!s)return '–';var b=new Date(s),t=new Date(),a=t.getFullYear()-b.getFullYear(),m=t.getMonth()-b.getMonth();if(m<0||(m===0&&t.getDate()<b.getDate()))a--;return a}
 function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+/* ========= SELECTION & BULK ACTIONS ========= */
+function toggleRow(cb){
+var id=cb.dataset.id;
+if(cb.checked)selectedIds.add(id);else selectedIds.delete(id);
+var tr=cb.closest('tr');if(tr)tr.classList.toggle('row-selected',cb.checked);
+updateBulkBar();
+var allCbs=document.querySelectorAll('.row-check');
+var sa=document.getElementById('selectAll');
+if(sa)sa.checked=allCbs.length>0&&selectedIds.size>=allCbs.length;
+}
+function toggleSelectAll(cb){
+var boxes=document.querySelectorAll('.row-check');
+boxes.forEach(function(b){b.checked=cb.checked;var id=b.dataset.id;if(cb.checked)selectedIds.add(id);else selectedIds.delete(id);
+var tr=b.closest('tr');if(tr)tr.classList.toggle('row-selected',cb.checked)});
+updateBulkBar()}
+function deselectAll(){selectedIds.clear();
+document.querySelectorAll('.row-check').forEach(function(b){b.checked=false;var tr=b.closest('tr');if(tr)tr.classList.remove('row-selected')});
+var sa=document.getElementById('selectAll');if(sa)sa.checked=false;
+updateBulkBar()}
+function updateBulkBar(){
+var bar=document.getElementById('bulkBar');var cnt=document.getElementById('bulkCount');
+if(!bar)return;
+if(selectedIds.size>0){bar.classList.add('visible');cnt.textContent=selectedIds.size+' ausgewählt'}
+else{bar.classList.remove('visible')}}
+function getSelectedAnmeldungen(){return allAnmeldungen.filter(function(a){return selectedIds.has(a.id)})}
+
+async function bulkSetStatus(st){
+var sel=getSelectedAnmeldungen();
+if(sel.length===0)return;
+var lb={bezahlt:'als bezahlt markieren',storniert:'stornieren',erstattet:'als erstattet markieren'};
+if(!confirm(sel.length+' Anmeldung(en) wirklich '+lb[st]+'?'))return;
+var ok=0;
+for(var i=0;i<sel.length;i++){
+var a=sel[i];var table=(a.__table)||'anmeldungen';
+var u={};
+if(table==='firmen_anmeldungen'){u.status=st;if(st==='bezahlt')u.bezahlt_am=new Date().toISOString();if(st==='storniert')u.storniert_am=new Date().toISOString()}
+else{u.zahlungsstatus=st;u.status=st;if(st==='bezahlt')u.zahlung_am=new Date().toISOString();if(st==='storniert')u.storniert_am=new Date().toISOString()}
+var r=await apiPatch(table,a.id,u);if(r&&r.ok)ok++}
+selectedIds.clear();
+showToast(ok+'/'+sel.length+' auf '+st+' gesetzt ✓');
+await loadAll()}
+
+async function bulkDelete(){
+var sel=getSelectedAnmeldungen();
+if(sel.length===0)return;
+if(!confirm(sel.length+' Anmeldung(en) wirklich LÖSCHEN? Das kann nicht rückgängig gemacht werden!'))return;
+var ok=0;
+for(var i=0;i<sel.length;i++){
+var a=sel[i];var tables=[(a.__table)||'anmeldungen'];
+var alt=(tables[0]==='anmeldungen')?'firmen_anmeldungen':'anmeldungen';
+if(tables.indexOf(alt)===-1)tables.push(alt);
+for(var t=0;t<tables.length;t++){await apiDelete(tables[t],a.id)}
+ok++}
+selectedIds.clear();
+showToast(ok+' Anmeldung(en) gelöscht ✓');
+await loadAll()}
+
+async function bulkReminder(){
+var sel=getSelectedAnmeldungen().filter(function(a){return a.__effectiveStatus==='offen'&&a.email});
+if(sel.length===0){showToast('Keine offenen Anmeldungen mit E-Mail ausgewählt',true);return}
+if(!confirm(sel.length+' Zahlungserinnerung(en) jetzt versenden?'))return;
+/* Resend via Edge Function */
+try{
+var ids=sel.map(function(a){return a.id});
+var resp=await fetch(SUPABASE_URL+'/functions/v1/send-reminder',{
+method:'POST',
+headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken},
+body:JSON.stringify({anmeldung_ids:ids})});
+var data=await resp.json();
+if(resp.ok&&data.sent>0){
+showToast(data.sent+' Erinnerung(en) versendet ✓'+(data.failed?' · '+data.failed+' fehlgeschlagen':''));
+await loadAll()}
+else if(data.error){
+showToast('Fehler: '+data.error,true);
+console.warn('send-reminder error, fallback to mailto');
+bulkReminderMailto(sel)}
+else{showToast('Keine E-Mails versendet',true);bulkReminderMailto(sel)}
+}catch(e){
+console.error('send-reminder exception:',e);
+showToast('Server nicht erreichbar – öffne E-Mail-Entwurf',true);
+bulkReminderMailto(sel)}}
+
+function bulkReminderMailto(sel){
+var grouped={};
+sel.forEach(function(a){
+var e=a.email.toLowerCase().trim();
+if(!grouped[e])grouped[e]={email:e,eltern:a.eltern_vorname||'',kinder:[],betrag:0,camp:''};
+grouped[e].kinder.push(a.vorname+' '+a.nachname);
+grouped[e].betrag+=Number(a.betrag_euro||0);
+grouped[e].camp=a.camps?a.camps.name:'Feriencamp'});
+var emails=Object.values(grouped);
+if(emails.length===1){
+var g=emails[0];
+var subj='Zahlungserinnerung – Feriencamp TALENTEXPERTE';
+var body='Hallo '+g.eltern+',\n\nvielen Dank für die Anmeldung von '+g.kinder.join(', ')+' zum '+g.camp+'.\n\nWir möchten Sie freundlich daran erinnern, dass die Teilnahmegebühr von '+g.betrag.toLocaleString('de-DE')+' € noch aussteht.\n\nBitte überweisen Sie den Betrag zeitnah, damit wir den Platz verbindlich reservieren können.\n\nBei Fragen stehen wir Ihnen gerne zur Verfügung.\n\nSportliche Grüße\nTALENTEXPERTE Fußballschule\nkontakt@talentexperte.de';
+window.open('mailto:'+g.email+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body))}
+else{
+var bcc=emails.map(function(g){return g.email}).join(',');
+var subj='Zahlungserinnerung – Feriencamp TALENTEXPERTE';
+var body='Hallo,\n\nvielen Dank für die Anmeldung zum Feriencamp TALENTEXPERTE.\n\nWir möchten Sie freundlich daran erinnern, dass die Teilnahmegebühr noch aussteht.\n\nBitte überweisen Sie den Betrag zeitnah, damit wir den Platz verbindlich reservieren können.\n\nBei Fragen stehen wir Ihnen gerne zur Verfügung.\n\nSportliche Grüße\nTALENTEXPERTE Fußballschule\nkontakt@talentexperte.de';
+window.open('mailto:?bcc='+bcc+'&subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body))}}
 </script>
 </body>
 </html>
