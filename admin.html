@@ -99,6 +99,7 @@
 var SUPABASE_URL='https://yxygwwoocsdnneqykiym.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
 var accessToken=null,allCamps=[],allAnmeldungen=[],currentSort={field:'datum',dir:'desc'},onlyMitarbeiter=false;
+var campReadMode='private';
 var allDashboardRows=[],privateKpi=null;
 var KNOWN_STATUS={offen:true,bezahlt:true,storniert:true,erstattet:true};
 function statusToken(v){var s=String(v||'').toLowerCase().trim();if(s==='paid'||s==='zahlung_erfolgt'||s==='bezahlt')return 'bezahlt';if(s==='cancelled'||s==='storniert')return 'storniert';if(s==='refunded'||s==='erstattet')return 'erstattet';if(s==='open'||s==='offen'||s==='pending')return 'offen';return ''}
@@ -178,8 +179,25 @@ if(hasPaymentSignal(a)&&!hasPaymentSignal(b))return a;
 return new Date(b.created_at||0)>new Date(a.created_at||0)?b:a
 }
 
-async function loadAll(){await Promise.all([loadCamps(),loadAnmeldungen(),loadPrivateKpis()]);updateStats()}
-async function loadCamps(){var d=await apiGet('camp_verfuegbarkeit?order=datum_von.asc');if(!d)return;allCamps=d;renderCamps();populateCampFilter()}
+async function loadAll(){await Promise.all([loadCamps(),loadAnmeldungen(),loadPrivateKpis()]);renderCamps();populateCampFilter();updateStats()}
+async function loadCamps(){
+campReadMode='private';
+var d=await apiGet('camps?select=*&order=datum_von.asc');
+if(Array.isArray(d)){allCamps=d;renderCamps();populateCampFilter();return}
+var fallback=await apiGet('camp_verfuegbarkeit_public?select=*&order=datum_von.asc');
+campReadMode='public';
+if(Array.isArray(fallback)){
+allCamps=fallback.map(function(c){return Object.assign({__readonly:true},c)});
+renderCamps();
+populateCampFilter();
+showToast('Camp-Ansicht im sicheren Lesemodus geladen',false);
+return
+}
+allCamps=[];
+renderCamps();
+populateCampFilter();
+showToast('Camps konnten nicht geladen werden',true)
+}
 async function loadPrivateKpis(){
 var rows=await apiGet('anmeldungen?select=*&order=created_at.desc');
 if(!Array.isArray(rows)){privateKpi=null;return}
@@ -260,8 +278,7 @@ firma_name:a.firma_name||null
 }}
 var priv=await apiGet('anmeldungen?select=*,camps(name,datum_von,datum_bis)&order=created_at.desc');
 var firm=await apiGet('firmen_anmeldungen?select=*,camps(name,datum_von,datum_bis)&order=created_at.desc');
-var allDash=await apiGet('alle_anmeldungen_dashboard?select=*&order=created_at.desc');
-allDashboardRows=Array.isArray(allDash)?allDash:[];
+allDashboardRows=[];
 var rows=[];
 if(Array.isArray(priv))rows=rows.concat(priv.map(function(a){return normalize(a,'anmeldungen')}));
 if(Array.isArray(firm))rows=rows.concat(firm.map(function(a){return normalize(a,'firmen_anmeldungen')}));
@@ -287,8 +304,8 @@ var bezahltCount=privateKpi?privateKpi.paidCount:fallbackBezahlt.length;
 var offenCount=privateKpi?privateKpi.openCount:fallbackOffen.length;
 var umsatz=privateKpi?privateKpi.paidAmount:fallbackBezahlt.reduce(function(s,a){return s+Number(a.betrag_euro||0)},0);
 var umsatzO=privateKpi?privateKpi.openAmount:fallbackOffen.reduce(function(s,a){return s+Number(a.betrag_euro||0)},0);
-var tp=aktive.reduce(function(s,c){return s+c.max_plaetze},0);
-var bp=aktive.reduce(function(s,c){return s+c.anmeldungen_count},0);
+var tp=aktive.reduce(function(s,c){return s+Number(c.max_plaetze||0)},0);
+var bp=aktive.reduce(function(s,c){return s+getCampMetrics(c.id).anmeldungen_count},0);
 var ausl=tp>0?Math.round((bp/tp)*100):0;
 document.getElementById('statCamps').textContent=aktive.length;
 document.getElementById('statCampsSub').textContent=allCamps.length+' insgesamt';
@@ -304,6 +321,34 @@ document.getElementById('statUmsatz').textContent=umsatz.toLocaleString('de-DE')
 document.getElementById('statUmsatzSub').textContent=umsatzO>0?'+ '+umsatzO.toLocaleString('de-DE')+' € offen (privat)':'Keine offenen';
 document.getElementById('statAuslastung').textContent=ausl+'%';
 document.getElementById('statAuslastungSub').textContent=bp+' / '+tp+' Plätze'}
+
+function isCampFruehbucherAktiv(c){
+if(!c)return false;
+if(typeof c.fruehbucher_aktiv==='boolean')return c.fruehbucher_aktiv;
+var preis=Number(c.fruehbucher_preis);
+if(!isFinite(preis)||preis<=0||!c.fruehbucher_bis)return false;
+var today=new Date();
+today.setHours(0,0,0,0);
+var deadline=new Date(c.fruehbucher_bis+'T23:59:59');
+return !isNaN(deadline.getTime())&&deadline>=today
+}
+
+function getCampCurrentPrice(c){
+if(c&&c.aktueller_preis!==undefined&&c.aktueller_preis!==null&&c.aktueller_preis!=='')return Number(c.aktueller_preis||0);
+if(isCampFruehbucherAktiv(c)&&c&&c.fruehbucher_preis!==undefined&&c.fruehbucher_preis!==null&&c.fruehbucher_preis!=='')return Number(c.fruehbucher_preis||0);
+return Number((c&&c.preis_euro)||0)
+}
+
+function getCampMetrics(campId){
+var activeRows=allAnmeldungen.filter(function(a){return a.camp_id===campId&&a.__effectiveStatus!=='storniert'&&a.__effectiveStatus!=='erstattet'});
+var paidCount=activeRows.filter(function(a){return getEffectiveStatus(a)==='bezahlt'}).length;
+var openCount=activeRows.filter(function(a){return getEffectiveStatus(a)==='offen'}).length;
+return{anmeldungen_count:activeRows.length,bezahlt_count:paidCount,offen_count:openCount}
+}
+
+function canEditCamp(c){
+return !!(c&&!c.__readonly&&campReadMode==='private')
+}
 
 function hasPaidTwin(openRow){
 if(openRow.__effectiveStatus!=='offen')return false;
@@ -322,13 +367,13 @@ return getEffectiveStatus(a)==='offen'
 
 function renderCamps(){var c=document.getElementById('campCards');if(allCamps.length===0){c.innerHTML='<div class="empty-state"><div class="icon">📋</div>Keine Camps</div>';return}
 var em={ostern:'🐣',sommer:'☀️',herbst:'🍂',winter:'❄️'};
-c.innerHTML=allCamps.map(function(x){var p=x.max_plaetze>0?Math.round(((x.max_plaetze-x.freie_plaetze)/x.max_plaetze)*100):0;var l=p<50?'low':p<80?'medium':'high';
+c.innerHTML=allCamps.map(function(x){var metrics=getCampMetrics(x.id);var maxPlaetze=Number(x.max_plaetze||0);var freiePlaetze=x.freie_plaetze!==undefined&&x.freie_plaetze!==null?Number(x.freie_plaetze):Math.max(maxPlaetze-metrics.anmeldungen_count,0);var p=maxPlaetze>0?Math.round(((maxPlaetze-freiePlaetze)/maxPlaetze)*100):0;var l=p<50?'low':p<80?'medium':'high';var preis=getCampCurrentPrice(x);var fruehbucherAktiv=isCampFruehbucherAktiv(x);var editBtn=canEditCamp(x)?'<button class="btn-camp btn-camp-edit" onclick="openCampEdit(\\''+x.id+'\\')">✏️ Bearbeiten</button>':'<button class="btn-camp btn-camp-edit" type="button" disabled title="Nur Lesemodus">🔒 Lesemodus</button>';
 return '<div class="camp-admin-card"><div class="camp-admin-header"><div class="camp-admin-name">'+(em[x.saison]||'⚽')+' '+x.name+'</div><span class="camp-admin-status '+x.status+'">'+x.status+'</span></div>'+
-'<div class="camp-admin-meta"><span>📅 '+fD(x.datum_von)+' – '+fD(x.datum_bis)+'</span><span>🕐 '+(x.uhrzeit_von||'').slice(0,5)+' – '+(x.uhrzeit_bis||'').slice(0,5)+' Uhr</span><span>📍 '+x.ort+'</span><span>💰 '+x.aktueller_preis+' €'+(x.fruehbucher_aktiv?' (Frühbucher)':'')+'</span></div>'+
+'<div class="camp-admin-meta"><span>📅 '+fD(x.datum_von)+' – '+fD(x.datum_bis)+'</span><span>🕐 '+(x.uhrzeit_von||'').slice(0,5)+' – '+(x.uhrzeit_bis||'').slice(0,5)+' Uhr</span><span>📍 '+x.ort+'</span><span>💰 '+preis+' €'+(fruehbucherAktiv?' (Frühbucher)':'')+'</span></div>'+
 '<div class="capacity-bar"><div class="capacity-fill '+l+'" style="width:'+p+'%"></div></div>'+
-'<div class="capacity-text"><span>'+x.anmeldungen_count+' / '+x.max_plaetze+' belegt</span><span>'+x.bezahlt_count+' bezahlt · '+x.offen_count+' offen</span></div>'+
-'<div class="camp-actions"><button class="btn-camp btn-camp-edit" onclick="openCampEdit(\''+x.id+'\')">✏️ Bearbeiten</button>'+
-'<button class="btn-camp btn-camp-view" onclick="filterByCamp(\''+x.id+'\')">'+x.anmeldungen_count+' Anmeldungen →</button></div></div>'}).join('')}
+'<div class="capacity-text"><span>'+metrics.anmeldungen_count+' / '+maxPlaetze+' belegt</span><span>'+metrics.bezahlt_count+' bezahlt · '+metrics.offen_count+' offen</span></div>'+
+'<div class="camp-actions">'+editBtn+
+'<button class="btn-camp btn-camp-view" onclick="filterByCamp(\''+x.id+'\')">'+metrics.anmeldungen_count+' Anmeldungen →</button></div></div>'}).join('')}
 
 function filterByCamp(id){switchTab('anmeldungen',document.querySelector('[data-tab="anmeldungen"]'));document.getElementById('filterCamp').value=id;filterTable()}
 

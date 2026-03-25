@@ -228,7 +228,7 @@ function applyGermanDateMask(selector) {
 async function loadCamps() {
   try {
     const { data, error } = await supabase
-      .from('camp_verfuegbarkeit')
+      .from('camp_verfuegbarkeit_public')
       .select('*')
       .gte('datum_bis', new Date().toISOString().split('T')[0])
       .gt('freie_plaetze', 0)
