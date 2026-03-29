@@ -1,10 +1,23 @@
 # TODO – TALENTEXPERTE Admin-Dashboard
 
-_Letzte Aktualisierung: 2026-03-29_
+_Letzte Aktualisierung: 2026-03-29 (Sitzung 2)_
 
 ---
 
-## ✅ Erledigt (diese Sitzung)
+## ✅ Erledigt (Sitzung 2 – Anwesenheit)
+
+- [x] **Anwesenheits-Tab** – Neuer Tab "📅 Anwesenheit" im Admin-Dashboard
+- [x] **Anwesenheitsliste** – Alle Kinder eines Camps (privat + SG + ÖF) in einer gemeinsamen Tabelle
+- [x] **Tages-Checkboxen** – Automatisch aus Camp-Datum generiert, speichert sofort
+- [x] **Sprint / Torschuss / Dribbling** – Zahleneingabe pro Kind, speichert on blur
+- [x] **Tageszusammenfassung** – Zähler pro Tag (z.B. 8/12 Kinder anwesend)
+- [x] **Sortierung nach Vorname**
+- [x] **Timezone-Fix** – Off-by-one-Tag bei UTC+2 behoben
+- [x] **Supabase-Tabelle `teilnahme`** – Schema erstellt und deployed
+
+---
+
+## ✅ Erledigt (Sitzung 1)
 
 - [x] **Manuelle Anmeldung erfassen** – Modal im Admin-Dashboard, alle Pflichtfelder, POST direkt in Supabase (`anmeldungen`)
 - [x] **Zahlungsstatus manuell ändern** – Dropdown im Detail-Panel: Offen / Bezahlt (Banküberweisung) / Bezahlt (Barzahlung) / Storniert / Erstattet
@@ -22,7 +35,8 @@ _Letzte Aktualisierung: 2026-03-29_
 
 ## 🔲 Offen
 
+- [ ] **Anwesenheit: Daten aus Google Sheet übertragen** – Bisherige Werte (Sprint, Torschuss, Dribbling) aus dem alten Google Sheet manuell eintragen oder per Script importieren
+- [ ] **Anwesenheit: Export** – CSV-Export der Anwesenheits- und Leistungsdaten (analog zu Anmeldungs-Export)
 - [ ] **ÖF-Anmeldungen einpflegen** – Werden vom Nutzer selbst manuell hinzugefügt (über „Manuell erfassen" → Typ: ÖF)
-- [ ] **Manuelle Anmeldung testen** – Speicherfehler trat auf (wahrscheinlich `status`-Feld); mit aktueller Version erneut prüfen
 - [ ] **Spalten-Toggle persistieren** – Aktuell nur im Arbeitsspeicher; bei Bedarf per localStorage dauerhaft speichern
 - [ ] **Stripe-Webhook Monitoring** – Gelegentlich prüfen ob alle neuen Zahlungen korrekt ankommen (Status-Seite: STRIPE-SUPABASE-STATUS.md)

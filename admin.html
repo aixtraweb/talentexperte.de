@@ -44,8 +44,16 @@
     <div class="tabs">
       <button class="tab active" data-tab="camps" onclick="switchTab('camps',this)">⚽ Camps</button>
       <button class="tab" data-tab="anmeldungen" onclick="switchTab('anmeldungen',this)">📋 Anmeldungen</button>
+      <button class="tab" data-tab="anwesenheit" onclick="switchTab('anwesenheit',this)">📅 Anwesenheit</button>
     </div>
     <div class="tab-content active" id="tabCamps"><div class="camp-cards" id="campCards"><div class="empty-state"><div class="icon">⏳</div>Laden…</div></div></div>
+    <div class="tab-content" id="tabAnwesenheit">
+      <div class="anwesenheit-controls">
+        <select class="filter-select" id="anwesenheitCampSel" onchange="onAnwesenheitCampChange(this.value)"><option value="">– Camp auswählen –</option></select>
+        <button class="btn-sm btn-refresh" onclick="reloadAnwesenheit()">↻ Aktualisieren</button>
+      </div>
+      <div id="anwesenheitContent"><div class="empty-state"><div class="icon">📅</div>Bitte ein Camp auswählen</div></div>
+    </div>
     <div class="tab-content" id="tabAnmeldungen">
       <div class="table-controls">
         <input type="text" class="table-search" id="searchInput" placeholder="🔍 Name, E-Mail, Telefon…" oninput="filterTable()">
@@ -256,7 +264,7 @@ if(hasPaymentSignal(a)&&!hasPaymentSignal(b))return a;
 return new Date(b.created_at||0)>new Date(a.created_at||0)?b:a
 }
 
-async function loadAll(){await Promise.all([loadCamps(),loadAnmeldungen(),loadPrivateKpis()]);renderCamps();populateCampFilter();updateStats()}
+async function loadAll(){await Promise.all([loadCamps(),loadAnmeldungen(),loadPrivateKpis()]);renderCamps();populateCampFilter();populateAnwesenheitCampSel();updateStats()}
 async function loadCamps(){
 campReadMode='private';
 var d=await apiGet('camps?select=*&order=datum_von.asc');
@@ -814,6 +822,110 @@ var sel=document.getElementById('detailStatusSel_'+id);
 if(!sel)return;
 var st=sel.value==='bezahlt_bar'?'bezahlt':sel.value;
 await setStatus(id,st)}
+
+/* ========= ANWESENHEIT ========= */
+var anwesenheitCampId=null,teilnahmeCache={};
+var AWD=['So','Mo','Di','Mi','Do','Fr','Sa'];
+
+function populateAnwesenheitCampSel(){
+var sel=document.getElementById('anwesenheitCampSel');if(!sel)return;
+var prev=sel.value;
+sel.innerHTML='<option value="">– Camp auswählen –</option>';
+allCamps.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.name+' ('+fD(c.datum_von)+' – '+fD(c.datum_bis)+')';sel.appendChild(o)});
+if(prev)sel.value=prev}
+
+async function onAnwesenheitCampChange(id){
+anwesenheitCampId=id;
+if(!id){document.getElementById('anwesenheitContent').innerHTML='<div class="empty-state"><div class="icon">📅</div>Bitte ein Camp auswählen</div>';return}
+document.getElementById('anwesenheitContent').innerHTML='<div class="empty-state"><div class="icon">⏳</div>Laden…</div>';
+await loadTeilnahme();renderAnwesenheit()}
+
+async function reloadAnwesenheit(){if(!anwesenheitCampId)return;await loadTeilnahme();renderAnwesenheit();showToast('Anwesenheit aktualisiert ✓')}
+
+async function loadTeilnahme(){
+if(!anwesenheitCampId)return;
+var data=await apiGet('teilnahme?camp_id=eq.'+anwesenheitCampId+'&select=*');
+teilnahmeCache={};
+if(Array.isArray(data))data.forEach(function(t){teilnahmeCache[t.referenz_id]=t})}
+
+function getCampDays(von,bis){
+var days=[],d=new Date(von+'T00:00:00'),end=new Date(bis+'T00:00:00');
+while(d<=end){
+var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+days.push(y+'-'+m+'-'+day);d.setDate(d.getDate()+1)}
+return days}
+
+function renderAnwesenheit(){
+var camp=allCamps.find(function(c){return c.id===anwesenheitCampId});
+if(!camp)return;
+var days=getCampDays(camp.datum_von,camp.datum_bis);
+var kids=allAnmeldungen.filter(function(a){return a.camp_id===anwesenheitCampId&&a.__effectiveStatus!=='storniert'&&a.__effectiveStatus!=='erstattet'})
+.sort(function(a,b){return a.vorname.localeCompare(b.vorname,'de')});
+if(kids.length===0){document.getElementById('anwesenheitContent').innerHTML='<div class="empty-state"><div class="icon">📭</div>Keine Anmeldungen für dieses Camp</div>';return}
+// Summary
+var sum={};days.forEach(function(d){sum[d]=0});
+kids.forEach(function(a){var anw=(teilnahmeCache[a.id]||{}).anwesenheit||{};days.forEach(function(d){if(anw[d])sum[d]++})});
+var html='<div class="aw-summary"><span class="aw-summary-label">Anwesenheit pro Tag:</span>';
+days.forEach(function(d){var dt=new Date(d+'T00:00:00');html+='<span class="aw-summary-day"><span class="aw-day-name">'+AWD[dt.getDay()]+' '+dt.getDate()+'.'+(dt.getMonth()+1)+'.</span><span class="aw-day-count">'+sum[d]+'/'+kids.length+'</span></span>'});
+html+='</div>';
+// Table
+html+='<div class="table-wrap aw-table-wrap"><table class="anwesenheit-table"><thead><tr>';
+html+='<th class="aw-th-nr">Nr.</th><th class="aw-th-name">Vorname</th><th class="aw-th-name">Nachname</th><th class="aw-th-typ">Typ</th>';
+days.forEach(function(d){var dt=new Date(d+'T00:00:00');html+='<th class="aw-th-day" title="'+d+'">'+AWD[dt.getDay()]+'<br><span class="aw-day-num">'+dt.getDate()+'.'+(dt.getMonth()+1)+'.</span></th>'});
+html+='<th class="aw-th-metric">Sprint<br><span class="aw-metric-unit">(s)</span></th>';
+html+='<th class="aw-th-metric">Tor-<br>schuss</th>';
+html+='<th class="aw-th-metric">Dribb-<br>ling<br><span class="aw-metric-unit">(s)</span></th>';
+html+='</tr></thead><tbody>';
+kids.forEach(function(a,idx){
+var t=teilnahmeCache[a.id]||{};var anw=t.anwesenheit||{};
+var typClass=a.__typ==='Firma'?'sg':a.__typ==='ÖF'?'oef':'';
+var typLabel=a.__typ==='Firma'?'SG':a.__typ==='ÖF'?'ÖF':'';
+html+='<tr class="aw-row">';
+html+='<td class="aw-td-nr">'+(idx+1)+'</td>';
+html+='<td class="aw-td-name">'+esc(a.vorname)+'</td>';
+html+='<td class="aw-td-name"><strong>'+esc(a.nachname)+'</strong></td>';
+html+='<td class="aw-td-typ">'+(typLabel?'<span class="aw-badge-'+typClass+'">'+typLabel+'</span>':'')+'</td>';
+days.forEach(function(d){
+html+='<td class="aw-td-day"><input type="checkbox" class="aw-checkbox"'+(anw[d]?' checked':'')+' onchange="toggleAnwesenheit(\''+a.id+'\',\''+a.__table+'\',\''+d+'\',this.checked)"></td>'});
+html+='<td class="aw-td-metric"><input type="number" step="0.1" min="0" placeholder="–" value="'+(t.sprint!=null?t.sprint:'')+'" class="metric-input" onblur="saveMetric(\''+a.id+'\',\''+a.__table+'\',\'sprint\',this.value)" onclick="this.select()"></td>';
+html+='<td class="aw-td-metric"><input type="number" step="1" min="0" placeholder="–" value="'+(t.torschuss!=null?t.torschuss:'')+'" class="metric-input" onblur="saveMetric(\''+a.id+'\',\''+a.__table+'\',\'torschuss\',this.value)" onclick="this.select()"></td>';
+html+='<td class="aw-td-metric"><input type="number" step="0.1" min="0" placeholder="–" value="'+(t.dribbling!=null?t.dribbling:'')+'" class="metric-input" onblur="saveMetric(\''+a.id+'\',\''+a.__table+'\',\'dribbling\',this.value)" onclick="this.select()"></td>';
+html+='</tr>'});
+html+='</tbody></table></div>';
+document.getElementById('anwesenheitContent').innerHTML=html}
+
+async function upsertTeilnahme(referenzId,quelle,campId,data){
+var payload=Object.assign({referenz_id:referenzId,quelle:quelle,camp_id:campId,updated_at:new Date().toISOString()},data);
+var r=await fetch(SUPABASE_URL+'/rest/v1/teilnahme',{method:'POST',
+headers:Object.assign({},apiH(),{'Prefer':'resolution=merge-duplicates,return=representation'}),
+body:JSON.stringify(payload)});
+if(r.status===401){doLogout();return null}
+if(!r.ok){var txt=await r.text();console.error('upsertTeilnahme error',r.status,txt);return null}
+var rows=await r.json();return Array.isArray(rows)?rows[0]:rows}
+
+async function toggleAnwesenheit(referenzId,quelle,datum,checked){
+var existing=teilnahmeCache[referenzId]||{};
+var anw=Object.assign({},existing.anwesenheit||{});
+if(checked)anw[datum]=true;else delete anw[datum];
+var result=await upsertTeilnahme(referenzId,quelle,anwesenheitCampId,{anwesenheit:anw});
+if(result){teilnahmeCache[referenzId]=result;updateAnwesenheitSummary()}
+else showToast('Speichern fehlgeschlagen',true)}
+
+async function saveMetric(referenzId,quelle,field,value){
+var val=value===''?null:parseFloat(value);
+var data={};data[field]=val;
+var result=await upsertTeilnahme(referenzId,quelle,anwesenheitCampId,data);
+if(result){teilnahmeCache[referenzId]=result;showToast(field.charAt(0).toUpperCase()+field.slice(1)+' gespeichert ✓')}
+else showToast('Speichern fehlgeschlagen',true)}
+
+function updateAnwesenheitSummary(){
+var camp=allCamps.find(function(c){return c.id===anwesenheitCampId});if(!camp)return;
+var days=getCampDays(camp.datum_von,camp.datum_bis);
+var kids=allAnmeldungen.filter(function(a){return a.camp_id===anwesenheitCampId&&a.__effectiveStatus!=='storniert'&&a.__effectiveStatus!=='erstattet'});
+var sum={};days.forEach(function(d){sum[d]=0});
+kids.forEach(function(a){var anw=(teilnahmeCache[a.id]||{}).anwesenheit||{};days.forEach(function(d){if(anw[d])sum[d]++})});
+var spans=document.querySelectorAll('.aw-summary .aw-day-count');
+spans.forEach(function(span,i){if(days[i])span.textContent=sum[days[i]]+'/'+kids.length})}
 
 function bulkReminderMailto(sel){
 var grouped={};

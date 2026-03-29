@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-03-29 (Sitzung 2)
+
+### Admin-Dashboard: Anwesenheit & Leistungsdaten (`admin.html`, `css/admin.css`)
+- **Neuer Tab "📅 Anwesenheit"**: Dritter Tab neben Camps und Anmeldungen
+- **Camp-Auswahl**: Dropdown lädt alle Camps inkl. Datumsbereich
+- **Anwesenheitsliste**: Zeigt alle Kinder des Camps (privat + Saint-Gobain + ÖF), sortiert nach Vorname
+- **Tages-Checkboxen**: Spalten automatisch aus `datum_von`/`datum_bis` generiert; Klick speichert sofort per Upsert in Supabase (`teilnahme`-Tabelle, JSONB-Feld `anwesenheit`)
+- **Leistungsspalten**: Sprint (s), Torschuss, Dribbling (s) als Zahleneingabe; speichert on blur
+- **Tageszusammenfassung**: Anzeige wieviele Kinder pro Tag anwesend waren (z.B. `8/12`)
+- **Timezone-Fix**: `getCampDays()` nutzt lokale Datumsformatierung statt `toISOString()` (verhinderte Off-by-one-Tag bei UTC+2)
+- **Neue Supabase-Tabelle `teilnahme`**: `referenz_id` + `quelle` + `camp_id` + `anwesenheit` (jsonb) + `sprint` + `torschuss` + `dribbling`; unique auf `(referenz_id, camp_id)`
+
 ## 2026-03-29
 
 ### Admin-Dashboard: Manuelle Anmeldung & Datenbearbeitung (`admin.html`, `css/admin.css`)
