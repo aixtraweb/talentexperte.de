@@ -52,7 +52,11 @@
         <div class="table-filters">
           <select class="filter-select" id="filterCamp" onchange="filterTable()"><option value="">Alle Camps</option></select>
           <select class="filter-select" id="filterStatus" onchange="filterTable()"><option value="">Alle Status</option><option value="offen">⏳ Offen</option><option value="bezahlt">✅ Bezahlt</option><option value="storniert">❌ Storniert</option><option value="erstattet">↩ Erstattet</option></select>
-          <button class="btn-sm" id="filterMitarbeiterBtn" onclick="toggleMitarbeiterFilter()">👔 Mitarbeiter</button>
+          <button class="btn-sm" id="filterMitarbeiterBtn" onclick="toggleMitarbeiterFilter()">🏭 Saint-Gobain</button>
+          <button class="btn-sm" id="filterOefBtn" onclick="toggleOefFilter()">🤝 ÖF</button>
+          <button class="btn-sm btn-col-toggle" id="toggleElternBtn" onclick="toggleCol('eltern')" title="Spalte Eltern ein-/ausblenden">👤 Eltern</button>
+          <button class="btn-sm btn-col-toggle" id="toggleBetragBtn" onclick="toggleCol('betrag')" title="Spalte Betrag ein-/ausblenden">💶 Betrag</button>
+          <button class="btn-sm btn-add-manual" onclick="openManualAnmeldung()">➕ Manuell erfassen</button>
           <button class="btn-sm btn-export" onclick="exportCSV()">📥 CSV</button>
           <button class="btn-sm btn-refresh" onclick="loadAll()">↻ Laden</button>
         </div>
@@ -66,11 +70,11 @@
         <button class="bulk-btn bulk-delete" onclick="bulkDelete()">🗑 Löschen</button>
         <button class="bulk-btn bulk-deselect" onclick="deselectAll()">✕ Auswahl aufheben</button>
       </div>
-      <div class="table-wrap"><table><thead><tr>
+      <div class="table-wrap"><table id="mainTable"><thead><tr>
         <th class="th-check"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
         <th onclick="sortTable('camp')">Camp ↕</th><th onclick="sortTable('kind')">Kind ↕</th><th onclick="sortTable('alter')">Alter</th>
-        <th onclick="sortTable('eltern')">Eltern</th><th onclick="sortTable('email')">E-Mail</th><th onclick="sortTable('telefon')">Telefon</th>
-        <th onclick="sortTable('status')">Status ↕</th><th onclick="sortTable('betrag')">Betrag</th><th onclick="sortTable('datum')">Datum ↕</th><th>Aktionen</th>
+        <th class="col-eltern" onclick="sortTable('eltern')">Eltern</th><th onclick="sortTable('email')">E-Mail</th><th onclick="sortTable('telefon')">Telefon</th>
+        <th onclick="sortTable('status')">Status ↕</th><th class="col-betrag" onclick="sortTable('betrag')">Betrag</th><th onclick="sortTable('datum')">Datum ↕</th><th>Aktionen</th>
       </tr></thead><tbody id="tableBody"></tbody></table></div>
     </div>
   </div>
@@ -95,6 +99,63 @@
   </div>
 </div>
 
+<!-- MANUELLE ANMELDUNG MODAL -->
+<div class="modal-overlay" id="manualModal">
+  <div class="modal" style="max-width:640px;max-height:90vh;overflow-y:auto;">
+    <div class="modal-header"><h2 id="manualModalTitle">Manuelle Anmeldung erfassen</h2><button class="modal-close" onclick="closeManualAnmeldung()">✕</button></div>
+    <div class="modal-body">
+      <div class="modal-field"><label>Camp *</label><select id="mCamp" onchange="mCampChanged()"><option value="">– Bitte wählen –</option></select></div>
+      <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;margin:16px 0 8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);">Kind</div>
+      <div class="modal-row">
+        <div class="modal-field"><label>Vorname Kind *</label><input type="text" id="mVorname" placeholder="Max"></div>
+        <div class="modal-field"><label>Nachname Kind *</label><input type="text" id="mNachname" placeholder="Mustermann"></div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-field"><label>Geburtsdatum *</label><input type="date" id="mGeburtsdatum"></div>
+        <div class="modal-field"><label>Trikotgröße</label><select id="mTrikot"><option value="">–</option><option>116</option><option>128</option><option>140</option><option>152</option><option>164</option><option>S</option><option>M</option><option>L</option><option>XL</option></select></div>
+      </div>
+      <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;margin:16px 0 8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);">Eltern / Kontakt</div>
+      <div class="modal-row">
+        <div class="modal-field"><label>Vorname Elternteil *</label><input type="text" id="mElternVorname"></div>
+        <div class="modal-field"><label>Nachname Elternteil *</label><input type="text" id="mElternNachname"></div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-field"><label>E-Mail *</label><input type="email" id="mEmail" placeholder="eltern@beispiel.de"></div>
+        <div class="modal-field"><label>Telefon</label><input type="tel" id="mTelefon" placeholder="+49 …"></div>
+      </div>
+      <div class="modal-field"><label>Adresse</label><input type="text" id="mAdresse" placeholder="Musterstraße 1, 52066 Aachen"></div>
+      <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;margin:16px 0 8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);">Weitere Angaben</div>
+      <div class="modal-row">
+        <div class="modal-field"><label>Erfahrung</label><input type="text" id="mErfahrung" placeholder="z.B. Vereinsspieler, Anfänger…"></div>
+        <div class="modal-field"><label>Betrag (€) *</label><input type="number" id="mBetrag" step="0.01" min="0" placeholder="0.00"></div>
+      </div>
+      <div class="modal-field"><label>Allergien / Besonderheiten</label><textarea id="mAllergien" rows="2" placeholder="Keine Angabe"></textarea></div>
+      <div class="modal-field"><label>Notizen</label><textarea id="mNotizen" rows="2" placeholder="Interne Notizen"></textarea></div>
+      <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;margin:16px 0 8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);">Zahlung & Herkunft</div>
+      <div class="modal-row">
+        <div class="modal-field"><label>Anmeldungstyp</label>
+          <select id="mTyp" onchange="mTypChanged()">
+            <option value="Privat">👤 Privat</option>
+            <option value="ÖF">🤝 ÖF – Förderverein</option>
+          </select>
+        </div>
+        <div class="modal-field"><label>Zahlungsstatus</label>
+          <select id="mZahlungsstatus">
+            <option value="offen">⏳ Offen – noch nicht bezahlt</option>
+            <option value="bezahlt">✅ Bezahlt – Banküberweisung erhalten</option>
+            <option value="bezahlt_bar">💵 Bezahlt – Barzahlung erhalten</option>
+          </select>
+        </div>
+        <div class="modal-field"><label>Anmeldekanal</label><input type="text" id="mKanal" placeholder="z.B. Telefon, Vor Ort, E-Mail…"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal btn-modal-cancel" onclick="closeManualAnmeldung()">Abbrechen</button>
+      <button class="btn-modal btn-modal-save" id="manualModalSaveBtn" onclick="saveManualAnmeldung()">Anmeldung speichern</button>
+    </div>
+  </div>
+</div>
+
 <!-- DETAIL PANEL -->
 <div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
 <div class="detail-panel" id="detailPanel">
@@ -107,7 +168,7 @@
 <script>
 var SUPABASE_URL='https://yxygwwoocsdnneqykiym.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
-var accessToken=null,allCamps=[],allAnmeldungen=[],currentSort={field:'datum',dir:'desc'},onlyMitarbeiter=false;
+var accessToken=null,allCamps=[],allAnmeldungen=[],currentSort={field:'datum',dir:'desc'},onlyMitarbeiter=false,onlyOef=false;
 var selectedIds=new Set();
 var campReadMode='private';
 var allDashboardRows=[],privateKpi=null;
@@ -136,6 +197,12 @@ return j
 }
 async function apiPatch(t,id,d){var r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?id=eq.'+id,{method:'PATCH',headers:apiH(),body:JSON.stringify(d)});if(r.status===401){doLogout();return null}return r}
 async function apiDelete(t,id){var r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?id=eq.'+id,{method:'DELETE',headers:apiH()});if(r.status===401){doLogout();return null}return r}
+async function apiPost(t,d){
+var h=Object.assign({},apiH(),{'Prefer':'return=minimal'});
+var r=await fetch(SUPABASE_URL+'/rest/v1/'+t,{method:'POST',headers:h,body:JSON.stringify(d)});
+if(r.status===401){doLogout();return null}
+if(!r.ok){var txt=await r.text();console.error('apiPost error',r.status,txt);}
+return r}
 
 function hasPaymentSignal(a){
 if(!a)return false;
@@ -164,7 +231,7 @@ statusToken(a.zahlungsstatus),statusToken(a.status),statusToken(a.payment_status
 statusToken(a.__raw_status),statusToken(a.__raw_zahlungsstatus),statusToken(a.__raw_payment_status),
 statusToken(a.__raw_zahlungs_status),statusToken(a.__raw_paymentState),statusToken(a.__raw_paymentstate)
 ];
-if(a.__typ==='Firma'){
+if(a.__typ==='Firma'||a.__typ==='ÖF'){
 if(states.indexOf('erstattet')!==-1)return 'erstattet';
 if(states.indexOf('storniert')!==-1)return 'storniert';
 return 'bezahlt';
@@ -258,11 +325,12 @@ var isPrivatSource=source==='anmeldungen';
 var hasStrongFirmaFields=!!(a.mitarbeiter_vorname||a.mitarbeiter_nachname||a.ansprechpartner_vorname||a.ansprechpartner_nachname||a.firma_name);
 var typ='Privat';
 if(typField==='firma'||isFirmaSource||(typField===''&&!isPrivatSource&&hasStrongFirmaFields))typ='Firma';
+if(typField==='öf'||typField==='oef'||(a.notizen&&/\[TYP:ÖF\]/.test(a.notizen)))typ='ÖF';
 var tableName=isFirmaSource?'firmen_anmeldungen':(isPrivatSource?'anmeldungen':(typ==='Firma'?'firmen_anmeldungen':'anmeldungen'));
 var campName=a.camp_name||a.name||(a.camps&&a.camps.name)||'';
 var statusNorm=resolveStatus(a);
-// Firmen-/Mitarbeiter-Anmeldungen sollen nicht als "offen" geführt werden.
-if(typ==='Firma'&&statusNorm==='offen')statusNorm='bezahlt';
+// Saint-Gobain und ÖF werden nicht als "offen" geführt.
+if((typ==='Firma'||typ==='ÖF')&&statusNorm==='offen')statusNorm='bezahlt';
 return{
 id:a.id,__table:tableName,__typ:typ,
 camp_id:a.camp_id,camps:campName?{name:campName}:a.camps||null,
@@ -303,6 +371,7 @@ allAnmeldungen=Object.keys(merged).map(function(k){return merged[k]})
 .map(function(a){a.__effectiveStatus=getEffectiveStatus(a);return a})
 .sort(function(a,b){return new Date(b.created_at||0)-new Date(a.created_at||0)});
 renderTable();
+applyColVisibility();
 }
 
 function updateStats(){
@@ -321,8 +390,10 @@ var ausl=tp>0?Math.round((bp/tp)*100):0;
 document.getElementById('statCamps').textContent=aktive.length;
 document.getElementById('statCampsSub').textContent=allCamps.length+' insgesamt';
 document.getElementById('statAnmeldungen').textContent=gesamt.length;
-var firmenCount=allAnmeldungen.filter(function(a){return a.__typ==='Firma'}).length;
-document.getElementById('statAnmeldungenSub').textContent=firmenCount+' Firmen · '+allAnmeldungen.length+' gesamt';
+var sgCount=allAnmeldungen.filter(function(a){return a.__typ==='Firma'}).length;
+var oefCount=allAnmeldungen.filter(function(a){return a.__typ==='ÖF'}).length;
+var subParts=[];if(sgCount)subParts.push(sgCount+' Saint-Gobain');if(oefCount)subParts.push(oefCount+' ÖF');subParts.push(allAnmeldungen.length+' gesamt');
+document.getElementById('statAnmeldungenSub').textContent=subParts.join(' · ');
 document.getElementById('statBezahlt').textContent=umsatz.toLocaleString('de-DE')+' €';
 document.getElementById('statBezahltSub').textContent='';
 document.getElementById('statBezahltSub').style.display='none';
@@ -419,24 +490,24 @@ document.getElementById('resultCount').textContent=baseCount+' · Offen gesamt: 
 document.getElementById('resultCount').textContent=baseCount;
 }
 if(f.length===0){tb.innerHTML='<tr><td colspan="11" class="empty-state"><div class="icon">📭</div>Keine Anmeldungen</td></tr>';updateBulkBar();return}
-tb.innerHTML=f.map(function(a){var cn=a.camps?a.camps.name:'–';var d=new Date(a.created_at);var ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
-var statusText=a.__typ==='Firma'?'FIRMA':a.zahlungsstatus;
-var statusClass=a.__typ==='Firma'?'bezahlt':a.__effectiveStatus;
-if(a.__typ!=='Firma')statusText=a.__effectiveStatus;
+tb.innerHTML=f.map(function(a){var cn=a.camps?a.camps.name:'–';var d=new Date(a.created_at);var ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+var statusText=a.__typ==='Firma'?'Saint-Gobain':(a.__typ==='ÖF'?'ÖF':a.__effectiveStatus);
+var statusClass=a.__typ==='Firma'?'sg':(a.__typ==='ÖF'?'oef':a.__effectiveStatus);
 var chk=selectedIds.has(a.id)?'checked':'';
 return '<tr class="clickable'+(chk?' row-selected':'')+'" ondblclick="openDetail(\''+a.id+'\')">'+'<td class="td-check" onclick="event.stopPropagation()"><input type="checkbox" class="row-check" data-id="'+a.id+'" '+chk+' onchange="toggleRow(this)"></td>'+'<td>'+cn+'</td><td><strong>'+a.vorname+' '+a.nachname+'</strong>'+(a.allergien?' <span title="Hat Allergien/Hinweise" class="badge-allergy">⚠️</span>':'')+'</td>'+
-'<td>'+getAge(a.geburtsdatum)+'</td><td>'+a.eltern_vorname+' '+a.eltern_nachname+'</td>'+
-'<td><a href="mailto:'+a.email+'" class="text-red" onclick="event.stopPropagation()">'+a.email+'</a></td>'+
-'<td><a href="tel:'+a.telefon+'" class="link-gray" onclick="event.stopPropagation()">'+a.telefon+'</a></td>'+
+'<td>'+getAge(a.geburtsdatum)+'</td><td class="col-eltern">'+a.eltern_vorname+' '+a.eltern_nachname+'</td>'+
+'<td class="td-email"><a href="mailto:'+a.email+'" class="text-red" onclick="event.stopPropagation()">'+a.email+'</a></td>'+
+'<td class="td-telefon"><a href="tel:'+a.telefon+'" class="link-gray" onclick="event.stopPropagation()">'+a.telefon+'</a></td>'+
 '<td><span class="status-badge status-'+statusClass+'">'+statusText+'</span>'+(a.erinnerung_gesendet_am&&a.__effectiveStatus==='offen'?' <span class="badge-reminded" title="Erinnerung gesendet am '+fDT(a.erinnerung_gesendet_am)+'">📨</span>':'')+'</td>'+
-'<td>'+(a.betrag_euro||'–')+' €</td><td>'+ds+'</td>'+
+'<td class="td-betrag col-betrag">'+(a.betrag_euro||'–')+' €</td><td class="td-date">'+ds+'</td>'+
 '<td onclick="event.stopPropagation()">'+actBtns(a)+'</td></tr>'}).join('');
 updateBulkBar()}
 
-function actBtns(a){if(a.__typ==='Firma')return ' <button class="action-btn" class="action-btn-view" onclick="openDetail(\''+a.id+'\')">👁</button> <button class="action-btn action-cancel" onclick="deleteAnmeldung(\''+a.id+'\')">🗑</button>';
-var h='';if(a.__effectiveStatus==='offen'){h+='<button class="action-btn action-pay" onclick="setStatus(\''+a.id+'\',\'bezahlt\')">✓ Bezahlt</button> <button class="action-btn action-cancel" onclick="setStatus(\''+a.id+'\',\'storniert\')">✕</button>'}
+function actBtns(a){if(a.__typ==='Firma'||a.__typ==='ÖF')return ' <button class="action-btn action-btn-edit" onclick="openEditAnmeldung(\''+a.id+'\')" title="Daten bearbeiten">✏️</button> <button class="action-btn action-btn-view" onclick="openDetail(\''+a.id+'\')">👁</button> <button class="action-btn action-cancel" onclick="deleteAnmeldung(\''+a.id+'\')">🗑</button>';
+var h='';if(a.__effectiveStatus==='offen'){h+='<button class="action-btn action-pay" onclick="setStatus(\''+a.id+'\',\'bezahlt\')" title="Als bezahlt markieren">→ Bezahlt</button> <button class="action-btn action-cancel" onclick="setStatus(\''+a.id+'\',\'storniert\')" title="Stornieren">✕</button>'}
 else if(a.__effectiveStatus==='bezahlt'){h+='<button class="action-btn action-cancel" onclick="setStatus(\''+a.id+'\',\'erstattet\')">↩</button>'}
-h+=' <button class="action-btn" class="action-btn-view" onclick="openDetail(\''+a.id+'\')">👁</button>';
+h+=' <button class="action-btn action-btn-edit" onclick="openEditAnmeldung(\''+a.id+'\')" title="Daten bearbeiten">✏️</button>';
+h+=' <button class="action-btn action-btn-view" onclick="openDetail(\''+a.id+'\')">👁</button>';
 h+=' <button class="action-btn action-cancel" onclick="deleteAnmeldung(\''+a.id+'\')">🗑</button>';
 return h}
 
@@ -450,8 +521,10 @@ if(a.erfahrung)h+='<div class="detail-info-block"><div class="detail-info-label"
 if(a.allergien)h+='<div class="detail-info-block"><div class="detail-info-label--warning">⚠️ ALLERGIEN / BESONDERHEITEN</div><div class="detail-notes" class="detail-notes--warning">'+esc(a.allergien)+'</div></div>';
 if(a.notizen)h+='<div class="detail-info-block"><div class="detail-info-label">NOTIZEN</div><div class="detail-notes">'+esc(a.notizen)+'</div></div>';h+='</div>'}
 h+='<div class="detail-actions">';
+h+='<button class="detail-action-btn btn-edit-data" onclick="closeDetail();openEditAnmeldung(\''+a.id+'\')">✏️ Daten bearbeiten</button>';
 if(a.__effectiveStatus==='offen'){h+='<button class="detail-action-btn btn-mark-paid" onclick="setStatus(\''+a.id+'\',\'bezahlt\')">✓ Als bezahlt markieren</button><button class="detail-action-btn btn-storno" onclick="setStatus(\''+a.id+'\',\'storniert\')">✕ Stornieren</button>'}
 else if(a.__effectiveStatus==='bezahlt'){h+='<button class="detail-action-btn btn-erstattung" onclick="setStatus(\''+a.id+'\',\'erstattet\')">↩ Erstatten</button>'}
+h+='<div class="detail-status-manual"><span style="font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.07em;">Zahlungsstatus manuell setzen</span><div style="display:flex;gap:8px;margin-top:6px;align-items:center;"><select id="detailStatusSel_'+a.id+'" style="flex:1;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:6px;padding:7px 10px;font-size:.85rem;"><option value="offen"'+(a.__effectiveStatus==='offen'?' selected':'')+'>⏳ Offen</option><option value="bezahlt">✅ Bezahlt (Banküberweisung)</option><option value="bezahlt_bar">💵 Bezahlt (Barzahlung)</option><option value="storniert"'+(a.__effectiveStatus==='storniert'?' selected':'')+'>❌ Storniert</option><option value="erstattet"'+(a.__effectiveStatus==='erstattet'?' selected':'')+'>↩ Erstattet</option></select><button class="detail-action-btn btn-mark-paid" style="white-space:nowrap;" onclick="setStatusFromSelect(\''+a.id+'\')">Setzen</button></div></div>';
 var waMsg='Hallo '+a.eltern_vorname+', hier ist die Fußballschule TALENTEXPERTE. ';
 var waNum=a.telefon.replace(/[^0-9]/g,'').replace(/^0/,'');
 h+='<a class="detail-action-btn btn-wa" href="https://wa.me/49'+waNum+'?text='+encodeURIComponent(waMsg)+'" target="_blank" rel="noopener">💬 WhatsApp</a>';
@@ -465,6 +538,7 @@ function rw(l,v){return '<div class="detail-row"><span class="label">'+l+'</span
 function getFiltered(){var s=document.getElementById('searchInput').value.toLowerCase(),cf=document.getElementById('filterCamp').value,sf=document.getElementById('filterStatus').value;
 var l=allAnmeldungen.filter(function(a){if(cf&&a.camp_id!==cf)return false;
 if(onlyMitarbeiter&&a.__typ!=='Firma')return false;
+if(onlyOef&&a.__typ!=='ÖF')return false;
 if(sf==='offen'){if(!isActuallyOpen(a))return false}
 else if(sf&&a.__effectiveStatus!==sf)return false;
 if(s){var h=(a.vorname+' '+a.nachname+' '+a.eltern_vorname+' '+a.eltern_nachname+' '+a.email+' '+a.telefon).toLowerCase();if(h.indexOf(s)===-1)return false}return true});
@@ -474,8 +548,27 @@ case'telefon':va=a.telefon;vb=b.telefon;break;case'status':va=a.__effectiveStatu
 default:va=a.created_at;vb=b.created_at}if(va<vb)return currentSort.dir==='asc'?-1:1;if(va>vb)return currentSort.dir==='asc'?1:-1;return 0});return l}
 
 function filterTable(){renderTable()}
-function toggleMitarbeiterFilter(){onlyMitarbeiter=!onlyMitarbeiter;updateMitarbeiterBtn();renderTable()}
-function updateMitarbeiterBtn(){var b=document.getElementById('filterMitarbeiterBtn');if(!b)return;b.style.borderColor=onlyMitarbeiter?'rgba(229,0,0,.45)':'rgba(255,255,255,.15)';b.style.color=onlyMitarbeiter?'#fff':'#cfcfcf';b.style.background=onlyMitarbeiter?'rgba(229,0,0,.24)':'transparent'}
+
+var hiddenCols={eltern:true,betrag:true};
+function applyColVisibility(){
+var tbl=document.getElementById('mainTable');
+if(!tbl)return;
+Object.keys(hiddenCols).forEach(function(col){
+tbl.classList.toggle('hide-col-'+col,hiddenCols[col]);
+var btn=document.getElementById('toggle'+col.charAt(0).toUpperCase()+col.slice(1)+'Btn');
+if(btn){btn.style.opacity=hiddenCols[col]?'0.4':'1';btn.style.textDecoration=hiddenCols[col]?'line-through':'none'}})}
+function toggleCol(col){
+hiddenCols[col]=!hiddenCols[col];
+applyColVisibility()}
+
+function toggleMitarbeiterFilter(){onlyMitarbeiter=!onlyMitarbeiter;if(onlyMitarbeiter)onlyOef=false;updateFilterBtns();renderTable()}
+function toggleOefFilter(){onlyOef=!onlyOef;if(onlyOef)onlyMitarbeiter=false;updateFilterBtns();renderTable()}
+function updateFilterBtns(){
+var b=document.getElementById('filterMitarbeiterBtn');
+if(b){b.style.borderColor=onlyMitarbeiter?'rgba(229,0,0,.45)':'rgba(255,255,255,.15)';b.style.color=onlyMitarbeiter?'#fff':'#cfcfcf';b.style.background=onlyMitarbeiter?'rgba(229,0,0,.24)':'transparent'}
+var o=document.getElementById('filterOefBtn');
+if(o){o.style.borderColor=onlyOef?'rgba(20,184,166,.5)':'rgba(255,255,255,.15)';o.style.color=onlyOef?'#fff':'#cfcfcf';o.style.background=onlyOef?'rgba(20,184,166,.2)':'transparent'}}
+function updateMitarbeiterBtn(){updateFilterBtns()}
 function bindQuickFilters(){var c=document.getElementById('statCardOffen');if(!c||c.dataset.bound==='1')return;c.dataset.bound='1';c.addEventListener('click',function(){switchTab('anmeldungen',document.querySelector('[data-tab="anmeldungen"]'));document.getElementById('filterStatus').value='offen';filterTable()})}
 function sortTable(f){if(currentSort.field===f){currentSort.dir=currentSort.dir==='asc'?'desc':'asc'}else{currentSort.field=f;currentSort.dir='asc'}renderTable()}
 function populateCampFilter(){var s=document.getElementById('filterCamp'),c=s.value;s.innerHTML='<option value="">Alle Camps</option>';allCamps.forEach(function(x){s.innerHTML+='<option value="'+x.id+'">'+x.name+'</option>'});s.value=c}
@@ -610,6 +703,117 @@ else{showToast('Keine E-Mails versendet',true);bulkReminderMailto(sel)}
 console.error('send-reminder exception:',e);
 showToast('Server nicht erreichbar – öffne E-Mail-Entwurf',true);
 bulkReminderMailto(sel)}}
+
+/* ========= MANUELLE ANMELDUNG / EDIT ========= */
+var manualEditId=null,manualEditTable=null;
+
+function openEditAnmeldung(id){
+var a=allAnmeldungen.find(function(x){return x.id===id});
+if(!a)return;
+manualEditId=id;
+manualEditTable=a.__table||'anmeldungen';
+// Befülle Modal
+var sel=document.getElementById('mCamp');
+sel.innerHTML='<option value="">– Bitte wählen –</option>';
+allCamps.forEach(function(c){
+var opt=document.createElement('option');opt.value=c.id;opt.textContent=c.name+' ('+fD(c.datum_von)+' – '+fD(c.datum_bis)+')';sel.appendChild(opt)});
+if(a.camp_id)sel.value=a.camp_id;
+document.getElementById('mVorname').value=a.vorname||'';
+document.getElementById('mNachname').value=a.nachname||'';
+document.getElementById('mGeburtsdatum').value=a.geburtsdatum||'';
+document.getElementById('mTrikot').value=a.trikot_groesse||'';
+document.getElementById('mElternVorname').value=a.eltern_vorname||'';
+document.getElementById('mElternNachname').value=a.eltern_nachname||'';
+document.getElementById('mEmail').value=a.email||'';
+document.getElementById('mTelefon').value=a.telefon||'';
+document.getElementById('mAdresse').value=a.adresse||'';
+document.getElementById('mErfahrung').value=a.erfahrung||'';
+document.getElementById('mBetrag').value=a.betrag_euro||'';
+document.getElementById('mAllergien').value=a.allergien||'';
+document.getElementById('mNotizen').value=a.notizen||'';
+document.getElementById('mZahlungsstatus').value=a.__effectiveStatus||'offen';
+document.getElementById('mTyp').value=a.__typ==='ÖF'?'ÖF':'Privat';
+document.getElementById('mKanal').value='';
+document.getElementById('manualModalTitle').textContent='Anmeldung bearbeiten';
+document.getElementById('manualModalSaveBtn').textContent='Änderungen speichern';
+document.getElementById('manualModal').classList.add('visible')}
+
+function openManualAnmeldung(){
+manualEditId=null;manualEditTable=null;
+var sel=document.getElementById('mCamp');
+sel.innerHTML='<option value="">– Bitte wählen –</option>';
+allCamps.filter(function(c){return c.status==='aktiv'||c.status==='ausgebucht'}).forEach(function(c){
+var opt=document.createElement('option');opt.value=c.id;opt.textContent=c.name+' ('+fD(c.datum_von)+' – '+fD(c.datum_bis)+')';sel.appendChild(opt)});
+['mVorname','mNachname','mElternVorname','mElternNachname','mEmail','mTelefon','mAdresse','mErfahrung','mAllergien','mNotizen','mKanal'].forEach(function(id){document.getElementById(id).value=''});
+document.getElementById('mGeburtsdatum').value='';
+document.getElementById('mTrikot').value='';
+document.getElementById('mBetrag').value='';
+document.getElementById('mZahlungsstatus').value='offen';
+document.getElementById('mTyp').value='Privat';
+document.getElementById('manualModalTitle').textContent='Manuelle Anmeldung erfassen';
+document.getElementById('manualModalSaveBtn').textContent='Anmeldung speichern';
+document.getElementById('manualModal').classList.add('visible')}
+
+function closeManualAnmeldung(){document.getElementById('manualModal').classList.remove('visible')}
+
+function mTypChanged(){
+var typ=document.getElementById('mTyp').value;
+if(typ==='ÖF'){
+document.getElementById('mZahlungsstatus').value='bezahlt';
+document.getElementById('mBetrag').value='0';}}
+
+function mCampChanged(){
+var campId=document.getElementById('mCamp').value;
+var camp=allCamps.find(function(c){return c.id===campId});
+if(camp)document.getElementById('mBetrag').value=getCampCurrentPrice(camp)}
+
+async function saveManualAnmeldung(){
+var campId=document.getElementById('mCamp').value;
+var vorname=document.getElementById('mVorname').value.trim();
+var nachname=document.getElementById('mNachname').value.trim();
+var geburtsdatum=document.getElementById('mGeburtsdatum').value;
+var elternVorname=document.getElementById('mElternVorname').value.trim();
+var elternNachname=document.getElementById('mElternNachname').value.trim();
+var email=document.getElementById('mEmail').value.trim();
+if(!campId||!vorname||!nachname||!geburtsdatum||!elternVorname||!elternNachname||!email){
+showToast('Bitte alle Pflichtfelder (*) ausfüllen',true);return}
+var betrag=parseFloat(document.getElementById('mBetrag').value)||0;
+var mTyp=document.getElementById('mTyp').value;
+var zahlungsstatus=document.getElementById('mZahlungsstatus').value;
+if(zahlungsstatus==='bezahlt_bar')zahlungsstatus='bezahlt';
+if(mTyp==='ÖF')zahlungsstatus='bezahlt';
+var kanal=document.getElementById('mKanal').value.trim();
+var notizen=document.getElementById('mNotizen').value.trim();
+if(mTyp==='ÖF')notizen='[TYP:ÖF]'+(notizen?'\n'+notizen:'');
+else if(kanal)notizen=(notizen?notizen+'\n':'')+'Anmeldekanal: '+kanal;
+var data={camp_id:campId,vorname:vorname,nachname:nachname,geburtsdatum:geburtsdatum,
+trikot_groesse:document.getElementById('mTrikot').value||null,
+eltern_vorname:elternVorname,eltern_nachname:elternNachname,email:email,
+telefon:document.getElementById('mTelefon').value.trim()||null,
+adresse:document.getElementById('mAdresse').value.trim()||null,
+erfahrung:document.getElementById('mErfahrung').value.trim()||null,
+allergien:document.getElementById('mAllergien').value.trim()||null,
+notizen:notizen||null,betrag_euro:betrag,
+zahlungsstatus:zahlungsstatus};
+if(zahlungsstatus==='bezahlt')data.zahlung_am=new Date().toISOString();
+var r;
+if(manualEditId){
+r=await apiPatch(manualEditTable||'anmeldungen',manualEditId,data);
+}else{
+r=await apiPost('anmeldungen',data);
+}
+if(r&&r.ok){closeManualAnmeldung();showToast(manualEditId?'Änderungen gespeichert ✓':'Anmeldung erfasst ✓');await loadAll()}
+else{
+var errTxt='';
+try{var errBody=await r.clone().json();errTxt=errBody.message||errBody.details||errBody.hint||''}catch(e){}
+showToast('Fehler: '+(errTxt||r.status),true);
+console.error('saveManualAnmeldung failed',r.status,errTxt)}}
+
+async function setStatusFromSelect(id){
+var sel=document.getElementById('detailStatusSel_'+id);
+if(!sel)return;
+var st=sel.value==='bezahlt_bar'?'bezahlt':sel.value;
+await setStatus(id,st)}
 
 function bulkReminderMailto(sel){
 var grouped={};

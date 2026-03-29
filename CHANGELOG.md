@@ -1,5 +1,69 @@
 # Changelog
 
+## 2026-03-29
+
+### Admin-Dashboard: Manuelle Anmeldung & Datenbearbeitung (`admin.html`, `css/admin.css`)
+- **Manuell erfassen**: Neues Modal (➕-Button) zum Eingeben von Kindern, die über andere Kanäle (Telefon, Vor Ort, E-Mail) angemeldet wurden — alle Felder inkl. Camp-Auswahl, Betrag-Autofill, Zahlungsstatus direkt setzbar
+- **Anmeldetyp**: Dropdown „Privat" / „ÖF (Förderverein)" im Erfassungsformular
+- **Daten bearbeiten**: ✏️-Button in Tabellenzeile und Detail-Panel öffnet Edit-Modal mit vorausgefüllten Feldern; speichert per PATCH
+- **`apiPost`**: Neue Hilfsfunktion mit `Prefer: return=minimal` und echtem Fehlertext im Toast
+
+### Admin-Dashboard: Zahlungsstatus & UX (`admin.html`, `css/admin.css`)
+- **Zahlungsstatus manuell setzen**: Dropdown im Detail-Panel (Offen / Bezahlt Banküberweisung / Bezahlt Barzahlung / Storniert / Erstattet) — funktioniert von jedem Ausgangsstatus
+- **Barzahlung**: Als eigene Option in Detail-Panel und Erfassungsformular; DB-Wert bleibt `bezahlt`
+- **„→ Bezahlt"-Button**: Von „✓ Bezahlt" umbenannt, Farbe gelb wie OFFEN-Badge — kein visueller Widerspruch mehr
+- **E-Mail-Farbe**: Grau wie Telefonnummern (nicht mehr rot)
+- **Spalten-Toggle**: Buttons „👤 Eltern" und „💶 Betrag" blenden Spalten ein/aus; standardmäßig ausgeblendet
+
+### Admin-Dashboard: Saint-Gobain & ÖF-Typ (`admin.html`, `css/admin.css`)
+- **„Mitarbeiter" → „Saint-Gobain"**: Filterbutton und Badge umbenannt; Badge-Farbe lila (`.status-sg`)
+- **ÖF (Förderverein)**: Neuer Anmeldungstyp mit türkisem Badge (`.status-oef`), eigenem Filterbutton; Betrag 0, Status automatisch „bezahlt"; Typ-Marker `[TYP:ÖF]` wird in `notizen` gespeichert und in `normalize()` erkannt — keine DB-Schema-Änderung nötig
+- **Stats-Zeile**: Zeigt Saint-Gobain- und ÖF-Anzahl separat an
+
+### Deploy & Infrastruktur
+- **Permissions-Fix**: Lokale Datei-Permissions auf `644` gesetzt; verhindert 403-Fehler nach rsync-Deploy
+
+## 2026-03-25
+
+### Stripe-Zahlungssync (Backfill)
+- Stripe-Backfill über Browser-JS ausgeführt: 25 Anmeldungen von `offen` auf `bezahlt` gesetzt
+- Matching-Logik: E-Mail + Betrag + Zeitfenster (24h vor bis 60 Tage nach Anmeldung)
+- Ergebnis: 35 bezahlt / 24 offen, 5.215 € Umsatz (vorher: 10 bezahlt / 48 offen)
+- Verbleibende 24 offene: entweder tatsächlich unbezahlt oder E-Mail-/Betrags-Mismatch zwischen Stripe und Supabase
+
+### Admin-Dashboard: Bulk-Aktionen (`admin.html`, `css/admin.css`)
+- **Checkbox-Auswahl**: Einzelne oder alle Anmeldungen per Checkbox markieren
+- **Bulk-Leiste**: Erscheint bei Auswahl mit Aktionen: Bezahlt setzen, Stornieren, Zahlungserinnerung, Löschen, Auswahl aufheben
+- **Bulk-Status**: Mehrere Anmeldungen gleichzeitig auf bezahlt/storniert setzen
+- **Bulk-Löschen**: Mehrere Einträge mit Sicherheitsabfrage gleichzeitig löschen
+- **Zahlungserinnerung**: Per Resend Edge Function (primär) oder mailto-Fallback (wenn Server nicht erreichbar)
+- **📨 Badge**: Zeigt an, wenn eine Erinnerung bereits versendet wurde (mit Datum im Tooltip)
+- Feld `erinnerung_gesendet_am` in der Detailansicht ergänzt
+
+### Admin-Dashboard: UI-Optimierung (`css/admin.css`)
+- **Link-Farben**: Kein Browser-Blau mehr. E-Mail-Links rot (Theme-konform), Telefon grau mit Hover-Effekt
+- **Datums-Spalte**: `min-width:130px` + Tabular-Nums, Format TT.MM.JJ HH:MM — wird nicht mehr abgeschnitten
+- **Betrag-Spalte**: Rechtsbündig mit Tabular-Nums für saubere Ausrichtung
+- **Bulk-Bar**: Größere Buttons, Gradient-Hintergrund, animierter Pulse-Dot, Hover-Lift mit Shadow
+- **Action-Buttons**: Größer, mit Hover-Lift-Effekt, doppeltes `class`-Attribut gefixt
+- **E-Mail-Spalte**: max-width mit Ellipsis bei langen Adressen
+
+### Resend E-Mail-Integration (NEU)
+- `supabase/functions/send-reminder/index.ts`: Supabase Edge Function für Zahlungserinnerungen per Resend API
+- Personalisierte HTML-E-Mails mit TALENTEXPERTE-Branding (roter Header, Pay-Button mit Stripe-Link)
+- Absender: `TALENTEXPERTE Fußballschule <kontakt@talentexperte.de>`
+- DNS-Einträge für Domain-Verifizierung erstellt: DKIM, SPF (MX + TXT), DMARC
+- `dns-eintraege-resend.txt`: Fertige Vorlage für den Hosting-Provider
+
+### Stripe-Backfill-Script (NEU)
+- `scripts/stripe-backfill-sync.mjs`: Node.js-Script zum Abgleich von Stripe-Zahlungen gegen Supabase
+- Dry-Run-Modus (Default) + `--apply` für echte Updates
+- Matching per E-Mail + Betrag + Zeitfenster
+
+### Dokumentation
+- `RUNBOOK.md`: Backfill-Anleitung und Verweis auf `STRIPE-SUPABASE-STATUS.md` ergänzt
+- `STRIPE-SUPABASE-STATUS.md`: Neues Statusdokument für Stripe/Supabase/Webhook-Probleme
+
 ## 2026-03-19
 
 ### UI-Fixes (index.html, css/main.css)
