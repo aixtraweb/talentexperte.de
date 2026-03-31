@@ -13,6 +13,13 @@
 <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
 <meta name="apple-mobile-web-app-title" content="TALENTEXPERTE" />
 <link rel="manifest" href="favicon/site.webmanifest" />
+<style>
+.sync-indicator{font-size:.7rem;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;letter-spacing:.02em}
+.sync-ok{color:#4ade80;background:rgba(74,222,128,.12)}
+.sync-pending{color:#facc15;background:rgba(250,204,21,.12);animation:sync-pulse 1.5s ease-in-out infinite}
+.sync-error{color:#f87171;background:rgba(248,113,113,.12)}
+@keyframes sync-pulse{0%,100%{opacity:1}50%{opacity:.5}}
+</style>
 </head>
 <body>
 
@@ -51,6 +58,7 @@
       <div class="anwesenheit-controls">
         <select class="filter-select" id="anwesenheitCampSel" onchange="onAnwesenheitCampChange(this.value)"><option value="">– Camp auswählen –</option></select>
         <button class="btn-sm btn-refresh" onclick="reloadAnwesenheit()">↻ Aktualisieren</button>
+        <span id="syncIndicator" class="sync-indicator sync-ok"></span>
       </div>
       <div id="anwesenheitContent"><div class="empty-state"><div class="icon">📅</div>Bitte ein Camp auswählen</div></div>
     </div>
@@ -171,7 +179,8 @@
 <script>
 var SUPABASE_URL='https://yxygwwoocsdnneqykiym.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
-var accessToken=null,allCamps=[],allAnmeldungen=[],currentSort={field:'kind',dir:'asc'},onlyMitarbeiter=false,onlyOef=false;
+var accessToken=null,tokenExpiry=0,refreshing=null;
+var allCamps=[],allAnmeldungen=[],currentSort={field:'kind',dir:'asc'},onlyMitarbeiter=false,onlyOef=false;
 var selectedIds=new Set();
 var lastAnwCampId=null;
 var campReadMode='private';
@@ -184,12 +193,12 @@ setInterval(updateClock,30000);
 
 async function doLogin(){var email=document.getElementById('loginEmail').value,pw=document.getElementById('loginPassword').value,err=document.getElementById('loginError');err.style.display='none';
 try{var r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:JSON.stringify({email:email,password:pw})});var d=await r.json();
-if(d.access_token){accessToken=d.access_token;localStorage.setItem('sb_token',accessToken);localStorage.setItem('sb_refresh',d.refresh_token);showDashboard()}else{err.textContent='Falsche E-Mail oder Passwort.';err.style.display='block'}}
+if(d.access_token){accessToken=d.access_token;tokenExpiry=Date.now()+(d.expires_in||3600)*1000;localStorage.setItem('sb_token',accessToken);localStorage.setItem('sb_token_expiry',String(tokenExpiry));localStorage.setItem('sb_refresh',d.refresh_token);showDashboard()}else{err.textContent='Falsche E-Mail oder Passwort.';err.style.display='block'}}
 catch(e){err.textContent='Verbindungsfehler: '+e.message;err.style.display='block'}}
 
 function doLogout(){accessToken=null;localStorage.removeItem('sb_token');localStorage.removeItem('sb_refresh');document.getElementById('loginScreen').style.display='flex';document.getElementById('dashboard').style.display='none'}
-function showDashboard(){document.getElementById('loginScreen').style.display='none';document.getElementById('dashboard').style.display='block';updateClock();bindQuickFilters();updateMitarbeiterBtn();loadAll()}
-(function(){var s=localStorage.getItem('sb_token');if(s){accessToken=s;showDashboard()}})();
+function showDashboard(){document.getElementById('loginScreen').style.display='none';document.getElementById('dashboard').style.display='block';updateClock();bindQuickFilters();updateMitarbeiterBtn();loadAll();setTimeout(flushQueue,1500)}
+(function(){var s=localStorage.getItem('sb_token');if(s){accessToken=s;tokenExpiry=parseInt(localStorage.getItem('sb_token_expiry')||'0')||Date.now()+3600000;showDashboard()}})();
 
 function apiH(){return{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json','Prefer':'return=representation'}}
 async function apiGet(p){
@@ -882,7 +891,13 @@ async function loadTeilnahme(){
 if(!anwesenheitCampId)return;
 var data=await apiGet('teilnahme?camp_id=eq.'+anwesenheitCampId+'&select=*');
 teilnahmeCache={};
-if(Array.isArray(data))data.forEach(function(t){teilnahmeCache[t.referenz_id]=t})}
+if(Array.isArray(data))data.forEach(function(t){teilnahmeCache[t.referenz_id]=t});
+// Offline-Queue über DB-Daten legen (lokal ist immer neuer)
+var q=getQueue();
+Object.values(q).forEach(function(item){
+if(item.camp_id===anwesenheitCampId){
+teilnahmeCache[item.referenz_id]=Object.assign({},teilnahmeCache[item.referenz_id]||{referenz_id:item.referenz_id},item.data)}});
+updateSyncIndicator()}
 
 function getCampDays(von,bis){
 var days=[],d=new Date(von+'T00:00:00'),end=new Date(bis+'T00:00:00');
@@ -930,29 +945,89 @@ html+='</tr>'});
 html+='</tbody></table></div>';
 document.getElementById('anwesenheitContent').innerHTML=html}
 
-async function upsertTeilnahme(referenzId,quelle,campId,data){
+/* ===== SESSION AUTO-REFRESH ===== */
+async function doRefreshToken(){
+var rt=localStorage.getItem('sb_refresh');if(!rt){doLogout();return}
+try{
+var r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:JSON.stringify({refresh_token:rt})});
+var d=await r.json();
+if(d.access_token){accessToken=d.access_token;tokenExpiry=Date.now()+(d.expires_in||3600)*1000;localStorage.setItem('sb_token',accessToken);localStorage.setItem('sb_token_expiry',String(tokenExpiry));if(d.refresh_token)localStorage.setItem('sb_refresh',d.refresh_token)}
+else{doLogout()}
+}catch(e){console.warn('Token-Refresh fehlgeschlagen (offline?)',e)}}
+async function ensureFreshToken(){
+if(!accessToken)return false;
+if(Date.now()>tokenExpiry-120000){if(!refreshing)refreshing=doRefreshToken().finally(function(){refreshing=null});await refreshing}
+return!!accessToken}
+setInterval(function(){if(accessToken)doRefreshToken()},50*60*1000);
+
+/* ===== OFFLINE WRITE QUEUE ===== */
+var QUEUE_KEY='teilnahme_q';
+function getQueue(){try{return JSON.parse(localStorage.getItem(QUEUE_KEY)||'{}')}catch(e){return{}}}
+function enqueue(rid,quelle,cid,data){
+var q=getQueue(),k=rid+'|'+cid;
+if(q[k]){q[k].data=Object.assign({},q[k].data,data);q[k].ts=Date.now()}
+else{q[k]={referenz_id:rid,quelle:quelle,camp_id:cid,data:data,ts:Date.now()}}
+localStorage.setItem(QUEUE_KEY,JSON.stringify(q));updateSyncIndicator()}
+function dequeue(rid,cid){var q=getQueue();delete q[rid+'|'+cid];localStorage.setItem(QUEUE_KEY,JSON.stringify(q));updateSyncIndicator()}
+function getPendingCount(){return Object.keys(getQueue()).length}
+function updateSyncIndicator(){
+var el=document.getElementById('syncIndicator');if(!el)return;
+var n=getPendingCount();
+if(n===0){el.textContent='✓ Gespeichert';el.className='sync-indicator sync-ok'}
+else{el.textContent='⏳ '+n+' ausstehend';el.className='sync-indicator sync-pending'}}
+async function flushQueue(){
+var q=getQueue();var keys=Object.keys(q);if(!keys.length){updateSyncIndicator();return}
+if(!accessToken)return;
+await ensureFreshToken();
+var ok=0;
+for(var k of keys){
+var item=q[k];
+var result=await upsertTeilnahmeRaw(item.referenz_id,item.quelle,item.camp_id,item.data);
+if(result){dequeue(item.referenz_id,item.camp_id);teilnahmeCache[item.referenz_id]=result;ok++}}
+if(ok>0){if(anwesenheitCampId)updateAnwesenheitSummary();if(ok===keys.length)showToast(ok+' Eintr\u00e4ge synchronisiert \u2713')}
+}
+window.addEventListener('online',function(){showToast('Verbindung da \u2013 synchronisiere\u2026');flushQueue()});
+
+/* ===== UPSERT (mit Queue-First) ===== */
+async function upsertTeilnahmeRaw(referenzId,quelle,campId,data){
 var payload=Object.assign({referenz_id:referenzId,quelle:quelle,camp_id:campId,updated_at:new Date().toISOString()},data);
 var r=await fetch(SUPABASE_URL+'/rest/v1/teilnahme',{method:'POST',
 headers:Object.assign({},apiH(),{'Prefer':'resolution=merge-duplicates,return=representation'}),
 body:JSON.stringify(payload)});
-if(r.status===401){doLogout();return null}
+if(r.status===401){await doRefreshToken();if(!accessToken)return null;
+r=await fetch(SUPABASE_URL+'/rest/v1/teilnahme',{method:'POST',
+headers:Object.assign({},apiH(),{'Prefer':'resolution=merge-duplicates,return=representation'}),
+body:JSON.stringify(payload)})}
 if(!r.ok){var txt=await r.text();console.error('upsertTeilnahme error',r.status,txt);return null}
 var rows=await r.json();return Array.isArray(rows)?rows[0]:rows}
+
+async function upsertTeilnahme(referenzId,quelle,campId,data){
+enqueue(referenzId,quelle,campId,data);
+if(!navigator.onLine)return null;
+await ensureFreshToken();
+var result=await upsertTeilnahmeRaw(referenzId,quelle,campId,data);
+if(result)dequeue(referenzId,campId);
+return result}
 
 async function toggleAnwesenheit(referenzId,quelle,datum,checked){
 var existing=teilnahmeCache[referenzId]||{};
 var anw=Object.assign({},existing.anwesenheit||{});
 if(checked)anw[datum]=true;else delete anw[datum];
+if(!teilnahmeCache[referenzId])teilnahmeCache[referenzId]={referenz_id:referenzId};
+Object.assign(teilnahmeCache[referenzId],{anwesenheit:anw});
+updateAnwesenheitSummary();
 var result=await upsertTeilnahme(referenzId,quelle,anwesenheitCampId,{anwesenheit:anw});
-if(result){teilnahmeCache[referenzId]=result;updateAnwesenheitSummary()}
-else showToast('Speichern fehlgeschlagen',true)}
+if(result)teilnahmeCache[referenzId]=result;
+else if(navigator.onLine)showToast('Speichern fehlgeschlagen',true)}
 
 async function saveMetric(referenzId,quelle,field,value){
 var val=value===''?null:parseFloat(value);
 var data={};data[field]=val;
+if(!teilnahmeCache[referenzId])teilnahmeCache[referenzId]={referenz_id:referenzId};
+Object.assign(teilnahmeCache[referenzId],data);
 var result=await upsertTeilnahme(referenzId,quelle,anwesenheitCampId,data);
-if(result){teilnahmeCache[referenzId]=result;showToast(field.charAt(0).toUpperCase()+field.slice(1)+' gespeichert ✓')}
-else showToast('Speichern fehlgeschlagen',true)}
+if(result){teilnahmeCache[referenzId]=result;if(navigator.onLine)showToast(field.charAt(0).toUpperCase()+field.slice(1)+' gespeichert \u2713')}
+else if(navigator.onLine)showToast('Speichern fehlgeschlagen',true)}
 
 function updateAnwesenheitSummary(){
 var camp=allCamps.find(function(c){return c.id===anwesenheitCampId});if(!camp)return;
@@ -967,9 +1042,11 @@ async function toggleAnwesenheitMain(referenzId,quelle,campId,datum,checked){
 var existing=teilnahmeCache[referenzId]||{};
 var anw=Object.assign({},existing.anwesenheit||{});
 if(checked)anw[datum]=true;else delete anw[datum];
+if(!teilnahmeCache[referenzId])teilnahmeCache[referenzId]={referenz_id:referenzId};
+Object.assign(teilnahmeCache[referenzId],{anwesenheit:anw});
 var result=await upsertTeilnahme(referenzId,quelle,campId,{anwesenheit:anw});
 if(result)teilnahmeCache[referenzId]=result;
-else showToast('Speichern fehlgeschlagen',true)}
+else if(navigator.onLine)showToast('Speichern fehlgeschlagen',true)}
 
 function bulkReminderMailto(sel){
 var grouped={};
