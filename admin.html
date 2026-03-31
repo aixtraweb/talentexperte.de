@@ -78,12 +78,7 @@
         <button class="bulk-btn bulk-delete" onclick="bulkDelete()">🗑 Löschen</button>
         <button class="bulk-btn bulk-deselect" onclick="deselectAll()">✕ Auswahl aufheben</button>
       </div>
-      <div class="table-wrap"><table id="mainTable"><thead><tr>
-        <th class="th-check"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
-        <th onclick="sortTable('camp')">Camp ↕</th><th onclick="sortTable('kind')">Kind ↕</th><th onclick="sortTable('alter')">Alter</th>
-        <th class="col-eltern" onclick="sortTable('eltern')">Eltern</th><th onclick="sortTable('email')">E-Mail</th><th onclick="sortTable('telefon')">Telefon</th>
-        <th onclick="sortTable('status')">Status ↕</th><th class="col-betrag" onclick="sortTable('betrag')">Betrag</th><th onclick="sortTable('datum')">Datum ↕</th><th>Aktionen</th>
-      </tr></thead><tbody id="tableBody"></tbody></table></div>
+      <div class="table-wrap"><table id="mainTable"><thead id="tableHead"></thead><tbody id="tableBody"></tbody></table></div>
     </div>
   </div>
 </div>
@@ -176,8 +171,9 @@
 <script>
 var SUPABASE_URL='https://yxygwwoocsdnneqykiym.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
-var accessToken=null,allCamps=[],allAnmeldungen=[],currentSort={field:'datum',dir:'desc'},onlyMitarbeiter=false,onlyOef=false;
+var accessToken=null,allCamps=[],allAnmeldungen=[],currentSort={field:'kind',dir:'asc'},onlyMitarbeiter=false,onlyOef=false;
 var selectedIds=new Set();
+var lastAnwCampId=null;
 var campReadMode='private';
 var allDashboardRows=[],privateKpi=null;
 var KNOWN_STATUS={offen:true,bezahlt:true,storniert:true,erstattet:true};
@@ -264,7 +260,7 @@ if(hasPaymentSignal(a)&&!hasPaymentSignal(b))return a;
 return new Date(b.created_at||0)>new Date(a.created_at||0)?b:a
 }
 
-async function loadAll(){await Promise.all([loadCamps(),loadAnmeldungen(),loadPrivateKpis()]);renderCamps();populateCampFilter();populateAnwesenheitCampSel();updateStats()}
+async function loadAll(){await Promise.all([loadCamps(),loadAnmeldungen(),loadPrivateKpis()]);renderCamps();populateCampFilter();populateAnwesenheitCampSel();updateStats();if(lastAnwCampId){anwesenheitCampId=lastAnwCampId;await loadTeilnahme();renderTable()}}
 async function loadCamps(){
 campReadMode='private';
 var d=await apiGet('camps?select=*&order=datum_von.asc');
@@ -489,7 +485,29 @@ var fp=document.getElementById('editCampFruehPreis').value,fb=document.getElemen
 u.fruehbucher_preis=fp?parseFloat(fp):null;u.fruehbucher_bis=fb||null;
 var r=await apiPatch('camps',id,u);if(r&&r.ok){closeCampModal();showToast('Camp gespeichert ✓');await loadAll()}else{showToast('Fehler beim Speichern',true)}}
 
-function renderTable(){var tb=document.getElementById('tableBody'),f=getFiltered();
+function renderTable(){
+var campId=document.getElementById('filterCamp').value;
+var camp=campId?allCamps.find(function(c){return c.id===campId}):null;
+var days=camp?getCampDays(camp.datum_von,camp.datum_bis):[];
+var showCampCol=!campId;
+// Build thead dynamically
+var th='<tr>';
+th+='<th class="th-check"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>';
+if(showCampCol)th+='<th onclick="sortTable(\'camp\')">Camp ↕</th>';
+th+='<th onclick="sortTable(\'kind\')">Kind ↕</th>';
+th+='<th onclick="sortTable(\'alter\')">Alter</th>';
+th+='<th onclick="sortTable(\'status\')">Status ↕</th>';
+days.forEach(function(d){var dt=new Date(d+'T00:00:00');th+='<th class="aw-th-day" title="'+d+'">'+AWD[dt.getDay()]+'<br><span class="aw-day-num">'+dt.getDate()+'.'+(dt.getMonth()+1)+'.</span></th>';});
+th+='<th>Aktionen</th>';
+th+='<th class="col-eltern" onclick="sortTable(\'eltern\')">Eltern</th>';
+th+='<th onclick="sortTable(\'email\')">E-Mail</th>';
+th+='<th onclick="sortTable(\'telefon\')">Telefon</th>';
+th+='<th class="col-betrag" onclick="sortTable(\'betrag\')">Betrag</th>';
+th+='<th onclick="sortTable(\'datum\')">Datum ↕</th>';
+th+='</tr>';
+document.getElementById('tableHead').innerHTML=th;
+var f=getFiltered();
+var colCount=9+days.length+(showCampCol?1:0);
 var baseCount=f.length+' Anmeldung'+(f.length!==1?'en':'')+' gefunden';
 if(document.getElementById('filterStatus').value==='offen'){
 var sumOpen=f.reduce(function(s,a){return s+Number(a.betrag_euro||0)},0);
@@ -497,19 +515,30 @@ document.getElementById('resultCount').textContent=baseCount+' · Offen gesamt: 
 }else{
 document.getElementById('resultCount').textContent=baseCount;
 }
-if(f.length===0){tb.innerHTML='<tr><td colspan="11" class="empty-state"><div class="icon">📭</div>Keine Anmeldungen</td></tr>';updateBulkBar();return}
-tb.innerHTML=f.map(function(a){var cn=a.camps?a.camps.name:'–';var d=new Date(a.created_at);var ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+var tb=document.getElementById('tableBody');
+if(f.length===0){tb.innerHTML='<tr><td colspan="'+colCount+'" class="empty-state"><div class="icon">📭</div>Keine Anmeldungen</td></tr>';updateBulkBar();return}
+tb.innerHTML=f.map(function(a){
+var d=new Date(a.created_at);var ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
 var statusText=a.__typ==='Firma'?'Saint-Gobain':(a.__typ==='ÖF'?'ÖF':a.__effectiveStatus);
 var statusClass=a.__typ==='Firma'?'sg':(a.__typ==='ÖF'?'oef':a.__effectiveStatus);
 var chk=selectedIds.has(a.id)?'checked':'';
-return '<tr class="clickable'+(chk?' row-selected':'')+'" ondblclick="openDetail(\''+a.id+'\')">'+'<td class="td-check" onclick="event.stopPropagation()"><input type="checkbox" class="row-check" data-id="'+a.id+'" '+chk+' onchange="toggleRow(this)"></td>'+'<td>'+cn+'</td><td><strong>'+a.vorname+' '+a.nachname+'</strong>'+(a.allergien?' <span title="Hat Allergien/Hinweise" class="badge-allergy">⚠️</span>':'')+'</td>'+
-'<td>'+getAge(a.geburtsdatum)+'</td><td class="col-eltern">'+a.eltern_vorname+' '+a.eltern_nachname+'</td>'+
-'<td class="td-email"><a href="mailto:'+a.email+'" class="text-red" onclick="event.stopPropagation()">'+a.email+'</a></td>'+
-'<td class="td-telefon"><a href="tel:'+a.telefon+'" class="link-gray" onclick="event.stopPropagation()">'+a.telefon+'</a></td>'+
-'<td><span class="status-badge status-'+statusClass+'">'+statusText+'</span>'+(a.erinnerung_gesendet_am&&a.__effectiveStatus==='offen'?' <span class="badge-reminded" title="Erinnerung gesendet am '+fDT(a.erinnerung_gesendet_am)+'">📨</span>':'')+'</td>'+
-'<td class="td-betrag col-betrag">'+(a.betrag_euro||'–')+' €</td><td class="td-date">'+ds+'</td>'+
-'<td onclick="event.stopPropagation()">'+actBtns(a)+'</td></tr>'}).join('');
-updateBulkBar()}
+var row='<tr class="clickable'+(chk?' row-selected':'')+'" ondblclick="openDetail(\''+a.id+'\')">';
+row+='<td class="td-check" onclick="event.stopPropagation()"><input type="checkbox" class="row-check" data-id="'+a.id+'" '+chk+' onchange="toggleRow(this)"></td>';
+if(showCampCol)row+='<td>'+(a.camps?a.camps.name:'–')+'</td>';
+row+='<td><strong>'+a.vorname+' '+a.nachname+'</strong>'+(a.allergien?' <span title="Hat Allergien/Hinweise" class="badge-allergy">⚠️</span>':'')+'</td>';
+row+='<td>'+getAge(a.geburtsdatum)+'</td>';
+row+='<td><span class="status-badge status-'+statusClass+'">'+statusText+'</span>'+(a.erinnerung_gesendet_am&&a.__effectiveStatus==='offen'?' <span class="badge-reminded" title="Erinnerung gesendet am '+fDT(a.erinnerung_gesendet_am)+'">📨</span>':'')+'</td>';
+var anw=(teilnahmeCache[a.id]||{}).anwesenheit||{};
+days.forEach(function(day){row+='<td class="aw-td-day" onclick="event.stopPropagation()"><input type="checkbox" class="aw-checkbox"'+(anw[day]?' checked':'')+' onchange="toggleAnwesenheitMain(\''+a.id+'\',\''+a.__table+'\',\''+campId+'\',\''+day+'\',this.checked)"></td>';});
+row+='<td onclick="event.stopPropagation()">'+actBtns(a)+'</td>';
+row+='<td class="col-eltern">'+a.eltern_vorname+' '+a.eltern_nachname+'</td>';
+row+='<td class="td-email"><a href="mailto:'+a.email+'" class="text-red" onclick="event.stopPropagation()">'+a.email+'</a></td>';
+row+='<td class="td-telefon"><a href="tel:'+a.telefon+'" class="link-gray" onclick="event.stopPropagation()">'+a.telefon+'</a></td>';
+row+='<td class="td-betrag col-betrag">'+(a.betrag_euro||'–')+' €</td>';
+row+='<td class="td-date">'+ds+'</td>';
+row+='</tr>';
+return row;}).join('');
+applyColVisibility();updateBulkBar()}
 
 function actBtns(a){if(a.__typ==='Firma'||a.__typ==='ÖF')return ' <button class="action-btn action-btn-edit" onclick="openEditAnmeldung(\''+a.id+'\')" title="Daten bearbeiten">✏️</button> <button class="action-btn action-btn-view" onclick="openDetail(\''+a.id+'\')">👁</button> <button class="action-btn action-cancel" onclick="deleteAnmeldung(\''+a.id+'\')">🗑</button>';
 var h='';if(a.__effectiveStatus==='offen'){h+='<button class="action-btn action-pay" onclick="setStatus(\''+a.id+'\',\'bezahlt\')" title="Als bezahlt markieren">→ Bezahlt</button> <button class="action-btn action-cancel" onclick="setStatus(\''+a.id+'\',\'storniert\')" title="Stornieren">✕</button>'}
@@ -550,12 +579,19 @@ if(onlyOef&&a.__typ!=='ÖF')return false;
 if(sf==='offen'){if(!isActuallyOpen(a))return false}
 else if(sf&&a.__effectiveStatus!==sf)return false;
 if(s){var h=(a.vorname+' '+a.nachname+' '+a.eltern_vorname+' '+a.eltern_nachname+' '+a.email+' '+a.telefon).toLowerCase();if(h.indexOf(s)===-1)return false}return true});
-l.sort(function(a,b){var va,vb;switch(currentSort.field){case'camp':va=(a.camps?a.camps.name:'');vb=(b.camps?b.camps.name:'');break;case'kind':va=a.nachname;vb=b.nachname;break;
+l.sort(function(a,b){var va,vb;switch(currentSort.field){case'camp':va=(a.camps?a.camps.name:'');vb=(b.camps?b.camps.name:'');break;case'kind':va=a.vorname;vb=b.vorname;break;
 case'alter':va=getAge(a.geburtsdatum);vb=getAge(b.geburtsdatum);break;case'eltern':va=a.eltern_nachname;vb=b.eltern_nachname;break;case'email':va=a.email;vb=b.email;break;
 case'telefon':va=a.telefon;vb=b.telefon;break;case'status':va=a.__effectiveStatus;vb=b.__effectiveStatus;break;case'betrag':va=Number(a.betrag_euro||0);vb=Number(b.betrag_euro||0);break;
 default:va=a.created_at;vb=b.created_at}if(va<vb)return currentSort.dir==='asc'?-1:1;if(va>vb)return currentSort.dir==='asc'?1:-1;return 0});return l}
 
-function filterTable(){renderTable()}
+async function filterTable(){
+var campId=document.getElementById('filterCamp').value;
+if(campId!==lastAnwCampId){
+lastAnwCampId=campId;
+if(campId){anwesenheitCampId=campId;await loadTeilnahme()}
+else{teilnahmeCache={}}
+}
+renderTable()}
 
 var hiddenCols={eltern:true,betrag:true};
 function applyColVisibility(){
@@ -926,6 +962,14 @@ var sum={};days.forEach(function(d){sum[d]=0});
 kids.forEach(function(a){var anw=(teilnahmeCache[a.id]||{}).anwesenheit||{};days.forEach(function(d){if(anw[d])sum[d]++})});
 var spans=document.querySelectorAll('.aw-summary .aw-day-count');
 spans.forEach(function(span,i){if(days[i])span.textContent=sum[days[i]]+'/'+kids.length})}
+
+async function toggleAnwesenheitMain(referenzId,quelle,campId,datum,checked){
+var existing=teilnahmeCache[referenzId]||{};
+var anw=Object.assign({},existing.anwesenheit||{});
+if(checked)anw[datum]=true;else delete anw[datum];
+var result=await upsertTeilnahme(referenzId,quelle,campId,{anwesenheit:anw});
+if(result)teilnahmeCache[referenzId]=result;
+else showToast('Speichern fehlgeschlagen',true)}
 
 function bulkReminderMailto(sel){
 var grouped={};

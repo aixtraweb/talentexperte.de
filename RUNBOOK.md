@@ -79,9 +79,8 @@ limit 50;
 ### Symptom
 - Meldung „gelöscht“, Eintrag bleibt sichtbar.
 
-## 5) Stripe / Supabase / Dashboard
-- Detaillierter Status und Aufgabenliste:
-  - `STRIPE-SUPABASE-STATUS.md`
+### Stripe / Supabase / Dashboard
+- Detaillierter Status und Aufgabenliste: `STRIPE-SUPABASE-STATUS.md`
 
 ### Check
 1. Nach Löschen Seite neu laden.
@@ -98,7 +97,59 @@ where schemaname='public'
 - Admin-E-Mail in DELETE-Policy aufnehmen.
 - Danach erneut im Dashboard löschen.
 
-## 5) Schnelltest nach Deployment
+## 5) Zahlungserinnerung funktioniert nicht
+### Symptom
+- Bulk-Reminder-Button zeigt Fehlermeldung oder öffnet mailto-Fallback
+
+### Check
+1. Resend-Domain verifiziert? → Resend-Dashboard prüfen
+2. Edge Function deployed? → `supabase functions list`
+3. API-Key gesetzt? → `supabase secrets list`
+4. DB-Spalte vorhanden? → `SELECT column_name FROM information_schema.columns WHERE table_name='anmeldungen' AND column_name='erinnerung_gesendet_am';`
+
+### Fix
+```bash
+supabase secrets set RESEND_API_KEY=<key>
+supabase functions deploy send-reminder --no-verify-jwt
+```
+```sql
+ALTER TABLE anmeldungen ADD COLUMN IF NOT EXISTS erinnerung_gesendet_am timestamptz;
+```
+
+## 6) PayPal-Zahlungen manuell nachbuchen (CSV-Backfill)
+### Symptom
+- Eltern schicken PayPal-Zahlungsnachweis, Admin zeigt noch „OFFEN"
+- E-Mail in PayPal weicht von Registrierungs-E-Mail ab
+
+### Vorgehen
+1. PayPal-Export als CSV herunterladen (PayPal → Aktivitäten → Transaktionen exportieren)
+2. Dry-Run ausführen — zeigt welche Anmeldungen gefunden werden:
+```bash
+cd talenexperte.de
+node scripts/paypal-backfill-sync.mjs --csv /pfad/zur/Download.CSV
+```
+3. Treffer prüfen: Matching per E-Mail (primär) + Nachname (Fallback)
+4. Bei Abweichungen (z.B. `sunriseonly@` vs `xinyuonly@`) direkten PATCH ausführen:
+```bash
+curl -s -o /dev/null -w "%{http_code}" \
+  "https://yxygwwoocsdnneqykiym.supabase.co/rest/v1/anmeldungen?id=eq.<UUID>" \
+  -X PATCH \
+  -H "apikey: <SERVICE_KEY>" \
+  -H "Authorization: Bearer <SERVICE_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"zahlungsstatus":"bezahlt","zahlung_am":"<ISO-DATUM>","stripe_payment_id":"<PAYPAL-TX-ID>"}'
+```
+5. Apply ausführen wenn Treffer stimmen:
+```bash
+node scripts/paypal-backfill-sync.mjs --csv /pfad/zur/Download.CSV --apply
+```
+
+### Hinweise
+- `status`-Spalte existiert in `anmeldungen` **nicht** → nur `zahlungsstatus` patchen (HTTP 400 sonst)
+- PayPal-TX-IDs werden im Feld `stripe_payment_id` gespeichert
+- Absender-E-Mail im CSV-Export ≠ Empfänger-E-Mail in Supabase ist häufig (verschiedene PayPal-Konten vs. Anmelde-E-Mail)
+
+## 7) Schnelltest nach Deployment
 1. Hard Reload im Browser (`Cmd+Shift+R`).
 2. Admin öffnen und prüfen:
    - `Anmeldungen`
@@ -106,23 +157,33 @@ where schemaname='public'
    - `Offen`
    - `Umsatz`
 3. Tab `Anmeldungen`:
+   - Standardsortierung: Vorname A→Z ✓
+   - Camp im Filter auswählen → Camp-Spalte verschwindet, Anwesenheits-Checkboxen erscheinen ✓
+   - Anwesenheit-Checkbox klicken → speichert sofort (kein Fehler-Toast) ✓
+   - Filter zurücksetzen → Camp-Spalte erscheint wieder ✓
    - Filter `Mitarbeiter` testen
    - Statusfilter `Offen` testen
+   - Checkbox-Auswahl + Bulk-Leiste testen
    - Testeintrag löschen
 
-## 6) Wichtige Dateien
-- `admin.html` - Dashboard-Logik, Status, Filter, Löschen
+## 7) Wichtige Dateien
+- `admin.html` - Dashboard-Logik, Status, Filter, Bulk-Aktionen, Löschen
+- `css/admin.css` - Dashboard-Styling
 - `anmeldung.html` - Eltern-Anmeldung
 - `firmen-anmeldung.html` - Firmen/Mitarbeiter-Anmeldung
 - `bestaetigung.html` - normale Bestätigung
 - `bestaetigung-firma.html` - Firmenbestätigung + PDF
+- `supabase/functions/send-reminder/index.ts` - Zahlungserinnerung per Resend
+- `scripts/stripe-backfill-sync.mjs` - Stripe-Backfill-Script
+- `dns-eintraege-resend.txt` - DNS-Einträge für E-Mail-Domain
 - `README.md` - Projektstatus und Betriebsinfos
 - `CHANGELOG.md` - letzte Änderungen
+- `STRIPE-SUPABASE-STATUS.md` - Stripe/Supabase Status-Tracking
 
-## 7) Deployment und Git
+## 8) Deployment und Git
 ```bash
 ./ci/deploy.sh
 git add .
-git commit -m "Runbook update"
+git commit -m "Kurzbeschreibung"
 git push
 ```

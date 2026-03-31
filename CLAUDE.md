@@ -27,6 +27,12 @@ node scripts/stripe-backfill-sync.mjs --from 2023-08-01
 # Stripe payment backfill (apply changes)
 MY_SUPABASE_URL=... MY_SUPABASE_SERVICE_ROLE_KEY=... \
   node scripts/stripe-backfill-sync.mjs --from 2023-08-01 --apply
+
+# PayPal CSV backfill (dry-run preview)
+node scripts/paypal-backfill-sync.mjs --csv /path/to/Download.CSV
+
+# PayPal CSV backfill (apply changes)
+node scripts/paypal-backfill-sync.mjs --csv /path/to/Download.CSV --apply
 ```
 
 No linting or test framework is configured.
@@ -41,7 +47,7 @@ No linting or test framework is configured.
 | `firmen-anmeldung.html` | Employee/company registration (free); inserts to `firmen_anmeldungen` |
 | `bestaetigung.html` | Post-payment confirmation; generates PDF with booking number; `?id=<uuid>` fallback if localStorage empty |
 | `bestaetigung-firma.html` | Employee confirmation + PDF download |
-| `admin.html` | Full dashboard: camp stats, registration table, bulk actions (mark paid, cancel, send reminders, delete); Anwesenheit-Tab with daily checkboxes + performance metrics |
+| `admin.html` | Full dashboard: camp stats, registration table, bulk actions (mark paid, cancel, send reminders, delete); Anwesenheit checkboxes integrated directly in Anmeldungen tab when a camp is filtered; separate Anwesenheit-Tab retains performance metrics (sprint, torschuss, dribbling) |
 | `impressum.html`, `datenschutz.html`, `agb.html` | Legal pages |
 
 ### Supabase Data Model
@@ -61,8 +67,14 @@ Dashboard revenue/paid counts are based **only on `anmeldungen`**, not `firmen_a
 ### Payment Flow
 
 1. User registers → Supabase INSERT with `zahlungsstatus = 'offen'`
-2. User clicks payment → redirects to Stripe payment link
-3. `zahlungsstatus` updated to `'bezahlt'` via webhook or manual `stripe-backfill-sync.mjs`
+2. User clicks payment → redirects to Stripe payment link (or pays via PayPal/bank transfer)
+3. `zahlungsstatus` updated to `'bezahlt'` via:
+   - Stripe webhook (automatic)
+   - `stripe-backfill-sync.mjs` (manual Stripe sync)
+   - `paypal-backfill-sync.mjs --csv Download.CSV --apply` (manual PayPal sync)
+   - Admin dashboard "→ Bezahlt" button (manual per row)
+
+**Important**: The `status` column does **not** exist in `anmeldungen` — only `zahlungsstatus`. Patching `status` causes HTTP 400. PayPal TX-IDs are stored in `stripe_payment_id`.
 
 ### CSS Strategy
 

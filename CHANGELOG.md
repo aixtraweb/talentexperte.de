@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-03-31
+
+### Admin-Dashboard: Anwesenheit in Anmeldungen-Tab integriert (`admin.html`, `css/admin.css`)
+- **Anwesenheits-Checkboxen direkt in der Haupttabelle**: Wenn ein Camp im Filter ausgewählt ist, erscheinen die Tages-Spalten (Mo, Di, …) direkt in der Anmeldungs-Tabelle — kein Tab-Wechsel mehr nötig
+- **Camp-Spalte auto-ausblendet**: Bei aktivem Camp-Filter wird die Camp-Spalte automatisch ausgeblendet (kein Informationsgewinn, da Camp bekannt)
+- **Neue Spaltenreihenfolge**: Kind → Alter → Status → [Anwesenheits-Tage] → Aktionen → Eltern → E-Mail → Telefon → Betrag → Datum
+- **Standard-Sortierung**: Vorname aufsteigend (vorher: Datum absteigend); Kind-Sortierung nutzt jetzt Vorname statt Nachname
+- **Dynamischer Tabellenkopf**: `<thead>` wird per JS generiert — Spaltenanzahl passt sich je nach Camp-Auswahl an
+- **`toggleAnwesenheitMain()`**: Neue Funktion für Anwesenheitsklicks in der Haupttabelle (nimmt `campId` als Parameter statt globale Variable)
+- **Anwesenheit lädt automatisch**: `filterTable()` lädt `teilnahme`-Daten wenn Camp-Filter gesetzt wird; `loadAll()` aktualisiert Cache bei Reload
+
+### PayPal CSV Backfill-Script (`scripts/paypal-backfill-sync.mjs`)
+- Neues Script zum Abgleich von PayPal-Zahlungen gegen offene Supabase-Anmeldungen
+- Matching per E-Mail (primär) + Nachname (Fallback für abweichende PayPal-E-Mails)
+- Dry-Run-Modus (Standard) zeigt Treffer ohne Änderungen; `--apply` führt Updates durch
+- Liest `.env` aus `steuerberater/` automatisch ein
+- Felder: `zahlungsstatus=bezahlt`, `zahlung_am` (PayPal-Datum), `stripe_payment_id` (PayPal-TX-ID)
+
+### Manuelle Zahlungskorrekturen (6 Anmeldungen via PayPal CSV abgeglichen)
+- Laurens Derks, Jonah Schmittkamp, Nicolas Schmittkamp, Benjamin Sun, Tim Sun, Haval Mohamad per direktem Supabase-PATCH auf `bezahlt` gesetzt
+
 ## 2026-03-29 (Sitzung 2)
 
 ### Admin-Dashboard: Anwesenheit & Leistungsdaten (`admin.html`, `css/admin.css`)
