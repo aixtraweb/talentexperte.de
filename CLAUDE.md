@@ -47,7 +47,7 @@ No linting or test framework is configured.
 | `firmen-anmeldung.html` | Employee/company registration (free); inserts to `firmen_anmeldungen` |
 | `bestaetigung.html` | Post-payment confirmation; generates PDF with booking number; `?id=<uuid>` fallback if localStorage empty |
 | `bestaetigung-firma.html` | Employee confirmation + PDF download |
-| `admin.html` | Full dashboard: camp stats, registration table, bulk actions (mark paid, cancel, send reminders, delete); Anwesenheit checkboxes integrated directly in Anmeldungen tab when a camp is filtered; separate Anwesenheit-Tab retains performance metrics (sprint, torschuss, dribbling) |
+| `admin.html` | Full dashboard: camp stats, registration table, bulk actions (mark paid, cancel, send reminders, delete); Anwesenheit checkboxes integrated directly in Anmeldungen tab when a camp is filtered; separate Anwesenheit-Tab retains performance metrics (sprint, torschuss, dribbling); offline-first write queue + session auto-refresh |
 | `impressum.html`, `datenschutz.html`, `agb.html` | Legal pages |
 
 ### Supabase Data Model
@@ -90,7 +90,9 @@ Modular CSS files per page section (no bundler). Global variables in `:root`. Al
 - **Deployment excludes**: `.git`, `ci/`, `steuerberater/`, `.claude/`, `node_modules/`, `*.bak*`
 - **Server**: `medina-82@r20.hostingwerk.de` → `/srv/www/medina-82/public/talentexperte`
 - **Email DNS**: Resend DKIM/SPF/DMARC records documented in `dns-eintraege-resend.txt`
-- **Troubleshooting**: See `RUNBOOK.md` for common issues (payments not counting, delete not working, reminder failures)
+- **Troubleshooting**: See `RUNBOOK.md` for common issues (payments not counting, delete not working, reminder failures, offline sync)
+- **Offline queue**: `localStorage` key `teilnahme_q` holds pending writes. Flushed on page load and on `window.online`. Safe to inspect/clear in browser console.
+- **Session tokens**: `sb_token`, `sb_token_expiry`, `sb_refresh` in localStorage. Token auto-refreshed every 50 min; 401 triggers one refresh+retry before logout.
 
 ## Working Rules
 

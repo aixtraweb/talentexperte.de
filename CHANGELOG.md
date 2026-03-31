@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-03-31 (Sitzung 2)
+
+### Admin-Dashboard: Offline-Queue + Session Auto-Refresh (`admin.html`)
+
+**Problem:** Trainerdaten (Sprint/Torschuss/Dribbling, Anwesenheit), die auf dem iPad während des Camps eingetragen wurden, gingen verloren — weil entweder die WLAN-Verbindung fehlte oder die Supabase-Session abgelaufen war (401 → automatischer Logout).
+
+**Lösung — Offline Write Queue:**
+- Jede Änderung (Checkbox, Metrik) wird **zuerst in `localStorage` persistiert** (`teilnahme_q`) bevor der Server kontaktiert wird
+- Bei fehlender Verbindung (`navigator.onLine === false`) bleibt der Eintrag in der Queue, das UI reagiert normal (optimistisches Update)
+- `window.addEventListener('online', flushQueue)` — sobald WLAN zurückkommt, werden alle ausstehenden Writes automatisch an Supabase gesendet
+- Mehrere Offline-Änderungen am selben Kind werden gemergt (letzter Wert gewinnt pro Feld)
+- Beim nächsten Seitenaufruf / Login wird die Queue sofort geflusht (`setTimeout(flushQueue, 1500)` in `showDashboard`)
+- `loadTeilnahme()` legt Queue-Daten über DB-Daten (lokal ist immer neuer als der letzte DB-Stand)
+
+**Lösung — Session Auto-Refresh:**
+- Token-Ablaufzeit (`expires_in`) wird bei Login in `localStorage` gespeichert
+- `doRefreshToken()` erneuert den Token per `grant_type=refresh_token`
+- `setInterval` ruft Refresh automatisch alle **50 Minuten** auf (Token läuft nach 1h ab)
+- Bei einem 401-Fehler im Upsert: einmaliger Refresh-Versuch + Retry — kein sofortiger Logout mehr
+- `ensureFreshToken()` prüft vor jedem Upsert ob der Token < 2 Min vor Ablauf steht
+
+**Lösung — Sync-Indikator:**
+- Neuer `<span id="syncIndicator">` neben dem Aktualisieren-Button im Anwesenheits-Tab
+- **✓ Gespeichert** (grün) — alle Daten in Supabase
+- **⏳ N ausstehend** (gelb, pulsierend) — Offline-Queue nicht leer
+
+**Multi-Device-Sicherheit (iPad + Office gleichzeitig):**
+- Jedes Feld (Sprint, Torschuss, Dribbling) wird einzeln gesendet — überschreibt nie Felder anderer Geräte
+- `Prefer: resolution=merge-duplicates` auf PostgREST-Ebene stellt sicher, dass nur die tatsächlich gesendeten Spalten aktualisiert werden
+
 ## 2026-03-31
 
 ### Admin-Dashboard: Anwesenheit in Anmeldungen-Tab integriert (`admin.html`, `css/admin.css`)

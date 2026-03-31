@@ -149,7 +149,48 @@ node scripts/paypal-backfill-sync.mjs --csv /pfad/zur/Download.CSV --apply
 - PayPal-TX-IDs werden im Feld `stripe_payment_id` gespeichert
 - Absender-E-Mail im CSV-Export ≠ Empfänger-E-Mail in Supabase ist häufig (verschiedene PayPal-Konten vs. Anmelde-E-Mail)
 
-## 7) Schnelltest nach Deployment
+## 7) Anwesenheitsdaten fehlen / Sync-Probleme
+
+### Symptom A: Sync-Indikator zeigt „⏳ N ausstehend", Daten nicht in Supabase
+Ursache: iPad war offline, Queue wurde noch nicht geflusht.
+
+**Fix:**
+1. WLAN-Verbindung herstellen — Sync läuft automatisch (bis zu 10 Sek Verzögerung)
+2. Falls kein Auto-Flush: Seite neu laden → `flushQueue` läuft bei `showDashboard`
+3. Manuell prüfen:
+```javascript
+// Browser-Konsole auf admin.html:
+console.log(JSON.parse(localStorage.getItem('teilnahme_q') || '{}'))
+```
+
+### Symptom B: Alle eingegebenen Werte weg nach Seite neu laden
+Ursache: Session war abgelaufen (401), Saves hatten fehlgeschlagen, Queue war nicht aktiv (alter Code).
+
+**Mit neuem Code (ab 2026-03-31):** Passiert nicht mehr — Queue sichert jeden Write lokal.
+
+**Wenn Queue-Daten trotzdem fehlen** (z.B. anderer Browser / privater Modus):
+- Daten über Service Role Key direkt in Supabase eintragen:
+```bash
+curl -X POST "https://yxygwwoocsdnneqykiym.supabase.co/rest/v1/teilnahme" \
+  -H "apikey: <SERVICE_KEY>" \
+  -H "Authorization: Bearer <SERVICE_KEY>" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: resolution=merge-duplicates,return=representation" \
+  -d '{"referenz_id":"<UUID>","quelle":"anmeldungen","camp_id":"<CAMP_UUID>","sprint":16.5,"torschuss":53,"dribbling":8.5}'
+```
+
+### Symptom C: Session läuft ab, Dashboard loggt aus
+Token läuft nach 1 Stunde ab. Mit neuem Code: Auto-Refresh alle 50 Min. Falls doch Logout:
+- Einfach neu einloggen — Queue-Daten bleiben in localStorage erhalten und werden nach Login automatisch gesynct
+
+### Queue komplett leeren (Notfall-Reset)
+```javascript
+// Browser-Konsole:
+localStorage.removeItem('teilnahme_q')
+```
+**Achtung:** Nur wenn Queue fehlerhaft ist und manuell eingegeben wurde. Ungesendete Daten gehen verloren.
+
+## 8) Schnelltest nach Deployment
 1. Hard Reload im Browser (`Cmd+Shift+R`).
 2. Admin öffnen und prüfen:
    - `Anmeldungen`
@@ -165,8 +206,14 @@ node scripts/paypal-backfill-sync.mjs --csv /pfad/zur/Download.CSV --apply
    - Statusfilter `Offen` testen
    - Checkbox-Auswahl + Bulk-Leiste testen
    - Testeintrag löschen
+4. Tab `Anwesenheit`:
+   - Camp auswählen → Sync-Indikator zeigt „✓ Gespeichert" ✓
+   - Checkbox klicken → Indikator kurz „⏳ 1 ausstehend", dann „✓ Gespeichert" ✓
+   - Metrik-Feld (z.B. Sprint) eingeben + Tab → Toast „Sprint gespeichert ✓" ✓
+   - Browser offline stellen (DevTools → Network → Offline), Checkbox klicken → „⏳ ausstehend" ✓
+   - Wieder online → Auto-Sync innerhalb weniger Sekunden ✓
 
-## 7) Wichtige Dateien
+## 9) Wichtige Dateien
 - `admin.html` - Dashboard-Logik, Status, Filter, Bulk-Aktionen, Löschen
 - `css/admin.css` - Dashboard-Styling
 - `anmeldung.html` - Eltern-Anmeldung
@@ -180,7 +227,7 @@ node scripts/paypal-backfill-sync.mjs --csv /pfad/zur/Download.CSV --apply
 - `CHANGELOG.md` - letzte Änderungen
 - `STRIPE-SUPABASE-STATUS.md` - Stripe/Supabase Status-Tracking
 
-## 8) Deployment und Git
+## 10) Deployment und Git
 ```bash
 ./ci/deploy.sh
 git add .
