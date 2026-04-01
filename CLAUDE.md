@@ -47,7 +47,7 @@ No linting or test framework is configured.
 | `firmen-anmeldung.html` | Employee/company registration (free); inserts to `firmen_anmeldungen` |
 | `bestaetigung.html` | Post-payment confirmation; generates PDF with booking number; `?id=<uuid>` fallback if localStorage empty |
 | `bestaetigung-firma.html` | Employee confirmation + PDF download |
-| `admin.html` | Full dashboard: camp stats, registration table, bulk actions (mark paid, cancel, send reminders, delete); Anwesenheit checkboxes integrated directly in Anmeldungen tab when a camp is filtered; separate Anwesenheit-Tab retains performance metrics (sprint, torschuss, dribbling); offline-first write queue + session auto-refresh |
+| `admin.html` | Full dashboard: camp stats, registration table, bulk actions (mark paid, cancel, send reminders, delete); Anwesenheit checkboxes + Sprint/Torschuss/Dribbling metrics integrated directly in Anmeldungen tab when a camp is filtered (metric columns only visible with camp filter); separate Anwesenheit-Tab retains same metrics; offline-first write queue + session auto-refresh |
 | `impressum.html`, `datenschutz.html`, `agb.html` | Legal pages |
 
 ### Supabase Data Model
@@ -59,6 +59,23 @@ No linting or test framework is configured.
 - **Views**: `alle_anmeldungen`, `alle_anmeldungen_dashboard` for aggregation
 
 Dashboard revenue/paid counts are based **only on `anmeldungen`**, not `firmen_anmeldungen`. Employee entries appear as `FIRMA` status and are excluded from payment tracking.
+
+### Anmeldungstyp (`__typ`) — Erkennung und Speicherung
+
+`__typ` wird clientseitig aus den Rohdaten berechnet (`normalizeAnmeldung()`):
+
+| `__typ` | Erkennungsregel |
+|---------|----------------|
+| `'Firma'` | Datensatz aus `firmen_anmeldungen` **oder** `notizen` enthält `[TYP:SG]` |
+| `'ÖF'`   | `typField === 'öf'/'oef'` **oder** `notizen` enthält `[TYP:ÖF]` |
+| `'Privat'` | Default |
+
+Im Edit-Modal (`mTyp`) kann man einem `anmeldungen`-Eintrag den Typ ändern:
+- **ÖF** → setzt `[TYP:ÖF]` Prefix in `notizen`, Betrag = 0, Status = bezahlt
+- **Saint-Gobain** → setzt `[TYP:SG]` Prefix in `notizen`, Betrag = 0, Status = bezahlt
+- **Privat** → entfernt `[TYP:*]`-Tag aus `notizen`
+
+Beim Speichern werden alte Tags (`[TYP:ÖF]`, `[TYP:SG]`) automatisch bereinigt, bevor der neue gesetzt wird.
 
 ### Edge Function (Deno)
 

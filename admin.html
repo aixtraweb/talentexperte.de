@@ -148,6 +148,7 @@
           <select id="mTyp" onchange="mTypChanged()">
             <option value="Privat">👤 Privat</option>
             <option value="ÖF">🤝 ÖF – Förderverein</option>
+            <option value="Saint-Gobain">🏢 Saint-Gobain – Mitarbeiter</option>
           </select>
         </div>
         <div class="modal-field"><label>Zahlungsstatus</label>
@@ -337,7 +338,7 @@ var isFirmaSource=source==='firmen_anmeldungen';
 var isPrivatSource=source==='anmeldungen';
 var hasStrongFirmaFields=!!(a.mitarbeiter_vorname||a.mitarbeiter_nachname||a.ansprechpartner_vorname||a.ansprechpartner_nachname||a.firma_name);
 var typ='Privat';
-if(typField==='firma'||isFirmaSource||(typField===''&&!isPrivatSource&&hasStrongFirmaFields))typ='Firma';
+if(typField==='firma'||isFirmaSource||(typField===''&&!isPrivatSource&&hasStrongFirmaFields)||(a.notizen&&/\[TYP:SG\]/.test(a.notizen)))typ='Firma';
 if(typField==='öf'||typField==='oef'||(a.notizen&&/\[TYP:ÖF\]/.test(a.notizen)))typ='ÖF';
 var tableName=isFirmaSource?'firmen_anmeldungen':(isPrivatSource?'anmeldungen':(typ==='Firma'?'firmen_anmeldungen':'anmeldungen'));
 var campName=a.camp_name||a.name||(a.camps&&a.camps.name)||'';
@@ -507,6 +508,7 @@ th+='<th onclick="sortTable(\'kind\')">Kind ↕</th>';
 th+='<th onclick="sortTable(\'alter\')">Alter</th>';
 th+='<th onclick="sortTable(\'status\')">Status ↕</th>';
 days.forEach(function(d){var dt=new Date(d+'T00:00:00');th+='<th class="aw-th-day" title="'+d+'">'+AWD[dt.getDay()]+'<br><span class="aw-day-num">'+dt.getDate()+'.'+(dt.getMonth()+1)+'.</span></th>';});
+if(days.length>0){th+='<th class="aw-th-metric">Sprint<br><span class="aw-metric-unit">(s)</span></th>';th+='<th class="aw-th-metric">Tor-<br>schuss</th>';th+='<th class="aw-th-metric">Dribb-<br>ling<br><span class="aw-metric-unit">(s)</span></th>';}
 th+='<th>Aktionen</th>';
 th+='<th class="col-eltern" onclick="sortTable(\'eltern\')">Eltern</th>';
 th+='<th onclick="sortTable(\'email\')">E-Mail</th>';
@@ -516,7 +518,7 @@ th+='<th onclick="sortTable(\'datum\')">Datum ↕</th>';
 th+='</tr>';
 document.getElementById('tableHead').innerHTML=th;
 var f=getFiltered();
-var colCount=9+days.length+(showCampCol?1:0);
+var colCount=9+(days.length>0?days.length+3:0)+(showCampCol?1:0);
 var baseCount=f.length+' Anmeldung'+(f.length!==1?'en':'')+' gefunden';
 if(document.getElementById('filterStatus').value==='offen'){
 var sumOpen=f.reduce(function(s,a){return s+Number(a.betrag_euro||0)},0);
@@ -539,6 +541,7 @@ row+='<td>'+getAge(a.geburtsdatum)+'</td>';
 row+='<td><span class="status-badge status-'+statusClass+'">'+statusText+'</span>'+(a.erinnerung_gesendet_am&&a.__effectiveStatus==='offen'?' <span class="badge-reminded" title="Erinnerung gesendet am '+fDT(a.erinnerung_gesendet_am)+'">📨</span>':'')+'</td>';
 var anw=(teilnahmeCache[a.id]||{}).anwesenheit||{};
 days.forEach(function(day){row+='<td class="aw-td-day" onclick="event.stopPropagation()"><input type="checkbox" class="aw-checkbox"'+(anw[day]?' checked':'')+' onchange="toggleAnwesenheitMain(\''+a.id+'\',\''+a.__table+'\',\''+campId+'\',\''+day+'\',this.checked)"></td>';});
+if(days.length>0){var t=teilnahmeCache[a.id]||{};row+='<td class="aw-td-metric" onclick="event.stopPropagation()"><input type="number" step="0.1" min="0" placeholder="–" value="'+(t.sprint!=null?t.sprint:'')+'" class="metric-input" onblur="saveMetric(\''+a.id+'\',\''+a.__table+'\',\'sprint\',this.value)" onclick="event.stopPropagation();this.select()"></td>';row+='<td class="aw-td-metric" onclick="event.stopPropagation()"><input type="number" step="1" min="0" placeholder="–" value="'+(t.torschuss!=null?t.torschuss:'')+'" class="metric-input" onblur="saveMetric(\''+a.id+'\',\''+a.__table+'\',\'torschuss\',this.value)" onclick="event.stopPropagation();this.select()"></td>';row+='<td class="aw-td-metric" onclick="event.stopPropagation()"><input type="number" step="0.1" min="0" placeholder="–" value="'+(t.dribbling!=null?t.dribbling:'')+'" class="metric-input" onblur="saveMetric(\''+a.id+'\',\''+a.__table+'\',\'dribbling\',this.value)" onclick="event.stopPropagation();this.select()"></td>';}
 row+='<td onclick="event.stopPropagation()">'+actBtns(a)+'</td>';
 row+='<td class="col-eltern">'+a.eltern_vorname+' '+a.eltern_nachname+'</td>';
 row+='<td class="td-email"><a href="mailto:'+a.email+'" class="text-red" onclick="event.stopPropagation()">'+a.email+'</a></td>';
@@ -785,7 +788,7 @@ document.getElementById('mBetrag').value=a.betrag_euro||'';
 document.getElementById('mAllergien').value=a.allergien||'';
 document.getElementById('mNotizen').value=a.notizen||'';
 document.getElementById('mZahlungsstatus').value=a.__effectiveStatus||'offen';
-document.getElementById('mTyp').value=a.__typ==='ÖF'?'ÖF':'Privat';
+document.getElementById('mTyp').value=a.__typ==='ÖF'?'ÖF':(a.__typ==='Firma'?'Saint-Gobain':'Privat');
 document.getElementById('mKanal').value='';
 document.getElementById('manualModalTitle').textContent='Anmeldung bearbeiten';
 document.getElementById('manualModalSaveBtn').textContent='Änderungen speichern';
@@ -811,7 +814,7 @@ function closeManualAnmeldung(){document.getElementById('manualModal').classList
 
 function mTypChanged(){
 var typ=document.getElementById('mTyp').value;
-if(typ==='ÖF'){
+if(typ==='ÖF'||typ==='Saint-Gobain'){
 document.getElementById('mZahlungsstatus').value='bezahlt';
 document.getElementById('mBetrag').value='0';}}
 
@@ -834,10 +837,13 @@ var betrag=parseFloat(document.getElementById('mBetrag').value)||0;
 var mTyp=document.getElementById('mTyp').value;
 var zahlungsstatus=document.getElementById('mZahlungsstatus').value;
 if(zahlungsstatus==='bezahlt_bar')zahlungsstatus='bezahlt';
-if(mTyp==='ÖF')zahlungsstatus='bezahlt';
+if(mTyp==='ÖF'||mTyp==='Saint-Gobain')zahlungsstatus='bezahlt';
 var kanal=document.getElementById('mKanal').value.trim();
 var notizen=document.getElementById('mNotizen').value.trim();
+// Typ-Tags bereinigen bevor neu setzen
+notizen=notizen.replace(/^\[TYP:(ÖF|SG)\]\n?/,'').trim();
 if(mTyp==='ÖF')notizen='[TYP:ÖF]'+(notizen?'\n'+notizen:'');
+else if(mTyp==='Saint-Gobain')notizen='[TYP:SG]'+(notizen?'\n'+notizen:'');
 else if(kanal)notizen=(notizen?notizen+'\n':'')+'Anmeldekanal: '+kanal;
 var data={camp_id:campId,vorname:vorname,nachname:nachname,geburtsdatum:geburtsdatum,
 trikot_groesse:document.getElementById('mTrikot').value||null,
