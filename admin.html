@@ -649,8 +649,13 @@ var r=await apiPatch(table,id,u);if(r&&r.ok){showToast('Status: '+st+' ✓');clo
 async function deleteAnmeldung(id){
 var a=allAnmeldungen.find(function(x){return x.id===id});
 if(!a){showToast('Eintrag nicht gefunden',true);return}
-var name=(a.vorname||'')+' '+(a.nachname||'');
-if(!confirm('Anmeldung von '+name.trim()+' wirklich löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.'))return;
+var name=((a.vorname||'')+' '+(a.nachname||'')).trim();
+/* Stufe 1: Storno als Default anbieten */
+var doStorno=confirm('Anmeldung von '+name+'\n\nEmpfehlung: STORNIEREN statt löschen — Historie bleibt erhalten, Anwesenheits-Daten gehen nicht verloren.\n\nOK = Jetzt stornieren (empfohlen)\nAbbrechen = Anderen Weg wählen');
+if(doStorno){await setStatus(id,'storniert');return}
+/* Stufe 2: Doppelte Bestätigung für echten DELETE */
+if(!confirm('⚠️ ENDGÜLTIG LÖSCHEN?\n\n'+name+' wird unwiderruflich aus der Datenbank entfernt. Verknüpfte Anwesenheits-Daten bleiben als verwaiste Einträge zurück.\n\nNur fortfahren, wenn Stornieren nicht passt.\n\nOK = Löschen\nAbbrechen = Nichts tun'))return;
+if(!confirm('Letzte Bestätigung: '+name+' wirklich löschen?'))return;
 var tables=[(a.__table)||'anmeldungen'];
 var alt=(tables[0]==='anmeldungen')?'firmen_anmeldungen':'anmeldungen';
 if(tables.indexOf(alt)===-1)tables.push(alt);
@@ -723,7 +728,12 @@ await loadAll()}
 async function bulkDelete(){
 var sel=getSelectedAnmeldungen();
 if(sel.length===0)return;
-if(!confirm(sel.length+' Anmeldung(en) wirklich LÖSCHEN? Das kann nicht rückgängig gemacht werden!'))return;
+/* Stufe 1: Storno als Default anbieten */
+var doStorno=confirm(sel.length+' Anmeldung(en) ausgewählt.\n\nEmpfehlung: STORNIEREN statt löschen — Historie bleibt erhalten, Anwesenheits-Daten gehen nicht verloren.\n\nOK = Jetzt stornieren (empfohlen)\nAbbrechen = Anderen Weg wählen');
+if(doStorno){await bulkSetStatus('storniert');return}
+/* Stufe 2: Doppelte Bestätigung für echten DELETE */
+if(!confirm('⚠️ '+sel.length+' Anmeldung(en) ENDGÜLTIG LÖSCHEN?\n\nUnwiderruflich. Verknüpfte Anwesenheits-Daten bleiben als verwaiste Einträge zurück.\n\nNur fortfahren, wenn Stornieren nicht passt.\n\nOK = Löschen\nAbbrechen = Nichts tun'))return;
+if(!confirm('Letzte Bestätigung: '+sel.length+' Anmeldung(en) wirklich löschen?'))return;
 var ok=0;
 for(var i=0;i<sel.length;i++){
 var a=sel[i];var tables=[(a.__table)||'anmeldungen'];
