@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-04-11 — Offline-Queue-Audit + Saint-Gobain-Normalisierung
+
+### Audit: Offline-Queue + Session-Refresh (`admin.html`)
+Vollständige Prüfung nach Datenverlust-Sorge ("was, wenn ich mich erst Tage später am Mac einlogge?"). **Ergebnis: Mechanik ist robust, aber iPad-Queue ist gerätegebunden.**
+
+- `doLogout()` (Zeile 200) löscht bewusst **nicht** `teilnahme_q` → Queue überlebt Logout
+- `showDashboard()` (Zeile 201) flusht 1,5 s nach jedem Login/Reload → verspätete Syncs greifen automatisch
+- `doRefreshToken()` (Zeile 962) schluckt Netzwerkfehler in `catch` → offline führt nicht zu Auto-Logout
+- **Wichtig:** Daten, die auf dem iPad in `localStorage.teilnahme_q` liegen, erreichen den Server erst, wenn das iPad selbst wieder online geht. Der Mac kann iPad-Queue-Daten nicht abrufen.
+- **Offene Lücken** (nicht kritisch, aber verbesserbar): kein `visibilitychange`-Flush; keine Warnung beim Tab-Schließen bei nicht-leerer Queue; iOS Safari kann localStorage unter Speicherdruck theoretisch purgen.
+
+### Datenkorrektur: Saint-Gobain firma_name normalisiert
+In `firmen_anmeldungen` lagen drei Schreibweisen nebeneinander: `"Firma"`, `"Compagnie de Saint-Gobain"`, `"Saint-Gobain Sekurit Deutschland GmbH"`. **7 Rows** (3 Kinder × mehrere Camp-Buchungen) auf einheitlich `"Saint-Gobain"` gesetzt — betrifft Anouar Hawali, Lukas Häuselmann, Gökay Yildiz.
+
+### Gefunden: Verwaiste `teilnahme`-Rows in Ostercamp I
+Diff `teilnahme=40` vs. `anmeldungen=36 + firmen_anmeldungen=2 = 38` → **2 Orphan-Rows**. Die zugehörigen Anmeldungen wurden via Dashboard-DELETE gelöscht, die `teilnahme`-Rows blieben zurück (keine FK-Kaskade). Konsequenz: Anwesenheits-Summen im Dashboard können um gelöschte Kinder abweichen, und gelöschte Anmeldungen sind nicht mehr rekonstruierbar. **Neue Regel: stornieren statt löschen** — siehe `RUNBOOK.md` §7d.
+
 ## 2026-03-31 (Sitzung 2)
 
 ### Admin-Dashboard: Offline-Queue + Session Auto-Refresh (`admin.html`)

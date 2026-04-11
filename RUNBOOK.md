@@ -190,6 +190,25 @@ localStorage.removeItem('teilnahme_q')
 ```
 **Achtung:** Nur wenn Queue fehlerhaft ist und manuell eingegeben wurde. Ungesendete Daten gehen verloren.
 
+### Symptom D: Verwaiste `teilnahme`-Rows (Count stimmt nicht mit Anmeldungen überein)
+Wenn eine Anmeldung per Dashboard **gelöscht** wird, bleibt die zugehörige `teilnahme`-Row zurück (keine FK-Kaskade). Folge: Anwesenheits-Tab zählt Kinder, die gar nicht mehr existieren; der Datensatz (Name, Email, `[TYP:*]`-Tag) ist endgültig weg.
+
+**Regel: Statt `DELETE` stornieren** (`zahlungsstatus = 'storniert'`) — dann bleibt die Historie vollständig.
+
+**Orphans auflisten (Service-Role-Key nötig):**
+```bash
+source steuerberater/.env
+curl -s "$MY_SUPABASE_URL/rest/v1/teilnahme?camp_id=eq.<CAMP_UUID>&select=referenz_id,quelle,anwesenheit,updated_at" \
+  -H "apikey: $MY_SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $MY_SUPABASE_SERVICE_ROLE_KEY"
+# Dann IDs gegen anmeldungen/firmen_anmeldungen prüfen — fehlende referenz_ids sind Orphans
+```
+
+**Orphan löschen:**
+```bash
+curl -X DELETE "$MY_SUPABASE_URL/rest/v1/teilnahme?referenz_id=eq.<UUID>&camp_id=eq.<CAMP_UUID>" \
+  -H "apikey: $MY_SUPABASE_SERVICE_ROLE_KEY" -H "Authorization: Bearer $MY_SUPABASE_SERVICE_ROLE_KEY"
+```
+
 ## 8) Schnelltest nach Deployment
 1. Hard Reload im Browser (`Cmd+Shift+R`).
 2. Admin öffnen und prüfen:
