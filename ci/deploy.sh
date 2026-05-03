@@ -32,6 +32,10 @@ rsync -avz --delete \
   --exclude ".agent/" \
   --exclude ".orchids/" \
   --exclude "node_modules/" \
+  --exclude ".env.social" \
+  --exclude "social-posts.json" \
+  --exclude "social-published.json" \
+  --exclude "client_secret_*.json" \
   --exclude "*.bak" \
   --exclude "*.bak2" \
   ./ "${USER}@${HOST}:${REMOTE_PATH}/"

@@ -21,5 +21,11 @@
 # Node
 node_modules/
 
+# Local credentials / generated publish payloads
+.env.social
+social-posts.json
+social-published.json
+client_secret_*.json
+
 # Steuerberater / private Belege
 steuerberater/

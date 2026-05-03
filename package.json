@@ -1,0 +1,19 @@
+{
+  "name": "talentexperte-de",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Static website for talentexperte.de",
+  "scripts": {
+    "dev": "browser-sync start --server --files \"**/*.html,css/**/*.css,**/*.js\" --port 3000 --host 127.0.0.1 --no-open --no-ui --no-notify",
+    "social:dry": "node scripts/social-publish.mjs --posts social-posts.sample.json",
+    "social:publish": "node scripts/social-publish.mjs --posts social-posts.json --publish",
+    "social:google:url": "node scripts/social-auth.mjs google-url",
+    "social:google:list": "node scripts/social-auth.mjs google-list",
+    "social:meta:url": "node scripts/social-auth.mjs meta-url",
+    "social:meta:list": "node scripts/social-auth.mjs meta-list",
+    "social:meta:save": "node scripts/social-auth.mjs meta-save-page"
+  },
+  "devDependencies": {
+    "browser-sync": "^3.0.4"
+  }
+}
