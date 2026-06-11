@@ -47,7 +47,7 @@
         "name": "JSC Blau-Weiss Aachen 1946 e.V.",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "Branderhoferweg 15",
+          "streetAddress": "Branderhofer Weg 15",
           "postalCode": "52066",
           "addressLocality": "Aachen",
           "addressCountry": "DE"
@@ -79,7 +79,7 @@
         "name": "JSC Blau-Weiss Aachen 1946 e.V.",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "Branderhoferweg 15",
+          "streetAddress": "Branderhofer Weg 15",
           "postalCode": "52066",
           "addressLocality": "Aachen",
           "addressCountry": "DE"
@@ -111,7 +111,7 @@
         "name": "JSC Blau-Weiss Aachen 1946 e.V.",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "Branderhoferweg 15",
+          "streetAddress": "Branderhofer Weg 15",
           "postalCode": "52066",
           "addressLocality": "Aachen",
           "addressCountry": "DE"
@@ -143,7 +143,7 @@
         "name": "JSC Blau-Weiss Aachen 1946 e.V.",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "Branderhoferweg 15",
+          "streetAddress": "Branderhofer Weg 15",
           "postalCode": "52066",
           "addressLocality": "Aachen",
           "addressCountry": "DE"
@@ -175,7 +175,7 @@
         "name": "JSC Blau-Weiss Aachen 1946 e.V.",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "Branderhoferweg 15",
+          "streetAddress": "Branderhofer Weg 15",
           "postalCode": "52066",
           "addressLocality": "Aachen",
           "addressCountry": "DE"
@@ -207,7 +207,7 @@
         "name": "JSC Blau-Weiss Aachen 1946 e.V.",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "Branderhoferweg 15",
+          "streetAddress": "Branderhofer Weg 15",
           "postalCode": "52066",
           "addressLocality": "Aachen",
           "addressCountry": "DE"
@@ -226,6 +226,17 @@
         "availability": "https://schema.org/InStock"
       }
     }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "@id": "https://www.talentexperte.de/anmeldung.html#breadcrumb",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Startseite", "item": "https://www.talentexperte.de/"},
+    {"@type": "ListItem", "position": 2, "name": "Anmeldung", "item": "https://www.talentexperte.de/anmeldung.html"}
   ]
 }
 </script>
@@ -750,19 +761,19 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
       }
 
       // Erfolgsmeldung
-      var successMsg = formData.vorname + ' wurde erfolgreich zu ' + results.length + ' Camp' + (results.length > 1 ? 's' : '') + ' angemeldet (' + campNames.join(', ') + ')! Bitte bezahle jetzt ' + totalBetrag + '€, um die Plätze verbindlich zu reservieren.';
+      var successMsg = formData.vorname + ' wurde erfolgreich zu ' + results.length + ' Camps angemeldet (' + campNames.join(', ') + ')! Bitte bezahle jedes Camp einzeln über die Buttons unten (' + totalBetrag + '€ gesamt), um die Plätze verbindlich zu reservieren.';
       if (results.length === 1) {
         successMsg = formData.vorname + ' wurde erfolgreich zum ' + campNames[0] + ' angemeldet! Bitte bezahle jetzt ' + totalBetrag + '€, um den Platz verbindlich zu reservieren.';
       }
       document.getElementById('successMessage').textContent = successMsg;
-      
+
       var payBtn = document.getElementById('payBtn');
-      if (firstResult.stripe_link) {
+      // Dynamische Buttons eines früheren Submits entfernen
+      document.querySelectorAll('.btn-pay-multi').forEach(function(b) { b.remove(); });
+
+      if (results.length === 1 && firstResult.stripe_link) {
         payBtn.href = firstResult.stripe_link;
         payBtn.style.display = 'inline-flex';
-        if (results.length > 1) {
-          payBtn.textContent = totalBetrag + '€ bezahlen (' + results.length + '× Camp) →';
-        }
 
         // Auto-PDF beim Stripe-Klick: PDF speichern, dann weiterleiten
         payBtn.onclick = async function(e) {
@@ -771,6 +782,25 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
           try { await downloadRegistrationPDF(); } catch (ex) {}
           setTimeout(function() { window.location.href = stripeUrl; }, 800);
         };
+      } else if (results.length > 1) {
+        // Jeder Stripe-Payment-Link deckt genau ein Camp ab → ein Button pro Camp,
+        // in neuem Tab, damit alle Camps nacheinander bezahlt werden können
+        payBtn.style.display = 'none';
+        var pdfDone = false;
+        results.forEach(function(r) {
+          if (!r.stripe_link) return;
+          var a = document.createElement('a');
+          a.className = 'btn-overlay btn-pay btn-pay-multi';
+          a.href = r.stripe_link;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.textContent = r.camp_name + ' – ' + r.betrag + '€ bezahlen →';
+          a.style.marginBottom = '8px';
+          a.addEventListener('click', function() {
+            if (!pdfDone) { pdfDone = true; try { downloadRegistrationPDF(); } catch (ex) {} }
+          });
+          payBtn.parentNode.insertBefore(a, payBtn);
+        });
       } else {
         payBtn.style.display = 'none';
       }

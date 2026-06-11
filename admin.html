@@ -639,8 +639,8 @@ u.status=st;
 if(st==='bezahlt')u.bezahlt_am=new Date().toISOString();
 if(st==='storniert')u.storniert_am=new Date().toISOString();
 }else{
+/* anmeldungen hat KEINE status-Spalte – nur zahlungsstatus (status → HTTP 400) */
 u.zahlungsstatus=st;
-u.status=st;
 if(st==='bezahlt')u.zahlung_am=new Date().toISOString();
 if(st==='storniert')u.storniert_am=new Date().toISOString();
 }
@@ -719,7 +719,7 @@ for(var i=0;i<sel.length;i++){
 var a=sel[i];var table=(a.__table)||'anmeldungen';
 var u={};
 if(table==='firmen_anmeldungen'){u.status=st;if(st==='bezahlt')u.bezahlt_am=new Date().toISOString();if(st==='storniert')u.storniert_am=new Date().toISOString()}
-else{u.zahlungsstatus=st;u.status=st;if(st==='bezahlt')u.zahlung_am=new Date().toISOString();if(st==='storniert')u.storniert_am=new Date().toISOString()}
+else{u.zahlungsstatus=st;if(st==='bezahlt')u.zahlung_am=new Date().toISOString();if(st==='storniert')u.storniert_am=new Date().toISOString()}
 var r=await apiPatch(table,a.id,u);if(r&&r.ok)ok++}
 selectedIds.clear();
 showToast(ok+'/'+sel.length+' auf '+st+' gesetzt ✓');
@@ -855,7 +855,21 @@ notizen=notizen.replace(/^\[TYP:(ÖF|SG)\]\n?/,'').trim();
 if(mTyp==='ÖF')notizen='[TYP:ÖF]'+(notizen?'\n'+notizen:'');
 else if(mTyp==='Saint-Gobain')notizen='[TYP:SG]'+(notizen?'\n'+notizen:'');
 else if(kanal)notizen=(notizen?notizen+'\n':'')+'Anmeldekanal: '+kanal;
-var data={camp_id:campId,vorname:vorname,nachname:nachname,geburtsdatum:geburtsdatum,
+var data;
+if(manualEditId&&manualEditTable==='firmen_anmeldungen'){
+/* firmen_anmeldungen hat andere Spaltennamen (kind_*, mitarbeiter_*, status statt zahlungsstatus) */
+data={camp_id:campId,kind_vorname:vorname,kind_nachname:nachname,kind_geburtsdatum:geburtsdatum,
+trikot_groesse:document.getElementById('mTrikot').value||null,
+mitarbeiter_vorname:elternVorname,mitarbeiter_nachname:elternNachname,mitarbeiter_email:email,
+mitarbeiter_telefon:document.getElementById('mTelefon').value.trim()||null,
+erfahrung:document.getElementById('mErfahrung').value.trim()||null,
+allergien:document.getElementById('mAllergien').value.trim()||null,
+notizen:notizen||null,betrag_euro:betrag,
+status:zahlungsstatus};
+if(zahlungsstatus==='bezahlt')data.bezahlt_am=new Date().toISOString();
+if(zahlungsstatus==='storniert')data.storniert_am=new Date().toISOString();
+}else{
+data={camp_id:campId,vorname:vorname,nachname:nachname,geburtsdatum:geburtsdatum,
 trikot_groesse:document.getElementById('mTrikot').value||null,
 eltern_vorname:elternVorname,eltern_nachname:elternNachname,email:email,
 telefon:document.getElementById('mTelefon').value.trim()||null,
@@ -865,6 +879,7 @@ allergien:document.getElementById('mAllergien').value.trim()||null,
 notizen:notizen||null,betrag_euro:betrag,
 zahlungsstatus:zahlungsstatus};
 if(zahlungsstatus==='bezahlt')data.zahlung_am=new Date().toISOString();
+}
 var r;
 if(manualEditId){
 r=await apiPatch(manualEditTable||'anmeldungen',manualEditId,data);

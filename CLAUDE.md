@@ -77,9 +77,12 @@ Im Edit-Modal (`mTyp`) kann man einem `anmeldungen`-Eintrag den Typ ändern:
 
 Beim Speichern werden alte Tags (`[TYP:ÖF]`, `[TYP:SG]`) automatisch bereinigt, bevor der neue gesetzt wird.
 
-### Edge Function (Deno)
+### Edge Functions (Deno)
 
-`supabase/functions/send-reminder/index.ts` — sends batch payment reminder emails via Resend API. Max 50 per batch. Requires `RESEND_API_KEY` Supabase secret. Records send timestamp in `erinnerung_gesendet_am` column.
+- `supabase/functions/register/index.ts` — handles `anmeldung.html` form submit (deployed with `--no-verify-jwt`): validates, inserts into `anmeldungen`, sends confirmation email via Resend, returns Stripe link with `client_reference_id=<anmeldung_id>` + `prefilled_email` appended. **Resend sender must be a verified `@talentexperte.de` address** — `onboarding@resend.dev` only delivers to the account owner and fails silently for parents.
+- `supabase/functions/stripe-webhook/index.ts` — marks registrations `bezahlt`. Matches by `client_reference_id` first (exact), falls back to email + amount (can over-match if a family has two open registrations at the same price).
+- `supabase/functions/send-reminder/index.ts` — sends batch payment reminder emails via Resend API. Max 50 per batch. Requires `RESEND_API_KEY` Supabase secret. Records send timestamp in `erinnerung_gesendet_am` column.
+- Deployed-but-dead: `send-reminders` (plural) is an unused hello-world stub; `google-sheet-sync` runs the Sheets export.
 
 ### Payment Flow
 
