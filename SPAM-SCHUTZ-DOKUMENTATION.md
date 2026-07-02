@@ -53,7 +53,17 @@ Hinweis: `register` war bereits als oeffentlicher Formular-Endpunkt gedacht. `co
 
 ## Supabase-RLS-Haertung
 
-Nach erfolgreichem Deploy sollte die direkte anonyme Insert-Moeglichkeit geschlossen werden, besonders fuer `firmen_anmeldungen`. Zuerst Policies pruefen:
+Die direkte anonyme Insert-Moeglichkeit fuer `firmen_anmeldungen` wurde am 02.07.2026 live entfernt. Vorher existierte die Policy `Firmen können sich anmelden` mit `roles = public` und `with_check = true`; dadurch konnte der Browser direkt mit dem oeffentlichen Supabase-Anon-Key in `firmen_anmeldungen` schreiben. Das ist jetzt geschlossen, weil die Firmen-Anmeldung ueber die geschuetzte Service-Role-Edge-Function `company-register` laeuft.
+
+Live ausgefuehrt:
+
+```sql
+drop policy if exists "Firmen können sich anmelden" on public.firmen_anmeldungen;
+```
+
+Die Änderung ist zusätzlich als Migration dokumentiert: `supabase/migrations/20260702185000_remove_public_company_registration_insert.sql`.
+
+Policies pruefen:
 
 ```sql
 select schemaname, tablename, policyname, cmd, roles, qual, with_check
@@ -63,7 +73,7 @@ where schemaname = 'public'
 order by tablename, policyname;
 ```
 
-Danach oeffentliche `INSERT`-Policies fuer `anon` entfernen oder so einschraenken, dass Inserts nur noch ueber Service-Role-Edge-Functions laufen. Policy-Namen nicht blind kopieren, sondern aus der Abfrage oben uebernehmen.
+Erwartung: Fuer `firmen_anmeldungen` gibt es keine `INSERT`-Policy fuer `public` oder `anon` mehr. Admin-Policies fuer eingeloggte Nutzer und Service-Role-Zugriff bleiben erhalten.
 
 Wichtig: Die oeffentliche Camp-Auswahl liest weiter aus `camp_verfuegbarkeit_public`. Diese Leseberechtigung muss bestehen bleiben.
 
@@ -91,4 +101,3 @@ Die Rate-Limits laufen bewusst leichtgewichtig im Edge-Function-Prozess. Das rei
 - table-basiertes Rate-Limit in Supabase,
 - Cloudflare Turnstile als unsichtbarer Zusatzschutz,
 - restriktivere RLS-Policies nach Deploy konsequent aktivieren.
-
