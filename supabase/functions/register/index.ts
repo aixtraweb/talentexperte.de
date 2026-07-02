@@ -1,13 +1,22 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import {
+  asString,
+  checkFormProtection,
+  checkTokenRateLimit,
+  cleanText,
+  createFormToken,
+} from "../_shared/form-spam-protection.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Content-Type": "application/json",
 };
 
 const FROM_EMAIL = "TALENTEXPERTE Fußballschule <kontakt@talentexperte.de>";
+const FORM_TOKEN_PURPOSE = "talentexperte-registration";
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function formatDateDE(iso: string | null): string {
   if (!iso) return "–";
@@ -62,6 +71,21 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  if (req.method === "GET") {
+    const tokenLimit = checkTokenRateLimit(req);
+    if (!tokenLimit.ok) {
+      return new Response(
+        JSON.stringify({ error: tokenLimit.error || "Bitte versuchen Sie es spaeter erneut." }),
+        { status: tokenLimit.status || 429, headers: corsHeaders },
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ ok: true, token: await createFormToken(FORM_TOKEN_PURPOSE) }),
+      { status: 200, headers: { ...corsHeaders, "Cache-Control": "no-store" } },
+    );
+  }
+
   if (req.method !== "POST") {
     return new Response(
       JSON.stringify({ error: "Nur POST-Anfragen erlaubt" }),
@@ -76,16 +100,56 @@ Deno.serve(async (req) => {
     );
 
     const data = await req.json();
+    const spamCheck = await checkFormProtection(req, data, {
+      purpose: FORM_TOKEN_PURPOSE,
+      emailField: "email",
+      contentFields: [
+        "vorname",
+        "nachname",
+        "eltern_vorname",
+        "eltern_nachname",
+        "email",
+        "telefon",
+        "adresse",
+        "erfahrung",
+        "allergien",
+        "notizen",
+      ],
+    });
+
+    if (!spamCheck.ok) {
+      return new Response(
+        JSON.stringify({ error: spamCheck.error || "Anfrage konnte nicht verarbeitet werden." }),
+        { status: spamCheck.status || 400, headers: corsHeaders },
+      );
+    }
+
+    const registration = {
+      camp_id: cleanText(data.camp_id, 80),
+      vorname: cleanText(data.vorname, 80),
+      nachname: cleanText(data.nachname, 80),
+      geburtsdatum: asString(data.geburtsdatum, 20),
+      trikot_groesse: cleanText(data.trikot_groesse, 20) || null,
+      eltern_vorname: cleanText(data.eltern_vorname, 80),
+      eltern_nachname: cleanText(data.eltern_nachname, 80),
+      email: cleanText(data.email, 200).toLowerCase(),
+      telefon: cleanText(data.telefon, 80),
+      adresse: cleanText(data.adresse, 250) || null,
+      erfahrung: cleanText(data.erfahrung, 500) || null,
+      allergien: cleanText(data.allergien, 1000) || null,
+      notizen: cleanText(data.notizen, 1200) || null,
+    };
 
     const errors = [];
-    if (!data.camp_id) errors.push("Camp nicht ausgewaehlt");
-    if (!data.vorname?.trim()) errors.push("Vorname des Kindes fehlt");
-    if (!data.nachname?.trim()) errors.push("Nachname des Kindes fehlt");
-    if (!data.geburtsdatum) errors.push("Geburtsdatum fehlt");
-    if (!data.eltern_vorname?.trim()) errors.push("Vorname Elternteil fehlt");
-    if (!data.eltern_nachname?.trim()) errors.push("Nachname Elternteil fehlt");
-    if (!data.email?.trim() || !data.email.includes("@")) errors.push("Gueltige E-Mail fehlt");
-    if (!data.telefon?.trim()) errors.push("Telefonnummer fehlt");
+    if (!registration.camp_id) errors.push("Camp nicht ausgewaehlt");
+    if (!registration.vorname) errors.push("Vorname des Kindes fehlt");
+    if (!registration.nachname) errors.push("Nachname des Kindes fehlt");
+    if (!registration.geburtsdatum) errors.push("Geburtsdatum fehlt");
+    if (!registration.eltern_vorname) errors.push("Vorname Elternteil fehlt");
+    if (!registration.eltern_nachname) errors.push("Nachname Elternteil fehlt");
+    if (!registration.email || !EMAIL_PATTERN.test(registration.email)) errors.push("Gueltige E-Mail fehlt");
+    if (!registration.telefon) errors.push("Telefonnummer fehlt");
+    if (/[\r\n]/.test(registration.email)) errors.push("Gueltige E-Mail fehlt");
 
     if (errors.length > 0) {
       return new Response(
@@ -94,7 +158,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    const birthDate = new Date(data.geburtsdatum);
+    const birthDate = new Date(registration.geburtsdatum + "T00:00:00");
+    if (isNaN(birthDate.getTime())) {
+      return new Response(
+        JSON.stringify({ error: "Geburtsdatum ist ungueltig." }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
     const today = new Date();
     const age = today.getFullYear() - birthDate.getFullYear();
     if (age < 4 || age > 16) {
@@ -107,7 +178,7 @@ Deno.serve(async (req) => {
     const { data: camp, error: campError } = await supabase
       .from("camp_verfuegbarkeit")
       .select("*")
-      .eq("id", data.camp_id)
+      .eq("id", registration.camp_id)
       .single();
 
     if (campError || !camp) {
@@ -134,10 +205,10 @@ Deno.serve(async (req) => {
     const { data: existing } = await supabase
       .from("anmeldungen")
       .select("id")
-      .eq("camp_id", data.camp_id)
-      .eq("vorname", data.vorname.trim())
-      .eq("nachname", data.nachname.trim())
-      .eq("email", data.email.trim().toLowerCase())
+      .eq("camp_id", registration.camp_id)
+      .eq("vorname", registration.vorname)
+      .eq("nachname", registration.nachname)
+      .eq("email", registration.email)
       .neq("zahlungsstatus", "storniert")
       .maybeSingle();
 
@@ -153,19 +224,19 @@ Deno.serve(async (req) => {
     const { data: anmeldung, error: insertError } = await supabase
       .from("anmeldungen")
       .insert({
-        camp_id: data.camp_id,
-        vorname: data.vorname.trim(),
-        nachname: data.nachname.trim(),
-        geburtsdatum: data.geburtsdatum,
-        trikot_groesse: data.trikot_groesse || null,
-        eltern_vorname: data.eltern_vorname.trim(),
-        eltern_nachname: data.eltern_nachname.trim(),
-        email: data.email.trim().toLowerCase(),
-        telefon: data.telefon.trim(),
-        adresse: data.adresse?.trim() || null,
-        erfahrung: data.erfahrung?.trim() || null,
-        allergien: data.allergien?.trim() || null,
-        notizen: data.notizen?.trim() || null,
+        camp_id: registration.camp_id,
+        vorname: registration.vorname,
+        nachname: registration.nachname,
+        geburtsdatum: registration.geburtsdatum,
+        trikot_groesse: registration.trikot_groesse,
+        eltern_vorname: registration.eltern_vorname,
+        eltern_nachname: registration.eltern_nachname,
+        email: registration.email,
+        telefon: registration.telefon,
+        adresse: registration.adresse,
+        erfahrung: registration.erfahrung,
+        allergien: registration.allergien,
+        notizen: registration.notizen,
         betrag_euro: aktueller_preis,
         zahlungsstatus: "offen",
       })
@@ -186,7 +257,7 @@ Deno.serve(async (req) => {
     const payLink = camp.stripe_link
       ? camp.stripe_link + (camp.stripe_link.includes("?") ? "&" : "?") +
         "client_reference_id=" + anmeldung.id +
-        "&prefilled_email=" + encodeURIComponent(data.email.trim().toLowerCase())
+        "&prefilled_email=" + encodeURIComponent(registration.email)
       : null;
 
     let emailVersendet = false;
@@ -201,12 +272,12 @@ Deno.serve(async (req) => {
           },
           body: JSON.stringify({
             from: FROM_EMAIL,
-            to: [data.email.trim().toLowerCase()],
+            to: [registration.email],
             reply_to: "kontakt@talentexperte.de",
             subject: "Anmeldebestätigung – " + camp.name + " (Buchungs-Nr. " + buchungsNr + ")",
             html: buildConfirmationHtml({
-              elternVorname: data.eltern_vorname.trim(),
-              kindVorname: data.vorname.trim(),
+              elternVorname: registration.eltern_vorname,
+              kindVorname: registration.vorname,
               campName: camp.name,
               zeitraum: formatDateDE(camp.datum_von) + " – " + formatDateDE(camp.datum_bis),
               uhrzeit: formatTime(camp.uhrzeit_von) + " – " + formatTime(camp.uhrzeit_bis),

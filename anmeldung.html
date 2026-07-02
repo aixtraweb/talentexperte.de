@@ -296,6 +296,21 @@
 
   <!-- KIND -->
   <form id="registrationForm" novalidate>
+  <div class="form-honeypot" aria-hidden="true">
+    <label for="website_url">Website</label>
+    <input type="text" id="website_url" name="website_url" tabindex="-1" autocomplete="off">
+  </div>
+  <div class="form-honeypot" aria-hidden="true">
+    <label for="contact_url">Kontakt-URL</label>
+    <input type="text" id="contact_url" name="contact_url" tabindex="-1" autocomplete="off">
+  </div>
+  <div class="form-honeypot" aria-hidden="true">
+    <label for="fax_number">Fax</label>
+    <input type="text" id="fax_number" name="fax_number" tabindex="-1" autocomplete="off">
+  </div>
+  <input type="hidden" id="form_started_at" name="form_started_at" value="0">
+  <input type="hidden" id="form_token" name="form_token" value="">
+
   <div class="form-section form-reveal" id="stepSection2">
     <h2><span class="form-step-badge">2</span> Daten des Kindes</h2>
     <div class="form-grid form-grid-3">
@@ -456,6 +471,48 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // ============================================================
 let camps = [];
 let selectedCampIds = [];
+const formStartedAtField = document.getElementById('form_started_at');
+const formTokenField = document.getElementById('form_token');
+let registrationTokenPromise = null;
+
+if (formStartedAtField) {
+  formStartedAtField.value = String(Math.floor(Date.now() / 1000));
+}
+
+function showRegistrationError(message) {
+  document.getElementById('errorMessage').textContent = message;
+  document.getElementById('errorOverlay').classList.add('visible');
+}
+
+async function prepareRegistrationToken() {
+  if (!formTokenField) return false;
+  if (formTokenField.value) return true;
+
+  if (!registrationTokenPromise) {
+    registrationTokenPromise = fetch(SUPABASE_URL + '/functions/v1/register', {
+      method: 'GET',
+      cache: 'no-store'
+    })
+      .then(function(response) {
+        return response.ok ? response.json() : Promise.reject(new Error('Token nicht verfügbar'));
+      })
+      .then(function(data) {
+        if (!data || !data.token) throw new Error('Token fehlt');
+        formTokenField.value = data.token;
+        return true;
+      })
+      .catch(function() {
+        return false;
+      })
+      .finally(function() {
+        registrationTokenPromise = null;
+      });
+  }
+
+  return registrationTokenPromise;
+}
+
+prepareRegistrationToken();
 
 // ============================================================
 // CAMPS LADEN
@@ -687,6 +744,11 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
     return;
   }
 
+  if (!await prepareRegistrationToken()) {
+    showRegistrationError('Die Anmeldung konnte nicht vorbereitet werden. Bitte lade die Seite neu und versuche es erneut.');
+    return;
+  }
+
   const btn = document.getElementById('submitBtn');
   btn.classList.add('loading');
   btn.disabled = true;
@@ -703,6 +765,11 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
     erfahrung: document.getElementById('erfahrung').value || null,
     allergien: document.getElementById('allergien').value || null,
     notizen: document.getElementById('notizen').value || null,
+    website_url: document.getElementById('website_url').value,
+    contact_url: document.getElementById('contact_url').value,
+    fax_number: document.getElementById('fax_number').value,
+    form_started_at: Number(document.getElementById('form_started_at').value || 0),
+    form_token: document.getElementById('form_token').value,
   };
 
   try {

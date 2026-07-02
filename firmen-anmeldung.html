@@ -57,6 +57,20 @@
 
   <!-- FORMULAR -->
   <form id="firmenForm" novalidate>
+  <div class="form-honeypot" aria-hidden="true">
+    <label for="website_url">Website</label>
+    <input type="text" id="website_url" name="website_url" tabindex="-1" autocomplete="off">
+  </div>
+  <div class="form-honeypot" aria-hidden="true">
+    <label for="contact_url">Kontakt-URL</label>
+    <input type="text" id="contact_url" name="contact_url" tabindex="-1" autocomplete="off">
+  </div>
+  <div class="form-honeypot" aria-hidden="true">
+    <label for="fax_number">Fax</label>
+    <input type="text" id="fax_number" name="fax_number" tabindex="-1" autocomplete="off">
+  </div>
+  <input type="hidden" id="form_started_at" name="form_started_at" value="0">
+  <input type="hidden" id="form_token" name="form_token" value="">
   
   <!-- FIRMA -->
   <div class="form-section">
@@ -186,9 +200,47 @@
 const SUPABASE_URL = 'https://yxygwwoocsdnneqykiym.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const COMPANY_REGISTER_URL = SUPABASE_URL + '/functions/v1/company-register';
 
 let selectedCamp = null;
 let camps = [];
+const formStartedAtField = document.getElementById('form_started_at');
+const formTokenField = document.getElementById('form_token');
+let companyTokenPromise = null;
+
+if (formStartedAtField) {
+  formStartedAtField.value = String(Math.floor(Date.now() / 1000));
+}
+
+async function prepareCompanyToken() {
+  if (!formTokenField) return false;
+  if (formTokenField.value) return true;
+
+  if (!companyTokenPromise) {
+    companyTokenPromise = fetch(COMPANY_REGISTER_URL, {
+      method: 'GET',
+      cache: 'no-store'
+    })
+      .then(function(response) {
+        return response.ok ? response.json() : Promise.reject(new Error('Token nicht verfügbar'));
+      })
+      .then(function(data) {
+        if (!data || !data.token) throw new Error('Token fehlt');
+        formTokenField.value = data.token;
+        return true;
+      })
+      .catch(function() {
+        return false;
+      })
+      .finally(function() {
+        companyTokenPromise = null;
+      });
+  }
+
+  return companyTokenPromise;
+}
+
+prepareCompanyToken();
 
 function parseGermanDate(value) {
   const v = (value || '').trim();
@@ -309,43 +361,6 @@ function formatDate(d) {
   return date.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit', year:'numeric'});
 }
 
-async function mirrorToLegacyAnmeldungen(payload) {
-  // Some live dashboards still read from "anmeldungen" only.
-  const base = {
-    camp_id: payload.camp_id,
-    vorname: payload.kind_vorname,
-    nachname: payload.kind_nachname,
-    geburtsdatum: payload.kind_geburtsdatum,
-    eltern_vorname: payload.mitarbeiter_vorname,
-    eltern_nachname: payload.mitarbeiter_nachname,
-    email: payload.mitarbeiter_email || payload.firma_email,
-    telefon: payload.mitarbeiter_telefon || payload.firma_telefon,
-    adresse: payload.rechnungsadresse || null,
-    erfahrung: payload.erfahrung,
-    allergien: payload.allergien,
-    notizen: payload.notizen,
-    betrag_euro: payload.betrag_euro
-  };
-
-  let res = await supabase
-    .from('anmeldungen')
-    .insert([Object.assign({}, base, { zahlungsstatus: 'bezahlt' })]);
-
-  if (!res.error) return;
-  if (!String(res.error.message || '').includes('zahlungsstatus')) {
-    console.warn('Mirror insert failed:', res.error);
-    return;
-  }
-
-  res = await supabase
-    .from('anmeldungen')
-    .insert([Object.assign({}, base, { status: 'bezahlt' })]);
-
-  if (res.error) {
-    console.warn('Mirror insert fallback failed:', res.error);
-  }
-}
-
 // Form Submit
 document.getElementById('firmenForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -374,6 +389,11 @@ document.getElementById('firmenForm').addEventListener('submit', async (e) => {
   
   if (!selectedCamp) {
     alert('Bitte wähle ein Camp aus.');
+    return;
+  }
+
+  if (!await prepareCompanyToken()) {
+    alert('Die Anmeldung konnte nicht vorbereitet werden. Bitte lade die Seite neu und versuche es erneut.');
     return;
   }
   
@@ -416,36 +436,27 @@ document.getElementById('firmenForm').addEventListener('submit', async (e) => {
       ansprechpartner_vorname: raw.mitarbeiter_vorname?.trim() || null,
       ansprechpartner_nachname: raw.mitarbeiter_nachname?.trim() || null,
       kostenstelle: null,
-      trikot_groesse: null
+      trikot_groesse: null,
+
+      website_url: raw.website_url || '',
+      contact_url: raw.contact_url || '',
+      fax_number: raw.fax_number || '',
+      form_started_at: Number(raw.form_started_at || 0),
+      form_token: raw.form_token || ''
     };
 
-    const { error } = await supabase
-      .from('firmen_anmeldungen')
-      .insert([data]);
-    
-    if (error) throw error;
-    await mirrorToLegacyAnmeldungen(data);
-
-    // Optional: confirmation mail via Edge Function if deployed.
-    try {
-      await fetch(SUPABASE_URL + '/functions/v1/send-firma-confirmation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_ANON_KEY
-        },
-        body: JSON.stringify({
-          email: data.mitarbeiter_email || data.firma_email,
-          firma_name: data.firma_name,
-          kind_name: data.kind_vorname + ' ' + data.kind_nachname,
-          camp_name: selectedCampData?.name || ''
-        })
-      });
-    } catch (mailErr) {
-      console.warn('Confirmation mail hook unavailable:', mailErr);
+    const response = await fetch(COMPANY_REGISTER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.success) {
+      const details = Array.isArray(result.details) ? ' ' + result.details.join(' ') : '';
+      throw new Error((result.error || 'Fehler bei der Anmeldung.') + details);
     }
 
-    const confirmationPayload = {
+    const confirmationPayload = result.confirmation || {
       firma_name: data.firma_name,
       email: data.mitarbeiter_email || data.firma_email,
       mitarbeiter_vorname: data.mitarbeiter_vorname,

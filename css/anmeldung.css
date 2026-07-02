@@ -90,6 +90,7 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}button{fon
 .field.error input{border-color:var(--red)}
 .field .error-msg{font-size:.75rem;color:var(--red);display:none}
 .field.error .error-msg{display:block}
+.form-honeypot{position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
 
 /* AGB */
 .agb-check{display:flex;align-items:flex-start;gap:14px;padding:24px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:var(--radius);margin-bottom:32px;cursor:pointer}
