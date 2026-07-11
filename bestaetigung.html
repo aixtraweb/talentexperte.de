@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zahlung bestätigt – TALENTEXPERTE</title>
+<title>Anmeldung bestätigt – TALENTEXPERTE</title>
 <meta name="description" content="Bestätigung Ihrer TALENTEXPERTE Camp-Anmeldung in Aachen mit allen wichtigen Buchungsdetails.">
 <meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
 <link rel="canonical" href="https://www.talentexperte.de/bestaetigung.html">
 <meta property="og:locale" content="de_DE">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="TALENTEXPERTE">
-<meta property="og:title" content="Zahlung bestätigt - TALENTEXPERTE">
+<meta property="og:title" content="Anmeldung bestätigt - TALENTEXPERTE">
 <meta property="og:description" content="Ihre Anmeldung wurde erfolgreich bestätigt.">
 <meta property="og:url" content="https://www.talentexperte.de/bestaetigung.html">
 <meta property="og:image" content="https://www.talentexperte.de/ci/logo.png">
@@ -18,7 +19,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/bestaetigung.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"></script>
 <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
 <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg" />
 <link rel="shortcut icon" href="favicon/favicon.ico" />
@@ -77,21 +78,45 @@
 </div></nav>
 
 <div class="main">
-  <div class="success-header">
-    <div class="check-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-    <h1>ZAHLUNG <span class="green">BESTÄTIGT!</span></h1>
-    <p id="headerText">Vielen Dank! Der Camp-Platz ist jetzt verbindlich reserviert.</p>
+  <div class="success-header" id="successHeader" data-status="loading">
+    <div class="check-circle" id="statusIcon" aria-label="Bestätigung wird geladen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+    <h1 id="pageTitle">ANMELDUNG <span class="green">WIRD GELADEN</span></h1>
+    <p id="headerText">Die persönlichen Buchungsdaten und der aktuelle Status werden sicher geladen.</p>
   </div>
 
-  <!-- LOOKUP (nur wenn keine Daten vorhanden) -->
-  <div class="lookup-card" id="lookupCard" style="display:none;">
-    <h2>🔍 Buchungsbestätigung abrufen</h2>
-    <p>Gib deine Buchungsnummer ein, um deine Anmeldedaten erneut anzuzeigen.</p>
-    <div class="lookup-row">
-      <input type="text" class="lookup-input" id="lookupInput" placeholder="z.B. A1B2C3D4" maxlength="36">
-      <button class="lookup-btn" onclick="lookupBooking()">Abrufen</button>
+  <div class="sponsor-confirmation-card" id="sponsorConfirmationCard" hidden>
+    <div class="sponsor-confirmation-mark" aria-hidden="true">✓</div>
+    <div>
+      <span class="status-kicker">Sponsorfinanzierung bestätigt</span>
+      <h2>Vollständig durch <span id="sponsorPartnerName">den Förderpartner</span> finanziert</h2>
+      <p>Listenpreis <strong id="sponsorListPrice">–</strong> · Übernahme <strong id="sponsorCoveredAmount">–</strong> · Elternanteil <strong>0 €</strong></p>
+      <p class="sponsor-no-payment">Keine Zahlung erforderlich. Es folgt keine Zahlungsaufforderung.</p>
     </div>
-    <p class="lookup-error" id="lookupError">Buchungsnummer nicht gefunden. Bitte prüfe die Eingabe.</p>
+  </div>
+
+  <div class="payment-open-card" id="paymentOpenCard" hidden>
+    <span class="status-kicker">Zahlungsstatus: offen</span>
+    <h2>Die Zahlung steht noch aus</h2>
+    <p>Der Camp-Platz wird verbindlich reserviert, sobald die Zahlung eingegangen ist. Falls du gerade über Stripe bezahlt hast, aktualisiert sich der Status automatisch, sobald die Bestätigung vorliegt.</p>
+  </div>
+
+  <!-- FREUNDE EINLADEN -->
+  <div class="empfehl-card" id="empfehlCard" style="display:none;">
+    <div class="empfehl-emoji">⚽👫</div>
+    <h2>Mit Freunden macht's noch mehr Spaß</h2>
+    <p class="empfehl-text">Kinder spielen und trainieren am liebsten mit ihren Freunden. Lade die Freunde von <strong id="empfehlKind">deinem Kind</strong> ein – im Camp sind noch ein paar Plätze frei.</p>
+    <div class="empfehl-btns">
+      <a id="empfehlWa" class="empfehl-btn wa" href="#" target="_blank" rel="noopener">💬 Jetzt Deine Freunde informieren</a>
+      <button id="empfehlShare" class="empfehl-btn share" type="button">🔗 Teilen / Link kopieren</button>
+    </div>
+    <p class="empfehl-hint" id="empfehlHint" aria-live="polite"></p>
+  </div>
+
+  <!-- SICHERER LINK ERFORDERLICH -->
+  <div class="lookup-card" id="lookupCard" style="display:none;">
+    <h2 id="lookupTitle">🔐 Sicherer Bestätigungslink erforderlich</h2>
+    <p id="lookupMessage">Öffne bitte den persönlichen Bestätigungslink aus deiner E-Mail. Der Link enthält neben der Buchungsnummer einen Sicherheitscode und schützt die Daten deines Kindes.</p>
+    <a class="lookup-btn" href="mailto:kontakt@talentexperte.de?subject=Best%C3%A4tigungslink%20erneut%20anfordern">Bestätigungslink erneut anfordern</a>
   </div>
 
   <!-- ANMELDEDATEN -->
@@ -102,7 +127,7 @@
     <div class="info-row"><span class="info-label">Elternteil</span><span class="info-value" id="dEltern">–</span></div>
     <div class="info-row"><span class="info-label">E-Mail</span><span class="info-value" id="dEmail">–</span></div>
     <div class="info-row"><span class="info-label">Telefon</span><span class="info-value" id="dTelefon">–</span></div>
-    <div class="info-row"><span class="info-label">Buchungs-Nr.</span><span class="info-value" id="dNr" class="info-value--small">–</span></div>
+    <div class="info-row"><span class="info-label">Buchungs-Nr.</span><span class="info-value info-value--small" id="dNr">–</span></div>
   </div>
 
   <!-- CAMP DETAILS -->
@@ -112,11 +137,13 @@
     <div class="info-row"><span class="info-label">Zeitraum</span><span class="info-value" id="dZeitraum">–</span></div>
     <div class="info-row"><span class="info-label">Uhrzeit</span><span class="info-value" id="dUhrzeit">09:00 – 15:00 Uhr</span></div>
     <div class="info-row"><span class="info-label">Ort</span><span class="info-value" id="dOrt">JSC BW Aachen, Branderhofer Weg, 52066 Aachen</span></div>
-    <div class="info-row"><span class="info-label">Betrag</span><span class="info-value" id="dBetrag" class="info-value--betrag">–</span></div>
+    <div class="info-row"><span class="info-label">Betrag</span><span class="info-value info-value--betrag" id="dBetrag">–</span></div>
+    <div class="info-row sponsor-detail-row" id="partnerRow" hidden><span class="info-label">Finanzierung durch</span><span class="info-value" id="dPartner">–</span></div>
+    <div class="info-row sponsor-detail-row" id="parentAmountRow" hidden><span class="info-label">Elternanteil</span><span class="info-value">0,00 € · keine Zahlung erforderlich</span></div>
   </div>
 
   <!-- INKLUSIVE -->
-  <div class="info-card">
+  <div class="info-card" id="campIncludedCard">
     <h2>🎁 Im Camp enthalten</h2>
     <ul class="checklist">
       <li><span class="icon">✅</span>4 Tage professionelles Fußballtraining</li>
@@ -127,17 +154,17 @@
   </div>
 
   <!-- NÄCHSTE SCHRITTE -->
-  <div class="info-card">
+  <div class="info-card" id="nextStepsCard">
     <h2>📋 Nächste Schritte</h2>
     <ul class="checklist">
-      <li><span class="icon">1️⃣</span>Der Camp-Platz ist ab sofort verbindlich für dein Kind reserviert.</li>
+      <li id="reservationStep"><span class="icon">1️⃣</span><span id="reservationStepText">Der Camp-Platz ist ab sofort verbindlich für dein Kind reserviert.</span></li>
       <li><span class="icon">2️⃣</span>Kurz vor dem Camp senden wir dir eine Info-Mail mit allen Details (Treffpunkt, Ablauf, was mitbringen).</li>
       <li><span class="icon">3️⃣</span>Am ersten Tag bitte 15 Minuten früher da sein (8:45 Uhr) für die Begrüßung.</li>
     </ul>
   </div>
 
   <!-- MITBRINGEN -->
-  <div class="info-card">
+  <div class="info-card" id="packingCard">
     <h2>🎒 Das sollte dein Kind mitbringen</h2>
     <div class="pack-grid">
       <div class="pack-item"><span class="icon">👟</span>Fußballschuhe (Kunstrasen)</div>
@@ -165,7 +192,7 @@
   <!-- BUTTONS -->
   <div class="btn-area">
     <button class="btn-dl" onclick="downloadPDF()">📥 Bestätigung als PDF</button>
-    <a class="btn-dl" href="/pdf/faq-camps.pdf" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">📄 FAQ Camps (PDF)</a>
+    <a class="btn-dl" id="faqPdfLink" href="/pdf/faq-camps.pdf" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">📄 FAQ Camps (PDF)</a>
     <a href="index.html" class="btn-home">← Zur Startseite</a>
   </div>
 </div>
@@ -179,10 +206,9 @@
 // CONFIG
 // ============================================================
 var SUPABASE_URL = 'https://yxygwwoocsdnneqykiym.supabase.co';
-var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
 
 // ============================================================
-// DATEN LADEN (localStorage + URL-Parameter als Fallback)
+// DATEN LADEN (nur Sitzungsspeicher + signierte URL-Zugangsdaten)
 // ============================================================
 var regData = {
   kind: '',
@@ -202,30 +228,71 @@ var regData = {
   camp_uhrzeit_bis: '15:00',
   camp_ort: 'JSC BW Aachen',
   camp_adresse: 'Branderhofer Weg, 52066 Aachen',
+  payer_type: '',
+  parent_payment_status: '',
+  partner_name: '',
+  partner_slug: '',
+  list_price: '',
+  parent_amount: '',
+  sponsor_amount: '',
+  legacy_payment_status: '',
+  confirmation_token: '',
   datum: new Date().toLocaleDateString('de-DE')
 };
+var sessionConfirmationCredentials = [];
 
 function loadFromStorage() {
-  regData.kind         = localStorage.getItem('te_kind_name') || '';
-  regData.eltern       = localStorage.getItem('te_eltern_name') || '';
-  regData.email        = localStorage.getItem('te_email') || '';
-  regData.telefon      = localStorage.getItem('te_telefon') || '';
-  regData.geburtsdatum = localStorage.getItem('te_geburtsdatum') || '';
-  regData.camp_name    = localStorage.getItem('te_camp_name') || '';
-  regData.betrag       = localStorage.getItem('te_betrag') || '';
-  regData.camp_count   = localStorage.getItem('te_camp_count') || '1';
-  regData.anmeldung_id = localStorage.getItem('te_anmeldung_id') || '';
-  regData.camp_id      = localStorage.getItem('te_camp_id') || '';
-  regData.camp_ids     = JSON.parse(localStorage.getItem('te_camp_ids') || '[]');
+  // Fachdaten sind niemals Anzeigequelle. Aus dem Sitzungsspeicher werden nur
+  // die beiden signierten Zugangsdaten gelesen; beim Schließen des Tabs verfallen sie.
+  regData.anmeldung_id = sessionStorage.getItem('te_anmeldung_id') || '';
+  regData.confirmation_token = sessionStorage.getItem('te_confirmation_token') || '';
+  try {
+    var rawCredentials = JSON.parse(sessionStorage.getItem('te_confirmation_credentials') || '[]');
+    if (Array.isArray(rawCredentials)) {
+      sessionConfirmationCredentials = rawCredentials.filter(function(entry) {
+        return entry && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(entry.id || '')) && String(entry.token || '').length >= 20;
+      }).map(function(entry) { return { id: String(entry.id), token: String(entry.token) }; });
+    }
+  } catch (e) {
+    sessionConfirmationCredentials = [];
+    sessionStorage.removeItem('te_confirmation_credentials');
+  }
+  try {
+    Object.keys(localStorage).filter(function(key) { return key.indexOf('te_') === 0 && key !== 'te_form_draft'; })
+      .forEach(function(key) { localStorage.removeItem(key); });
+  } catch (e) {}
 }
 
-// URL-Parameter auslesen (z.B. ?id=xxx von Stripe-Redirect)
+// Signierte Zugangsdaten aus Query und URL-Fragment lesen.
 function getUrlParam(name) {
   return new URLSearchParams(window.location.search).get(name);
 }
 
+function getHashParam(name) {
+  return new URLSearchParams(window.location.hash.replace(/^#/, '')).get(name);
+}
+
 function hasData() {
   return !!(regData.kind || regData.anmeldung_id);
+}
+
+function setConfirmationContentVisible(visible) {
+  document.querySelectorAll('#successHeader, .info-card, .btn-area, #sponsorConfirmationCard, #paymentOpenCard, #empfehlCard').forEach(function(el) {
+    if (visible) el.style.removeProperty('display');
+    else el.style.display = 'none';
+  });
+}
+
+function showSecureLinkMessage(title, message) {
+  setConfirmationContentVisible(false);
+  document.getElementById('lookupTitle').textContent = title;
+  document.getElementById('lookupMessage').textContent = message;
+  document.getElementById('lookupCard').style.display = 'block';
+}
+
+function hideSecureLinkMessage() {
+  document.getElementById('lookupCard').style.display = 'none';
+  setConfirmationContentVisible(true);
 }
 
 function fmtDate(s) {
@@ -240,8 +307,48 @@ function fmtDateShort(s) {
   return d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-// Seite befüllen
+function money(value) {
+  var number = Number(value);
+  if (!Number.isFinite(number)) number = 0;
+  return number.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+}
+
+function getBookingState() {
+  var parentStatus = String(regData.parent_payment_status || '').toLowerCase();
+  var legacyStatus = String(regData.legacy_payment_status || '').toLowerCase();
+  if (parentStatus === 'cancelled' || legacyStatus === 'storniert' || legacyStatus === 'cancelled') return 'cancelled';
+  if (parentStatus === 'refunded' || legacyStatus === 'erstattet' || legacyStatus === 'refunded') return 'refunded';
+  if (regData.payer_type === 'sponsor' && regData.parent_payment_status === 'not_required') return 'sponsored';
+  if (regData.parent_payment_status === 'paid') return 'paid';
+  if (regData.parent_payment_status === 'open') return 'open';
+  if (regData.legacy_payment_status === 'bezahlt') return 'paid';
+  if (regData.legacy_payment_status === 'offen') return 'open';
+  return 'unknown';
+}
+
 function fillPage() {
+  var state = getBookingState();
+  var sponsored = state === 'sponsored';
+  var paid = state === 'paid';
+  var open = state === 'open';
+  var cancelled = state === 'cancelled';
+  var refunded = state === 'refunded';
+  var inactive = cancelled || refunded;
+  var sponsorBooking = regData.payer_type === 'sponsor';
+  var statusIcon = document.getElementById('statusIcon');
+
+  document.body.dataset.bookingStatus = state;
+  document.getElementById('successHeader').dataset.status = state;
+  if (cancelled || refunded) {
+    statusIcon.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 8l8 8M16 8l-8 8"/></svg>';
+    statusIcon.setAttribute('aria-label', cancelled ? 'Anmeldung storniert' : 'Anmeldung erstattet');
+  } else if (sponsored || paid) {
+    statusIcon.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+    statusIcon.setAttribute('aria-label', sponsored ? 'Finanzierung bestätigt' : 'Zahlung bestätigt');
+  } else {
+    statusIcon.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+    statusIcon.setAttribute('aria-label', open ? 'Zahlung offen' : 'Status wird geprüft');
+  }
   document.getElementById('dKind').textContent    = regData.kind    || '–';
   document.getElementById('dGeb').textContent     = fmtDate(regData.geburtsdatum);
   document.getElementById('dEltern').textContent  = regData.eltern  || '–';
@@ -251,106 +358,276 @@ function fillPage() {
     ? regData.anmeldung_id.slice(0, 8).toUpperCase() : '–';
   document.getElementById('dCamp').textContent    = regData.camp_name || '–';
 
-  var betragNum = parseInt(regData.betrag) || 0;
-  if (parseInt(regData.camp_count) > 1) {
-    document.getElementById('dBetrag').textContent = betragNum + ',00 € (' + regData.camp_count + ' Camps) ✓';
+  var amount = regData.parent_amount !== '' ? regData.parent_amount : regData.betrag;
+  var countSuffix = parseInt(regData.camp_count, 10) > 1 ? ' (' + regData.camp_count + ' Camps)' : '';
+  var amountEl = document.getElementById('dBetrag');
+  var headerTitle = document.getElementById('pageTitle');
+  var headerText = document.getElementById('headerText');
+  var reservationText = document.getElementById('reservationStepText');
+  var sponsorCard = document.getElementById('sponsorConfirmationCard');
+  var paymentOpenCard = document.getElementById('paymentOpenCard');
+  var paymentKicker = paymentOpenCard.querySelector('.status-kicker');
+  var paymentHeading = paymentOpenCard.querySelector('h2');
+  var paymentCopy = paymentOpenCard.querySelector('p');
+
+  sponsorCard.hidden = !sponsored;
+  paymentOpenCard.hidden = !(open || state === 'unknown' || inactive);
+  document.getElementById('partnerRow').hidden = !sponsorBooking;
+  document.getElementById('parentAmountRow').hidden = !sponsorBooking;
+  ['campIncludedCard', 'nextStepsCard', 'packingCard'].forEach(function(id) {
+    document.getElementById(id).hidden = inactive;
+  });
+
+  if (sponsored) {
+    var partner = regData.partner_name || 'den Förderpartner';
+    headerTitle.innerHTML = 'ANMELDUNG <span class="green">FINANZIERT!</span>';
+    headerText.textContent = 'Der Camp-Platz' + (regData.kind ? ' für ' + regData.kind : '') + ' ist verbindlich reserviert. Für dich ist keine Zahlung erforderlich.';
+    amountEl.textContent = '0,00 € für Sie';
+    amountEl.className = 'info-value info-value--betrag sponsored';
+    document.getElementById('sponsorPartnerName').textContent = partner;
+    document.getElementById('sponsorListPrice').textContent = money(regData.list_price);
+    document.getElementById('sponsorCoveredAmount').textContent = money(regData.sponsor_amount || regData.list_price);
+    document.getElementById('dPartner').textContent = partner;
+    reservationText.textContent = 'Der Camp-Platz ist verbindlich reserviert. ' + partner + ' übernimmt die Kosten vollständig.';
+    document.getElementById('faqPdfLink').href = '/pdf/faq-camps-sponsoring.pdf';
+    document.getElementById('faqPdfLink').textContent = '📄 FAQ gesponserte Camps (PDF)';
+    document.title = 'Finanzierung bestätigt – TALENTEXPERTE';
+  } else if (paid) {
+    headerTitle.innerHTML = 'ZAHLUNG <span class="green">BESTÄTIGT!</span>';
+    headerText.textContent = 'Vielen Dank! Der Camp-Platz' + (regData.kind ? ' für ' + regData.kind : '') + ' ist jetzt verbindlich reserviert.';
+    amountEl.textContent = money(amount) + countSuffix + ' · bezahlt';
+    amountEl.className = 'info-value info-value--betrag paid';
+    reservationText.textContent = 'Der Camp-Platz ist ab sofort verbindlich für dein Kind reserviert.';
+    document.getElementById('faqPdfLink').href = '/pdf/faq-camps.pdf';
+    document.getElementById('faqPdfLink').textContent = '📄 FAQ Camps (PDF)';
+    document.title = 'Zahlung bestätigt – TALENTEXPERTE';
+  } else if (inactive) {
+    headerTitle.innerHTML = cancelled
+      ? 'ANMELDUNG <span class="red">STORNIERT</span>'
+      : 'ANMELDUNG <span class="yellow">ERSTATTET</span>';
+    headerText.textContent = cancelled
+      ? 'Diese Anmeldung wurde storniert. Der Camp-Platz ist nicht reserviert.'
+      : 'Diese Anmeldung wurde beendet und die Erstattung wurde vermerkt. Der Camp-Platz ist nicht reserviert.';
+    amountEl.textContent = sponsorBooking
+      ? '0,00 € Elternanteil · ' + (cancelled ? 'storniert' : 'erstattet')
+      : money(amount) + countSuffix + ' · ' + (cancelled ? 'storniert' : 'erstattet');
+    amountEl.className = 'info-value info-value--betrag inactive';
+    document.getElementById('dPartner').textContent = regData.partner_name || 'Förderpartner';
+    reservationText.textContent = 'Diese Anmeldung ist nicht aktiv. Der Camp-Platz ist nicht reserviert.';
+    document.getElementById('faqPdfLink').href = sponsorBooking ? '/pdf/faq-camps-sponsoring.pdf' : '/pdf/faq-camps.pdf';
+    document.getElementById('faqPdfLink').textContent = sponsorBooking ? '📄 FAQ gesponserte Camps (PDF)' : '📄 FAQ Camps (PDF)';
+    document.title = cancelled ? 'Anmeldung storniert – TALENTEXPERTE' : 'Anmeldung erstattet – TALENTEXPERTE';
+    paymentKicker.textContent = cancelled ? 'Buchungsstatus: storniert' : 'Buchungsstatus: erstattet';
+    paymentHeading.textContent = cancelled ? 'Diese Anmeldung ist storniert' : 'Diese Anmeldung wurde erstattet';
+    paymentCopy.textContent = 'Der Camp-Platz ist nicht reserviert. Es ist keine weitere Zahlung erforderlich. Bei Rückfragen helfen wir gern weiter.';
   } else {
-    document.getElementById('dBetrag').textContent = betragNum > 0 ? betragNum + ',00 € ✓' : '–';
+    headerTitle.innerHTML = open
+      ? 'ANMELDUNG <span class="yellow">EINGEGANGEN</span>'
+      : 'ANMELDUNG <span class="yellow">WIRD GEPRÜFT</span>';
+    headerText.textContent = open
+      ? 'Die Anmeldung' + (regData.kind ? ' für ' + regData.kind : '') + ' ist gespeichert. Die Zahlung ist noch offen.'
+      : 'Die Anmeldung ist gespeichert. Der aktuelle Zahlungsstatus konnte noch nicht bestätigt werden.';
+    amountEl.textContent = money(amount) + countSuffix + (open ? ' · offen' : ' · Status wird geprüft');
+    amountEl.className = 'info-value info-value--betrag open';
+    reservationText.textContent = open
+      ? 'Der Platz wird nach Zahlungseingang verbindlich reserviert.'
+      : 'Wir bestätigen die Reservierung, sobald der Zahlungsstatus eindeutig vorliegt.';
+    document.getElementById('faqPdfLink').href = '/pdf/faq-camps.pdf';
+    document.getElementById('faqPdfLink').textContent = '📄 FAQ Camps (PDF)';
+    document.title = 'Anmeldung eingegangen – TALENTEXPERTE';
+
+    paymentKicker.textContent = open ? 'Zahlungsstatus: offen' : 'Zahlungsstatus wird geprüft';
+    paymentHeading.textContent = open ? 'Die Zahlung steht noch aus' : 'Noch keine eindeutige Bestätigung';
+    paymentCopy.textContent = open
+      ? 'Der Camp-Platz wird verbindlich reserviert, sobald die Zahlung eingegangen ist. Falls du gerade über Stripe bezahlt hast, aktualisiert sich der Status automatisch, sobald die Bestätigung vorliegt.'
+      : 'Wir zeigen bewusst keine Zahlungsbestätigung an, solange der Status nicht eindeutig aus der Buchung geladen werden konnte.';
   }
 
-  if (regData.kind) {
-    document.getElementById('headerText').textContent =
-      'Vielen Dank! Der Camp-Platz für ' + regData.kind + ' ist jetzt verbindlich reserviert.';
-  }
+  buildEmpfehlung();
 }
 
-// Camp-Details aus Supabase nachladen
-async function loadCampDetails() {
-  if (!regData.camp_id) return;
-  try {
-    var res = await fetch(
-      SUPABASE_URL + '/rest/v1/camps?id=eq.' + regData.camp_id + '&select=datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,ort,adresse',
-      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY } }
-    );
-    var data = await res.json();
-    if (data && data.length > 0) {
-      var c = data[0];
-      regData.camp_datum_von    = c.datum_von;
-      regData.camp_datum_bis    = c.datum_bis;
-      regData.camp_uhrzeit_von  = (c.uhrzeit_von || '09:00:00').slice(0, 5);
-      regData.camp_uhrzeit_bis  = (c.uhrzeit_bis || '15:00:00').slice(0, 5);
-      regData.camp_ort          = c.ort     || regData.camp_ort;
-      regData.camp_adresse      = c.adresse || regData.camp_adresse;
+// ============================================================
+// FREUNDE EINLADEN (Weiterempfehlung)
+// ============================================================
+var EMPFEHL_URL = 'https://www.talentexperte.de/#sommercamp';
 
-      document.getElementById('dZeitraum').textContent =
-        fmtDateShort(c.datum_von) + ' – ' + fmtDateShort(c.datum_bis);
-      document.getElementById('dUhrzeit').textContent =
-        regData.camp_uhrzeit_von + ' – ' + regData.camp_uhrzeit_bis + ' Uhr';
-      document.getElementById('dOrt').textContent =
-        regData.camp_ort + ', ' + regData.camp_adresse;
-    }
+function firstName(full) {
+  return (full || '').trim().split(/\s+/)[0] || '';
+}
+
+function buildShareText() {
+  var vorname = firstName(regData.kind);
+  var kindPart = vorname ? vorname : 'Mein Kind';
+  var datumPart = '';
+  if (regData.camp_datum_von && regData.camp_datum_bis) {
+    datumPart = ' (' + fmtDate(regData.camp_datum_von) + ' – ' + fmtDate(regData.camp_datum_bis) + ')';
+  }
+  return 'Hey! 👋 ' + kindPart + ' ist beim Fußballcamp in Aachen dabei' + datumPart +
+    '. Das wäre doch auch was für euch – kommt ihr mit? ⚽\n\nAlle Infos & Anmeldung: ' + EMPFEHL_URL;
+}
+
+function showEmpfehlHint(msg) {
+  var el = document.getElementById('empfehlHint');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(function () { el.classList.remove('show'); }, 3000);
+}
+
+function buildEmpfehlung() {
+  var card = document.getElementById('empfehlCard');
+  if (!card) return;
+  if (!regData.kind || ['paid', 'sponsored'].indexOf(getBookingState()) === -1) {
+    card.style.display = 'none';
+    return;
+  }
+
+  var vorname = firstName(regData.kind);
+  document.getElementById('empfehlKind').textContent = vorname || 'deinem Kind';
+
+  var waLink = document.getElementById('empfehlWa');
+  waLink.href = 'https://wa.me/?text=' + encodeURIComponent(buildShareText());
+
+  card.style.display = 'block';
+}
+
+async function shareEmpfehlung() {
+  var shareData = {
+    title: 'Fußballcamp Aachen – TALENTEXPERTE',
+    text: buildShareText(),
+    url: EMPFEHL_URL
+  };
+  if (navigator.share) {
+    try { await navigator.share(shareData); } catch (e) { /* abgebrochen */ }
+    return;
+  }
+  // Fallback: Link in die Zwischenablage kopieren
+  try {
+    await navigator.clipboard.writeText(EMPFEHL_URL);
+    showEmpfehlHint('🔗 Link kopiert!');
   } catch (e) {
-    console.log('Camp-Details konnten nicht geladen werden:', e);
+    var ta = document.createElement('textarea');
+    ta.value = EMPFEHL_URL;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showEmpfehlHint('🔗 Link kopiert!'); }
+    catch (e2) { showEmpfehlHint('Link: ' + EMPFEHL_URL); }
+    ta.remove();
   }
 }
 
-// Anmeldung per Buchungsnummer aus Supabase laden
-async function loadFromSupabase(anmeldungId) {
+document.addEventListener('click', function (e) {
+  if (e.target && e.target.id === 'empfehlShare') {
+    e.preventDefault();
+    shareEmpfehlung();
+  }
+});
+
+function renderCampDetails() {
+  document.getElementById('dCamp').textContent = regData.camp_name || '–';
+  document.getElementById('dZeitraum').textContent = regData.camp_datum_von && regData.camp_datum_bis
+    ? fmtDateShort(regData.camp_datum_von) + ' – ' + fmtDateShort(regData.camp_datum_bis)
+    : '–';
+  document.getElementById('dUhrzeit').textContent =
+    regData.camp_uhrzeit_von + ' – ' + regData.camp_uhrzeit_bis + ' Uhr';
+  document.getElementById('dOrt').textContent = [regData.camp_ort, regData.camp_adresse].filter(Boolean).join(', ') || '–';
+  buildEmpfehlung();
+}
+
+function storeConfirmationData() {
+  var values = {
+    te_anmeldung_id: regData.anmeldung_id,
+    te_confirmation_token: regData.confirmation_token,
+    te_kind_name: regData.kind,
+    te_eltern_name: regData.eltern,
+    te_email: regData.email,
+    te_telefon: regData.telefon,
+    te_geburtsdatum: regData.geburtsdatum,
+    te_camp_id: regData.camp_id,
+    te_camp_name: regData.camp_name,
+    te_camp_count: regData.camp_count,
+    te_betrag: regData.betrag,
+    te_payer_type: regData.payer_type,
+    te_parent_payment_status: regData.parent_payment_status,
+    te_partner_name: regData.partner_name,
+    te_list_price: regData.list_price,
+    te_parent_amount: regData.parent_amount,
+    te_sponsor_amount: regData.sponsor_amount
+  };
   try {
-    var res = await fetch(
-      SUPABASE_URL + '/rest/v1/anmeldungen?id=eq.' + encodeURIComponent(anmeldungId) +
-      '&select=id,vorname,nachname,geburtsdatum,eltern_vorname,eltern_nachname,email,telefon,camp_id,betrag_euro',
-      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY } }
-    );
-    if (!res.ok) return false;
-    var data = await res.json();
-    if (!data || data.length === 0) return false;
-    var r = data[0];
-    regData.anmeldung_id = r.id;
-    regData.kind         = (r.vorname || '') + ' ' + (r.nachname || '');
-    regData.geburtsdatum = r.geburtsdatum || '';
-    regData.eltern       = (r.eltern_vorname || '') + ' ' + (r.eltern_nachname || '');
-    regData.email        = r.email   || '';
-    regData.telefon      = r.telefon || '';
-    regData.camp_id      = r.camp_id || '';
-    regData.betrag       = r.betrag_euro || '';
+    Object.keys(values).forEach(function(key) {
+      sessionStorage.setItem(key, values[key] === null || values[key] === undefined ? '' : String(values[key]));
+    });
+  } catch (e) {}
+}
+
+function applyConfirmationData(r, confirmationToken) {
+  var partner = r.sponsoring_partners;
+  if (Array.isArray(partner)) partner = partner[0];
+  var camp = r.camps;
+  if (Array.isArray(camp)) camp = camp[0];
+  partner = partner || {};
+  camp = camp || {};
+
+  regData.anmeldung_id = r.id || '';
+  regData.confirmation_token = confirmationToken;
+  regData.kind = [r.vorname, r.nachname].filter(Boolean).join(' ');
+  regData.geburtsdatum = r.geburtsdatum || '';
+  regData.eltern = [r.eltern_vorname, r.eltern_nachname].filter(Boolean).join(' ');
+  regData.email = r.email || '';
+  regData.telefon = r.telefon || '';
+  regData.camp_id = r.camp_id || '';
+  regData.camp_ids = regData.camp_id ? [regData.camp_id] : [];
+  regData.camp_count = '1';
+  regData.betrag = r.betrag_euro !== null && r.betrag_euro !== undefined ? r.betrag_euro : '';
+  regData.payer_type = r.payer_type || '';
+  regData.parent_payment_status = r.parent_payment_status || '';
+  regData.legacy_payment_status = r.zahlungsstatus || '';
+  regData.list_price = r.list_price_euro !== null && r.list_price_euro !== undefined ? r.list_price_euro : regData.betrag;
+  regData.parent_amount = r.parent_amount_euro !== null && r.parent_amount_euro !== undefined ? r.parent_amount_euro : regData.betrag;
+  regData.sponsor_amount = r.sponsor_amount_euro !== null && r.sponsor_amount_euro !== undefined ? r.sponsor_amount_euro : '';
+  regData.partner_name = partner.name || '';
+  regData.partner_slug = partner.slug || '';
+  regData.camp_name = camp.name || '';
+  regData.camp_datum_von = camp.datum_von || '';
+  regData.camp_datum_bis = camp.datum_bis || '';
+  regData.camp_uhrzeit_von = (camp.uhrzeit_von || '09:00:00').slice(0, 5);
+  regData.camp_uhrzeit_bis = (camp.uhrzeit_bis || '15:00:00').slice(0, 5);
+  regData.camp_ort = camp.ort || '';
+  regData.camp_adresse = camp.adresse || '';
+  storeConfirmationData();
+}
+
+async function loadSecureConfirmation(registrationId, confirmationToken) {
+  if (!registrationId || !confirmationToken) return false;
+  try {
+    var response = await fetch(SUPABASE_URL + '/functions/v1/register', {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'get_confirmation',
+        registration_id: registrationId,
+        confirmation_token: confirmationToken
+      })
+    });
+    var text = await response.text();
+    var payload = {};
+    try { payload = JSON.parse(text); } catch (e) {}
+    var registration = payload.registration;
+    if (
+      !response.ok ||
+      !payload.success ||
+      !registration ||
+      String(registration.id || '').toLowerCase() !== String(registrationId).toLowerCase()
+    ) return false;
+    applyConfirmationData(registration, confirmationToken);
     return true;
   } catch (e) {
     return false;
-  }
-}
-
-// ============================================================
-// BUCHUNGSNUMMER LOOKUP (wenn localStorage leer)
-// ============================================================
-async function lookupBooking() {
-  var val = (document.getElementById('lookupInput').value || '').trim();
-  if (!val) return;
-  var errEl = document.getElementById('lookupError');
-  errEl.style.display = 'none';
-  var btn = document.querySelector('.lookup-btn');
-  btn.textContent = '…';
-  btn.disabled = true;
-
-  // Versuche vollständige UUID oder 8-Zeichen-Kürzel
-  var found = false;
-  if (val.length === 36) {
-    found = await loadFromSupabase(val);
-  } else {
-    // Kurzsuche (first 8 chars of UUID) - nicht direkt filterbar, daher Info anzeigen
-    found = false;
-  }
-
-  btn.textContent = 'Abrufen';
-  btn.disabled = false;
-
-  if (found) {
-    document.getElementById('lookupCard').style.display = 'none';
-    fillPage();
-    loadCampDetails();
-  } else {
-    errEl.style.display = 'block';
-    errEl.textContent = 'Buchungsnummer nicht gefunden. Bitte prüfe die Eingabe oder wende dich an uns.';
   }
 }
 
@@ -387,6 +664,13 @@ function u(s) {
 // ============================================================
 async function downloadPDF() {
   var logoBase64 = await loadLogoBase64();
+  var bookingState = getBookingState();
+  var isSponsored = bookingState === 'sponsored';
+  var isPaid = bookingState === 'paid';
+  var isOpen = bookingState === 'open';
+  var isCancelled = bookingState === 'cancelled';
+  var isRefunded = bookingState === 'refunded';
+  var isInactive = isCancelled || isRefunded;
 
   var jsPDF = window.jspdf.jsPDF;
   var doc = new jsPDF('p', 'mm', 'a4');
@@ -412,39 +696,56 @@ async function downloadPDF() {
   doc.text('TALENTEXPERTE', textX, 18);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text(u('Fußballschule seit 2005 | Anmeldebestätigung'), textX, 26);
+  doc.text(u(isCancelled
+    ? 'Fußballschule seit 2005 | Anmeldung storniert'
+    : isRefunded
+      ? 'Fußballschule seit 2005 | Anmeldung erstattet'
+      : isSponsored
+        ? 'Fußballschule seit 2005 | Sponsorfinanzierung bestätigt'
+        : 'Fußballschule seit 2005 | Anmeldebestätigung'), textX, 26);
 
   // Buchungsnr rechts
   doc.setFontSize(8);
   doc.text('Buchungs-Nr: ' + (regData.anmeldung_id ? regData.anmeldung_id.slice(0, 8).toUpperCase() : '–'), w - margin, 18, { align: 'right' });
   doc.text('Datum: ' + regData.datum, w - margin, 25, { align: 'right' });
 
-  y = 52;
+  y = 49;
 
   // Bestätigungstext
   doc.setTextColor(34, 34, 34);
   doc.setFontSize(15);
   doc.setFont('helvetica', 'bold');
-  doc.text(u('Anmeldebestätigung'), margin, y);
-  y += 9;
+  doc.text(u(isInactive ? 'Buchungsstatus' : 'Anmeldebestätigung'), margin, y);
+  y += 8;
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  doc.text(u('Vielen Dank für die Anmeldung! Der Camp-Platz ist verbindlich reserviert.'), margin, y);
-  y += 14;
+  var confirmationLine = isCancelled
+    ? 'Diese Anmeldung wurde storniert. Der Camp-Platz ist nicht reserviert. Keine Zahlung erforderlich.'
+    : isRefunded
+      ? 'Diese Anmeldung wurde erstattet. Der Camp-Platz ist nicht reserviert. Keine weitere Zahlung erforderlich.'
+      : isSponsored
+    ? 'Vollständig durch ' + (regData.partner_name || 'den Förderpartner') + ' finanziert. Keine Zahlung erforderlich.'
+    : isPaid
+      ? 'Vielen Dank für die Anmeldung! Der Camp-Platz ist verbindlich reserviert.'
+      : isOpen
+        ? 'Die Anmeldung ist eingegangen. Der Platz wird nach Zahlungseingang verbindlich reserviert.'
+        : 'Die Anmeldung ist eingegangen. Der Zahlungsstatus konnte noch nicht eindeutig bestätigt werden.';
+  doc.text(u(confirmationLine), margin, y);
+  y += 10;
 
   // Teilnehmer-Box
   doc.setFillColor(245, 245, 245);
-  doc.roundedRect(margin, y, col, 52, 3, 3, 'F');
+  doc.roundedRect(margin, y, col, 42, 3, 3, 'F');
   doc.setTextColor(34, 34, 34);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.text('Teilnehmer', margin + 8, y + 10);
+  doc.text('Teilnehmer', margin + 8, y + 8);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(100, 100, 100);
-  var ly = y + 20;
+  var ly = y + 16;
   var rows1 = [
     ['Kind:',         u(regData.kind)],
     ['Geburtsdatum:', fmtDate(regData.geburtsdatum)],
@@ -459,28 +760,29 @@ async function downloadPDF() {
     doc.setFont('helvetica', 'bold');
     doc.text(r[1], margin + 45, ly);
     doc.setFont('helvetica', 'normal');
-    ly += 6;
+    ly += 5;
   });
-  y += 60;
+  y += 48;
 
   // Camp-Box
   doc.setFillColor(245, 245, 245);
-  doc.roundedRect(margin, y, col, 46, 3, 3, 'F');
+  doc.roundedRect(margin, y, col, 37, 3, 3, 'F');
   doc.setTextColor(34, 34, 34);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.text('Camp-Details', margin + 8, y + 10);
+  doc.text('Camp-Details', margin + 8, y + 8);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  ly = y + 20;
+  ly = y + 15;
   var zeitraum = regData.camp_datum_von && regData.camp_datum_bis
     ? fmtDate(regData.camp_datum_von) + ' - ' + fmtDate(regData.camp_datum_bis)
     : '–';
+  var pdfOrt = [regData.camp_ort, regData.camp_adresse].filter(Boolean).join(', ') || '–';
   var rows2 = [
     ['Camp:',     u(regData.camp_name)],
     ['Zeitraum:', zeitraum],
     ['Uhrzeit:',  regData.camp_uhrzeit_von + ' - ' + regData.camp_uhrzeit_bis + ' Uhr'],
-    ['Ort:',      u(regData.camp_ort + ', ' + regData.camp_adresse)],
+    ['Ort:',      u(pdfOrt)],
   ];
   rows2.forEach(function(r) {
     doc.setTextColor(120, 120, 120);
@@ -489,28 +791,52 @@ async function downloadPDF() {
     doc.setFont('helvetica', 'bold');
     doc.text(r[1], margin + 45, ly);
     doc.setFont('helvetica', 'normal');
-    ly += 6;
+    ly += 5;
   });
-  y += 54;
+  y += 43;
 
-  // Betrag-Box
-  doc.setFillColor(34, 197, 94);
-  doc.roundedRect(margin, y, col, 16, 3, 3, 'F');
+  // Zahlungs- bzw. Finanzierungsstatus
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  var betragLabel = (regData.betrag || '–') + ',00 EUR';
-  if (parseInt(regData.camp_count) > 1) betragLabel += ' (' + regData.camp_count + ' Camps)';
-  doc.text('Bezahlt: ' + betragLabel, margin + 8, y + 11);
-  doc.text('Status: BEZAHLT', w - margin - 8, y + 11, { align: 'right' });
-  y += 26;
+  if (isInactive) {
+    doc.setFillColor(isCancelled ? 153 : 91, isCancelled ? 27 : 33, isCancelled ? 27 : 44);
+    doc.roundedRect(margin, y, col, 24, 3, 3, 'F');
+    doc.setFontSize(11);
+    doc.text(isCancelled ? 'STATUS: STORNIERT' : 'STATUS: ERSTATTET', margin + 8, y + 9);
+    doc.setFontSize(9);
+    doc.text('Camp-Platz nicht reserviert', margin + 8, y + 17);
+    doc.text('KEINE WEITERE ZAHLUNG ERFORDERLICH', w - margin - 8, y + 17, { align: 'right' });
+    y += 30;
+  } else if (isSponsored) {
+    var partnerName = regData.partner_name || 'Förderpartner';
+    doc.setFillColor(13, 148, 136);
+    doc.roundedRect(margin, y, col, 32, 3, 3, 'F');
+    doc.setFontSize(11);
+    doc.text(u('Vollständig durch ' + partnerName + ' finanziert'), margin + 8, y + 9);
+    doc.setFontSize(9);
+    doc.text('Listenpreis: ' + money(regData.list_price).replace(' €', ' EUR'), margin + 8, y + 17);
+    doc.text(u('Übernahme durch ' + partnerName + ': ' + money(regData.sponsor_amount || regData.list_price).replace(' €', ' EUR')), margin + 8, y + 24);
+    doc.text('Elternanteil: 0,00 EUR', w - margin - 8, y + 17, { align: 'right' });
+    doc.text('KEINE ZAHLUNG ERFORDERLICH', w - margin - 8, y + 26, { align: 'right' });
+    y += 38;
+  } else {
+    doc.setFillColor(isPaid ? 34 : 245, isPaid ? 197 : 158, isPaid ? 94 : 11);
+    doc.roundedRect(margin, y, col, 16, 3, 3, 'F');
+    doc.setFontSize(11);
+    var betragLabel = money(regData.parent_amount !== '' ? regData.parent_amount : regData.betrag).replace(' €', ' EUR');
+    if (parseInt(regData.camp_count) > 1) betragLabel += ' (' + regData.camp_count + ' Camps)';
+    doc.text((isPaid ? 'Bezahlt: ' : isOpen ? 'Elternbetrag: ' : 'Betrag: ') + betragLabel, margin + 8, y + 11);
+    doc.text(isPaid ? 'Status: BEZAHLT' : isOpen ? 'Status: ZAHLUNG OFFEN' : 'Status: WIRD GEPRUEFT', w - margin - 8, y + 11, { align: 'right' });
+    y += 21;
+  }
 
+  if (!isInactive) {
   // Inklusive
   doc.setTextColor(34, 34, 34);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.text('Im Camp enthalten', margin, y);
-  y += 8;
+  y += 7;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(80, 80, 80);
@@ -520,15 +846,15 @@ async function downloadPDF() {
     u('Urkunde, Foto & Medaille'),
     u('Betreuung durch lizenzierte Trainer'),
   ];
-  inkl.forEach(function(t) { doc.text('  \u2022  ' + t, margin, y); y += 6; });
-  y += 6;
+  inkl.forEach(function(t) { doc.text('  \u2022  ' + t, margin, y); y += 5; });
+  y += 4;
 
   // Mitbringen
   doc.setTextColor(34, 34, 34);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.text('Bitte mitbringen', margin, y);
-  y += 8;
+  y += 7;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(80, 80, 80);
@@ -541,17 +867,26 @@ async function downloadPDF() {
   pack.forEach(function(row) {
     doc.text('  \u2022  ' + row[0], margin,      y);
     doc.text('  \u2022  ' + row[1], margin + 80, y);
-    y += 6;
+    y += 5;
   });
-  y += 8;
+  y += 5;
 
   // Hinweis
   doc.setFillColor(255, 248, 230);
   doc.roundedRect(margin, y, col, 18, 3, 3, 'F');
   doc.setTextColor(120, 100, 0);
   doc.setFontSize(8);
-  doc.text(u('Bitte am ersten Tag 15 Minuten früher da sein (8:45 Uhr) für die Begrüßung.'), margin + 8, y + 8);
-  doc.text('Bei Fragen: kontakt@talentexperte.de | +49 1523 4678108 | WhatsApp', margin + 8, y + 14);
+  doc.text(u('Bitte am ersten Tag 15 Minuten früher da sein (8:45 Uhr) für die Begrüßung.'), margin + 8, y + 7);
+  doc.text('Bei Fragen: kontakt@talentexperte.de | +49 1523 4678108 | WhatsApp', margin + 8, y + 13);
+  } else {
+    doc.setFillColor(250, 245, 245);
+    doc.roundedRect(margin, y, col, 20, 3, 3, 'F');
+    doc.setTextColor(90, 45, 45);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(u('Diese Buchung ist nicht aktiv. Es sind keine Camp-Vorbereitungen oder Zahlungen erforderlich.'), margin + 8, y + 8);
+    doc.text('Bei Fragen: kontakt@talentexperte.de | +49 1523 4678108 | WhatsApp', margin + 8, y + 15);
+  }
 
   // Footer
   doc.setFillColor(229, 0, 0);
@@ -562,7 +897,8 @@ async function downloadPDF() {
 
   // PDF speichern
   var kindSlug = (regData.kind || 'Anmeldung').replace(/\s+/g, '-').replace(/[^a-zA-Z0-9\-]/g, '');
-  doc.save('Anmeldebestaetigung-TALENTEXPERTE-' + kindSlug + '.pdf');
+  var pdfPrefix = isCancelled ? 'Stornierung' : isRefunded ? 'Erstattung' : 'Anmeldebestaetigung';
+  doc.save(pdfPrefix + '-TALENTEXPERTE-' + kindSlug + '.pdf');
 }
 
 // ============================================================
@@ -571,24 +907,72 @@ async function downloadPDF() {
 (async function init() {
   loadFromStorage();
 
-  // Fallback: URL-Parameter ?id=xxx (z.B. von Stripe-Redirect mit custom success_url)
-  if (!hasData()) {
-    var urlId = getUrlParam('id');
-    if (urlId) {
-      var ok = await loadFromSupabase(urlId);
-      if (!ok) {
-        document.getElementById('lookupCard').style.display = 'block';
-        return;
-      }
-    } else {
-      // Keine Daten und kein URL-Parameter → Lookup anzeigen
-      document.getElementById('lookupCard').style.display = 'block';
-      return;
-    }
+  // Ein vollständiger Link aus der E-Mail hat immer Vorrang. Für einen Stripe-
+  // Rücksprung mit ID allein darf ausschließlich der exakt dazugehörige Token
+  // aus derselben Browser-Sitzung ergänzt werden.
+  var urlId = getUrlParam('id');
+  var urlToken = getHashParam('token') || getUrlParam('token');
+  var hasUrlCredentials = urlId !== null || urlToken !== null;
+
+  if (
+    urlId && !urlToken && regData.anmeldung_id && regData.confirmation_token &&
+    String(urlId).toLowerCase() === String(regData.anmeldung_id).toLowerCase()
+  ) urlToken = regData.confirmation_token;
+  if (urlId && !urlToken) {
+    var exactSessionCredential = sessionConfirmationCredentials.find(function(entry) {
+      return entry.id.toLowerCase() === String(urlId).toLowerCase();
+    });
+    if (exactSessionCredential) urlToken = exactSessionCredential.token;
   }
 
+  if (hasUrlCredentials && (!urlId || !urlToken)) {
+    showSecureLinkMessage(
+      '🔐 Bestätigungslink unvollständig',
+      'Bitte öffne den vollständigen persönlichen Link aus deiner Bestätigungs-E-Mail. Buchungsnummer und Sicherheitscode werden beide benötigt; ein fremder oder älterer Sitzungscode wird bewusst nicht verwendet.'
+    );
+    return;
+  }
+
+  var refreshId = hasUrlCredentials ? urlId : regData.anmeldung_id;
+  var refreshToken = hasUrlCredentials ? urlToken : regData.confirmation_token;
+  if (!refreshId || !refreshToken) {
+    showSecureLinkMessage(
+      '🔐 Sicherer Bestätigungslink erforderlich',
+      'Öffne bitte den persönlichen Bestätigungslink aus deiner E-Mail. Eine Buchungsnummer allein reicht zum Schutz der Daten deines Kindes nicht aus.'
+    );
+    return;
+  }
+
+  var loaded = await loadSecureConfirmation(refreshId, refreshToken);
+  if (!loaded) {
+    showSecureLinkMessage(
+      '⚠️ Bestätigungslink nicht gültig',
+      'Der Link konnte nicht bestätigt werden. Bitte öffne ihn vollständig aus der E-Mail oder fordere einen neuen Bestätigungslink an. Es werden keine eventuell auf diesem Gerät gespeicherten Buchungsdaten angezeigt.'
+    );
+    return;
+  }
+
+  if (hasUrlCredentials && window.history && window.history.replaceState) {
+    window.history.replaceState(null, '', window.location.pathname);
+  }
+
+  hideSecureLinkMessage();
   fillPage();
-  loadCampDetails();
+  renderCampDetails();
+
+  // Stripe-Webhooks können wenige Augenblicke später eintreffen. Offene Buchungen
+  // werden deshalb mit denselben signierten Zugangsdaten nachgeladen.
+  if (refreshId && getBookingState() === 'open') {
+    [2000, 5000].forEach(function(delay) {
+      setTimeout(async function() {
+        if (getBookingState() !== 'open') return;
+        if (await loadSecureConfirmation(refreshId, refreshToken)) {
+          fillPage();
+          renderCampDetails();
+        }
+      }, delay);
+    });
+  }
 })();
 </script>
 </body>

@@ -1,5 +1,45 @@
 # Changelog
 
+## 2026-07-10 (Sitzung 3) — Gutschein-Prüfung automatisch, ohne Button
+
+- **„Code prüfen"-Button entfernt** (`anmeldung.html` + CSS): Die Nummer wird automatisch im Hintergrund geprüft, sobald mind. 4 Zeichen eingegeben und ein Camp gewählt sind (debounced, 700 ms; auch bei Camp-/Namensänderung). Ohne Camp: neutraler Hinweis „Bitte wähle oben ein Camp aus …" statt Fehlermeldung.
+- **Keine Pflichtfelder mehr für die Prüfung**: `validate_sponsor` verlangt serverseitig nur noch Nummer + Camp (Name/Geburtsdatum optional, nur für namensgebundene Berechtigungen relevant; Geburtsdatum wird als `null` toleriert).
+- **Submit bleibt Sicherheitsnetz**: Vor dem Absenden wird ein eingegebener Code immer erneut geprüft; ein Code-Versuch fällt nie still in den Zahlweg.
+- Fehlermeldungen vereinheitlicht („Diese Gutschein-Nummer wurde nicht gefunden …", „… bereits verwendet").
+
+**Hinweis:** Bis `supabase functions deploy register --no-verify-jwt` ausgeführt ist, antwortet die alte Live-Function bei leeren Namensfeldern mit einem generischen Fehler — der Client zeigt dafür eine freundliche Fallback-Meldung. Nach Function-Deploy + Import ist der Ablauf vollständig.
+
+## 2026-07-10 (Sitzung 2) — ÖF-Gutscheinliste angebunden
+
+Der Verein hat die echte Gutscheinliste geliefert (`gutschein-nummern.ods`, 30 Nummern): Format `Talent <Camp-Startdatum TTMMJJJJ> <4 Ziffern>`, nur Nachnamen/Einrichtungsnamen (11 von 30 sind Einrichtungen wie Haus1/ZFSA/Maria im Tann), keine Geburtsdaten.
+
+- **Prüfung ist jetzt code-gebunden statt namensgebunden**: `register`-Function expandiert Elterneingaben („1118" → `TALENT200720261118` anhand des gewählten Camps) und prüft zusätzlich zur Kindesnamen-Identität die Code-Identität (Berechtigungen aus `--code-only`-Importen). Einmal-Verwendung bleibt atomar garantiert.
+- **Import-Skript**: neuer Modus `--code-only` (Namen optional, `child_name_normalized` = normalisierter Code, Platzhalter für Pflicht-Namensspalten, `import_mode` in Metadata). Self-Test erweitert.
+- **`gutschein-nummern-import.csv`** aus der ODS generiert: 29 Berechtigungen (22× Sommercamp I, 7× Sommercamp II). **Konflikt:** `Talent 20072026 2061` doppelt vergeben (Bazaiba + Sheptytska) → nur Bazaiba in der CSV; Sheptytska braucht neue Nummer vom Verein.
+- Formular-Platzhalter: „z. B. 1118 (die letzten 4 Ziffern genügen)".
+- Deploy-/Git-Ausschlüsse für `*.ods` und `gutschein-nummern*` (Klartext-Codes dürfen nie auf Webserver/Git).
+- Fehlertexte sprechen jetzt von „Gutschein-Nummer".
+
+**Noch offen:** `supabase functions deploy register --no-verify-jwt`, dann Import mit `--code-only --apply` (Secrets erforderlich), Testfall laut Abnahme-Checkliste, ODS + CSV nach Import sicher verschieben/löschen.
+
+## 2026-07-10 — ÖF-Gutschein-Feinschliff + Ostercamps als Vergangenheit
+
+### Vereinsname korrigiert: „Öcher Fans for Kenger e.V." (ÖF)
+Der Kooperationsverein heißt „Öcher Fans for Kenger e.V.", nicht „Öcher Kenger e.V.". Korrigiert in: Migration-Seed (`20260710090000`), neuer idempotenter Migration `20260710150000_rename_sponsor_partner_oef.sql` (greift auch, wenn der alte Seed schon angewendet wurde), `register`-Fehlertext, `send-missing-confirmations`-Fallback, `admin.html` (Filter-Button jetzt „🤝 ÖF / Sponsoring" + Fallback-Name), `SPONSORING-RUNBOOK.md`, `README.md`.
+
+### Anmeldeformular: Gutschein-Panel klar erkennbar
+Panel-Copy in `anmeldung.html` nennt jetzt explizit „Gutschein-Nummer" und den Verein: Kicker „Optional · Gutschein vom Verein / Förderpartner", Überschrift „Gutschein-Nummer vom Verein erhalten?", Label „Gutschein-Nummer / Vereinscode".
+
+### Abgelaufene Camps im Formular + serverseitiger Schutz
+- `loadCamps()` markiert Camps mit `datum_bis < heute` als „⏳ Abgelaufen · Vergangenheit" (sichtbar, aber deaktiviert, ans Listenende sortiert) — betrifft die in der DB noch `aktiv` stehenden Ostercamps.
+- `register`-Function lehnt Buchungen für beendete Camps mit 409 ab (Datumsprüfung zusätzlich zum Status).
+- JSON-LD: Ostercamp-Events auf `EventCompleted` + `SoldOut` gesetzt (`index.html` Ostercamp II, `anmeldung.html` beide).
+
+### Deploy
+Website via `ci/deploy.sh` deployt (Remote-Backup vorab). Neu: `SPONSORING-RUNBOOK.md` vom Deploy ausgeschlossen (internes Ops-Dokument). Live verifiziert: Gutschein-Panel, Ostercamp-Markierung, tokenbasierte `bestaetigung.html`, Admin-ÖF-Filter.
+
+**Noch offen (braucht Supabase-CLI/Secrets):** `supabase functions deploy register --no-verify-jwt` (Datums-Guard + Fehlertext), Migration `20260710150000` anwenden (bzw. `update sponsoring_partners set name='Öcher Fans for Kenger e.V.' where slug='oecher-kenger';` im SQL-Editor), ÖF-Vereinsliste importieren (Runbook), ggf. `resend-signed-confirmation-links.mjs --scope=all_future` (Alt-Links aus E-Mails vor der RLS-Härtung sind bereits jetzt ungültig).
+
 ## 2026-04-11 — Offline-Queue-Audit + Saint-Gobain-Normalisierung
 
 ### Audit: Offline-Queue + Session-Refresh (`admin.html`)

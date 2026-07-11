@@ -45,7 +45,7 @@ No linting or test framework is configured.
 |------|---------|
 | `anmeldung.html` | Parent registration (paid); inserts to `anmeldungen`; generates PDF; links to Stripe |
 | `firmen-anmeldung.html` | Employee/company registration (free); inserts to `firmen_anmeldungen` |
-| `bestaetigung.html` | Post-payment confirmation; generates PDF with booking number; `?id=<uuid>` fallback if localStorage empty |
+| `bestaetigung.html` | Sichere Bestätigung + PDF; lädt Buchungsdaten nur mit signiertem, ID-gebundenem Token (E-Mail-Link oder exakt passende Browser-Sitzung) |
 | `bestaetigung-firma.html` | Employee confirmation + PDF download |
 | `admin.html` | Full dashboard: camp stats, registration table, bulk actions (mark paid, cancel, send reminders, delete); Anwesenheit checkboxes + Sprint/Torschuss/Dribbling metrics integrated directly in Anmeldungen tab when a camp is filtered (metric columns only visible with camp filter); separate Anwesenheit-Tab retains same metrics; offline-first write queue + session auto-refresh |
 | `impressum.html`, `datenschutz.html`, `agb.html` | Legal pages |

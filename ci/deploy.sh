@@ -36,6 +36,9 @@ rsync -avz --delete \
   --exclude "social-posts.json" \
   --exclude "social-published.json" \
   --exclude "client_secret_*.json" \
+  --exclude "SPONSORING-RUNBOOK.md" \
+  --exclude "*.ods" \
+  --exclude "gutschein-nummern*" \
   --exclude "*.bak" \
   --exclude "*.bak2" \
   ./ "${USER}@${HOST}:${REMOTE_PATH}/"

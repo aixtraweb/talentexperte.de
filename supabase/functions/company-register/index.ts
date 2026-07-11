@@ -17,6 +17,16 @@ const corsHeaders = {
 const FROM_EMAIL = "TALENTEXPERTE Fußballschule <kontakt@talentexperte.de>";
 const FORM_TOKEN_PURPOSE = "talentexperte-company-registration";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_PATTERN = /^[0-9+()/. -]{6,40}$/;
+
+function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 function formatDateDE(iso: string | null): string {
   if (!iso) return "–";
@@ -45,13 +55,13 @@ function buildCompanyConfirmationHtml(opts: {
     <p style="margin:4px 0 0;font-size:14px;color:#fff;opacity:.9">Firmen-Anmeldung</p>
   </div>
   <div style="padding:32px">
-    <p>Hallo ${opts.parentName},</p>
-    <p>vielen Dank für die Anmeldung von <strong>${opts.childName}</strong> über <strong>${opts.companyName}</strong>.</p>
+    <p>Hallo ${escapeHtml(opts.parentName)},</p>
+    <p>vielen Dank für die Anmeldung von <strong>${escapeHtml(opts.childName)}</strong> über <strong>${escapeHtml(opts.companyName)}</strong>.</p>
     <table style="border-collapse:collapse;width:100%;font-size:14px;color:#ddd">
-      <tr><td style="padding:6px 0;color:#888">Camp</td><td style="padding:6px 0"><strong style="color:#fff">${opts.campName}</strong></td></tr>
-      <tr><td style="padding:6px 0;color:#888">Zeitraum</td><td style="padding:6px 0">${opts.zeitraum}</td></tr>
-      <tr><td style="padding:6px 0;color:#888">Uhrzeit</td><td style="padding:6px 0">${opts.uhrzeit}</td></tr>
-      <tr><td style="padding:6px 0;color:#888">Ort</td><td style="padding:6px 0">${opts.ort}</td></tr>
+      <tr><td style="padding:6px 0;color:#888">Camp</td><td style="padding:6px 0"><strong style="color:#fff">${escapeHtml(opts.campName)}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#888">Zeitraum</td><td style="padding:6px 0">${escapeHtml(opts.zeitraum)}</td></tr>
+      <tr><td style="padding:6px 0;color:#888">Uhrzeit</td><td style="padding:6px 0">${escapeHtml(opts.uhrzeit)}</td></tr>
+      <tr><td style="padding:6px 0;color:#888">Ort</td><td style="padding:6px 0">${escapeHtml(opts.ort)}</td></tr>
     </table>
     <p style="font-size:13px;color:#888;margin-top:24px">Bei Fragen erreichst du uns unter <a href="mailto:kontakt@talentexperte.de" style="color:#e50000">kontakt@talentexperte.de</a>.</p>
   </div>
@@ -154,7 +164,12 @@ Deno.serve(async (req) => {
     if (!registration.firma_name) errors.push("Firmenname fehlt");
     if (!registration.mitarbeiter_vorname) errors.push("Vorname Mitarbeiter fehlt");
     if (!registration.mitarbeiter_nachname) errors.push("Nachname Mitarbeiter fehlt");
-    if (!registration.mitarbeiter_telefon) errors.push("Telefonnummer fehlt");
+    if (!registration.mitarbeiter_telefon || !PHONE_PATTERN.test(registration.mitarbeiter_telefon)) {
+      errors.push("Gueltige Telefonnummer fehlt");
+    }
+    if (!registration.firma_telefon || !PHONE_PATTERN.test(registration.firma_telefon)) {
+      errors.push("Gueltige Firmen-Telefonnummer fehlt");
+    }
     if (!registration.kind_vorname) errors.push("Vorname des Kindes fehlt");
     if (!registration.kind_nachname) errors.push("Nachname des Kindes fehlt");
     if (!registration.kind_geburtsdatum) errors.push("Geburtsdatum fehlt");
@@ -263,18 +278,40 @@ Deno.serve(async (req) => {
       erfahrung: registration.erfahrung,
       allergien: registration.allergien,
       notizen: registration.notizen,
-      betrag_euro: betragEuro,
+      betrag_euro: 0,
     };
 
     let mirrorError: string | null = null;
     let mirror = await supabase
       .from("anmeldungen")
-      .insert({ ...legacyBase, zahlungsstatus: "bezahlt" });
+      .insert({
+        ...legacyBase,
+        zahlungsstatus: "bezahlt",
+        list_price_euro: betragEuro,
+        parent_amount_euro: 0,
+        sponsor_amount_euro: 0,
+        payer_type: "company",
+        parent_payment_status: "not_required",
+        sponsor_settlement_status: null,
+        sponsoring_partner_id: null,
+        sponsoring_entitlement_id: null,
+      });
 
     if (mirror.error && String(mirror.error.message || "").includes("zahlungsstatus")) {
       mirror = await supabase
         .from("anmeldungen")
-        .insert({ ...legacyBase, status: "bezahlt" });
+        .insert({
+          ...legacyBase,
+          status: "bezahlt",
+          list_price_euro: betragEuro,
+          parent_amount_euro: 0,
+          sponsor_amount_euro: 0,
+          payer_type: "company",
+          parent_payment_status: "not_required",
+          sponsor_settlement_status: null,
+          sponsoring_partner_id: null,
+          sponsoring_entitlement_id: null,
+        });
     }
 
     if (mirror.error) {

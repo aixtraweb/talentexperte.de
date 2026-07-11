@@ -55,6 +55,7 @@ serve(async (req) => {
 
     const paymentFields = {
       zahlungsstatus: "bezahlt",
+      parent_payment_status: "paid",
       zahlung_am: new Date().toISOString(),
       stripe_payment_id: session.payment_intent?.toString() || null,
     };
@@ -66,6 +67,8 @@ serve(async (req) => {
         .from("anmeldungen")
         .update(paymentFields)
         .eq("id", refId)
+        .eq("payer_type", "parent")
+        .eq("parent_payment_status", "open")
         .eq("zahlungsstatus", "offen")
         .select();
 
@@ -91,6 +94,8 @@ serve(async (req) => {
       let query = supabase
         .from("anmeldungen")
         .update(paymentFields)
+        .eq("payer_type", "parent")
+        .eq("parent_payment_status", "open")
         .eq("zahlungsstatus", "offen")
         .ilike("email", email);
 
@@ -124,9 +129,12 @@ serve(async (req) => {
         .from("anmeldungen")
         .update({
           zahlungsstatus: "bezahlt",
+          parent_payment_status: "paid",
           zahlung_am: new Date().toISOString(),
           stripe_payment_id: intent.id,
         })
+        .eq("payer_type", "parent")
+        .eq("parent_payment_status", "open")
         .eq("zahlungsstatus", "offen")
         .ilike("email", email)
         .eq("betrag_euro", amountPaid)

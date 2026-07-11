@@ -12,6 +12,8 @@
   --gray-500: #888;
   --gray-700: #444;
   --green: #22c55e;
+  --teal: #20c7b7;
+  --teal-deep: #0d9488;
   --yellow: #f59e0b;
   --font-display: 'Bebas Neue', Impact, sans-serif;
   --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
@@ -145,6 +147,46 @@ a {
   color: var(--green);
 }
 
+.success-header h1 .yellow {
+  color: var(--yellow);
+}
+
+.success-header h1 .red {
+  color: #ef4444;
+}
+
+.success-header[data-status="sponsored"] .check-circle {
+  background: rgba(32, 199, 183, .12);
+}
+
+.success-header[data-status="sponsored"] .check-circle svg,
+.success-header[data-status="sponsored"] h1 .green {
+  stroke: var(--teal);
+  color: var(--teal);
+}
+
+.success-header[data-status="open"] .check-circle,
+.success-header[data-status="unknown"] .check-circle,
+.success-header[data-status="loading"] .check-circle,
+.success-header[data-status="refunded"] .check-circle {
+  background: rgba(245, 158, 11, .12);
+}
+
+.success-header[data-status="open"] .check-circle svg,
+.success-header[data-status="unknown"] .check-circle svg,
+.success-header[data-status="loading"] .check-circle svg,
+.success-header[data-status="refunded"] .check-circle svg {
+  stroke: var(--yellow);
+}
+
+.success-header[data-status="cancelled"] .check-circle {
+  background: rgba(239, 68, 68, .12);
+}
+
+.success-header[data-status="cancelled"] .check-circle svg {
+  stroke: #ef4444;
+}
+
 .success-header p {
   color: var(--gray-300);
   font-size: 1rem;
@@ -202,6 +244,185 @@ a {
 .info-value--betrag {
   color: var(--green);
   font-size: 1.1rem;
+}
+
+.info-value--betrag.sponsored { color: var(--teal); }
+.info-value--betrag.open { color: var(--yellow); }
+.info-value--betrag.inactive { color: #fca5a5; }
+
+/* FINANZIERUNGS- UND ZAHLUNGSSTATUS */
+.sponsor-confirmation-card,
+.payment-open-card {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  border-radius: 14px;
+  padding: 25px 28px;
+  margin-bottom: 20px;
+}
+
+.sponsor-confirmation-card[hidden],
+.payment-open-card[hidden],
+.sponsor-detail-row[hidden] { display: none; }
+
+.sponsor-confirmation-card {
+  background: linear-gradient(145deg, rgba(32, 199, 183, .11), rgba(13, 148, 136, .04));
+  border: 1px solid rgba(32, 199, 183, .34);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, .18);
+}
+
+.sponsor-confirmation-mark {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 40px;
+  border-radius: 50%;
+  background: var(--teal-deep);
+  color: #fff;
+  font-weight: 900;
+}
+
+.status-kicker {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--teal);
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.sponsor-confirmation-card h2,
+.payment-open-card h2 {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: .04em;
+  line-height: 1.2;
+  margin-bottom: 7px;
+}
+
+.sponsor-confirmation-card p,
+.payment-open-card p {
+  color: var(--gray-300);
+  font-size: .84rem;
+  line-height: 1.6;
+}
+
+.sponsor-confirmation-card .sponsor-no-payment {
+  margin-top: 6px;
+  color: #b7e9e4;
+  font-weight: 700;
+}
+
+.payment-open-card {
+  display: block;
+  background: rgba(245, 158, 11, .07);
+  border: 1px solid rgba(245, 158, 11, .27);
+}
+
+.payment-open-card .status-kicker { color: var(--yellow); }
+.sponsor-detail-row .info-value { color: #b7e9e4; }
+
+/* FREUNDE EINLADEN */
+.empfehl-card {
+  position: relative;
+  text-align: center;
+  background: linear-gradient(160deg, rgba(229, 0, 0, .08), rgba(34, 197, 94, .05));
+  border: 1px solid rgba(229, 0, 0, .18);
+  border-radius: 14px;
+  padding: 30px 32px 28px;
+  margin-bottom: 20px;
+}
+
+.empfehl-emoji {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.empfehl-card h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: .05em;
+  margin-bottom: 8px;
+}
+
+.empfehl-text {
+  color: var(--gray-300);
+  font-size: .92rem;
+  line-height: 1.55;
+  max-width: 440px;
+  margin: 0 auto 20px;
+}
+
+.empfehl-text strong {
+  color: var(--white);
+}
+
+.empfehl-btns {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.empfehl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: 60px;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .3s;
+}
+
+.empfehl-btn.wa {
+  background: var(--green);
+  color: #0a0a0a;
+  border: none;
+  box-shadow: 0 4px 18px rgba(34, 197, 94, .25);
+}
+
+.empfehl-btn.wa:hover {
+  background: #1ea34d;
+  transform: translateY(-2px);
+}
+
+.empfehl-btn.share {
+  background: rgba(255, 255, 255, .04);
+  color: var(--gray-300);
+  border: 1px solid rgba(255, 255, 255, .12);
+}
+
+.empfehl-btn.share:hover {
+  border-color: var(--red);
+  color: var(--white);
+  background: rgba(229, 0, 0, .05);
+}
+
+.empfehl-hint {
+  min-height: 1.1em;
+  margin-top: 14px;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--green);
+  opacity: 0;
+  transition: opacity .2s;
+}
+
+.empfehl-hint.show {
+  opacity: 1;
+}
+
+@media (max-width: 480px) {
+  .empfehl-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* CHECKLIST */
@@ -373,4 +594,9 @@ a {
   .pack-grid {
     grid-template-columns: 1fr;
   }
+
+  .sponsor-confirmation-card,
+  .payment-open-card { padding: 22px 20px; }
+
+  .sponsor-confirmation-card { gap: 13px; }
 }

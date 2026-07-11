@@ -98,11 +98,15 @@ export function cleanText(value: unknown, maxLength = 5000): string {
 }
 
 export function getClientIp(req: Request): string {
+  const trusted = req.headers.get("cf-connecting-ip") ||
+    req.headers.get("x-real-ip");
+  if (trusted) return trusted.trim() || "unknown";
   const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim() || "unknown";
-  return req.headers.get("cf-connecting-ip") ||
-    req.headers.get("x-real-ip") ||
-    "unknown";
+  if (forwarded) {
+    const hops = forwarded.split(",");
+    return hops[hops.length - 1].trim() || "unknown";
+  }
+  return "unknown";
 }
 
 function hashForLimit(value: string): string {
@@ -170,7 +174,7 @@ function logRejected(reason: string, req: Request, body: FormBody): void {
   const email = asString(body.email ?? body.mitarbeiter_email ?? body.firma_email, 200).toLowerCase();
   console.warn("Form spam protection rejected request", {
     reason,
-    ip: getClientIp(req),
+    ip_hash: hashForLimit(getClientIp(req)),
     email_hash: email ? hashForLimit(email) : null,
     user_agent: asString(req.headers.get("user-agent"), 160),
   });
@@ -229,7 +233,7 @@ export function checkTokenRateLimit(req: Request): ProtectionResult {
   const ip = getClientIp(req);
   if (rateLimitExceeded("token-ip", ip, 40, 3600)) {
     console.warn("Form token rate limit exceeded", {
-      ip,
+      ip_hash: hashForLimit(ip),
       user_agent: asString(req.headers.get("user-agent"), 160),
     });
     return { ok: false, status: 429, error: "Bitte versuchen Sie es spaeter erneut.", reason: "token_rate_limited" };

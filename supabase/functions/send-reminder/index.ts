@@ -1,9 +1,18 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  assertConfirmationTokenConfiguration,
+  confirmationExpiryForCamp,
+  createConfirmationToken,
+} from "../_shared/confirmation-token.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const ADMIN_EMAILS = (Deno.env.get("ADMIN_EMAILS") ?? "")
+  .split(",")
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
 const FROM_EMAIL = "TALENTEXPERTE Fußballschule <kontakt@talentexperte.de>";
 
 const corsHeaders = {
@@ -23,7 +32,10 @@ interface Anmeldung {
   eltern_vorname: string;
   eltern_nachname: string;
   email: string;
-  betrag_euro: number;
+  parent_amount_euro: number;
+  payer_type: string;
+  parent_payment_status: string;
+  notizen?: string | null;
   camp_id: string;
   zahlungsstatus: string;
   camps?: { name: string; datum_von: string; datum_bis: string } | null;
@@ -36,10 +48,46 @@ function formatDate(iso: string): string {
   return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-function buildEmailHtml(a: Anmeldung, campName: string, campDates: string, stripeLink: string | null): string {
-  const payButton = stripeLink
-    ? `<a href="${stripeLink}" style="display:inline-block;padding:14px 32px;background:#e50000;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:16px;margin:16px 0;">Jetzt bezahlen – ${a.betrag_euro} €</a>`
-    : `<p style="font-size:16px;font-weight:700;color:#e50000;">Offener Betrag: ${a.betrag_euro} €</p>`;
+function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function formatEuro(value: number): string {
+  return new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency: "EUR",
+  }).format(value);
+}
+
+function paymentStartLink(
+  registrationId: string,
+  confirmationToken: string,
+  stripeLink: string,
+): string {
+  return "https://www.talentexperte.de/zahlung-start.html#" +
+    new URLSearchParams({
+      id: registrationId,
+      token: confirmationToken,
+      stripe: stripeLink,
+    }).toString();
+}
+
+function buildEmailHtml(
+  a: Anmeldung,
+  campName: string,
+  campDates: string,
+  securePaymentLink: string | null,
+  confirmationLink: string,
+): string {
+  const amount = formatEuro(Number(a.parent_amount_euro));
+  const payButton = securePaymentLink
+    ? `<a href="${escapeHtml(securePaymentLink)}" style="display:inline-block;padding:14px 32px;background:#e50000;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:16px;margin:16px 0;">Jetzt bezahlen – ${escapeHtml(amount)}</a>`
+    : `<p style="font-size:16px;font-weight:700;color:#e50000;">Offener Betrag: ${escapeHtml(amount)}</p>`;
 
   return `
 <!DOCTYPE html>
@@ -56,10 +104,10 @@ function buildEmailHtml(a: Anmeldung, campName: string, campDates: string, strip
     <!-- Content -->
     <div style="background:#fff;padding:32px;border-radius:0 0 12px 12px;">
       <p style="font-size:16px;color:#333;line-height:1.6;margin:0 0 16px;">
-        Hallo ${a.eltern_vorname || ""},
+        Hallo ${escapeHtml(a.eltern_vorname || "")},
       </p>
       <p style="font-size:16px;color:#333;line-height:1.6;margin:0 0 16px;">
-        vielen Dank für die Anmeldung von <strong>${a.vorname} ${a.nachname}</strong> zum <strong>${campName}</strong>${campDates ? " (" + campDates + ")" : ""}.
+        vielen Dank für die Anmeldung von <strong>${escapeHtml(a.vorname)} ${escapeHtml(a.nachname)}</strong> zum <strong>${escapeHtml(campName)}</strong>${campDates ? " (" + escapeHtml(campDates) + ")" : ""}.
       </p>
       <p style="font-size:16px;color:#333;line-height:1.6;margin:0 0 24px;">
         Wir möchten Sie freundlich daran erinnern, dass die Teilnahmegebühr noch aussteht. Bitte begleichen Sie den Betrag zeitnah, damit wir den Platz verbindlich reservieren können.
@@ -67,6 +115,9 @@ function buildEmailHtml(a: Anmeldung, campName: string, campDates: string, strip
       <div style="text-align:center;margin:24px 0;">
         ${payButton}
       </div>
+      <p style="font-size:13px;color:#666;line-height:1.6;margin:0 0 18px;">
+        Ihre persönliche Bestätigung: <a href="${escapeHtml(confirmationLink)}" style="color:#e50000;">sicher öffnen</a>
+      </p>
       <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
       <p style="font-size:14px;color:#666;line-height:1.6;margin:0;">
         Bei Fragen stehen wir Ihnen gerne zur Verfügung.
@@ -87,12 +138,21 @@ function buildEmailHtml(a: Anmeldung, campName: string, campDates: string, strip
 </html>`;
 }
 
-function buildPlainText(a: Anmeldung, campName: string, campDates: string): string {
+function buildPlainText(
+  a: Anmeldung,
+  campName: string,
+  campDates: string,
+  securePaymentLink: string | null,
+  confirmationLink: string,
+): string {
   return `Hallo ${a.eltern_vorname || ""},
 
 vielen Dank für die Anmeldung von ${a.vorname} ${a.nachname} zum ${campName}${campDates ? " (" + campDates + ")" : ""}.
 
-Wir möchten Sie freundlich daran erinnern, dass die Teilnahmegebühr von ${a.betrag_euro} € noch aussteht. Bitte begleichen Sie den Betrag zeitnah, damit wir den Platz verbindlich reservieren können.
+Wir möchten Sie freundlich daran erinnern, dass die Teilnahmegebühr von ${a.parent_amount_euro} € noch aussteht. Bitte begleichen Sie den Betrag zeitnah, damit wir den Platz verbindlich reservieren können.
+
+${securePaymentLink ? "Sicher bezahlen: " + securePaymentLink : ""}
+Persönliche Bestätigung: ${confirmationLink}
 
 Bei Fragen stehen wir Ihnen gerne zur Verfügung.
 
@@ -129,6 +189,27 @@ serve(async (req: Request) => {
       });
     }
 
+    const adminEmail = String(userData.user.email || "").toLowerCase();
+    if (ADMIN_EMAILS.length === 0) {
+      return new Response(JSON.stringify({ error: "ADMIN_EMAILS ist nicht konfiguriert" }), {
+        status: 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!adminEmail || !ADMIN_EMAILS.includes(adminEmail)) {
+      return new Response(JSON.stringify({ error: "Keine Admin-Berechtigung" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!RESEND_API_KEY) {
+      return new Response(JSON.stringify({ error: "RESEND_API_KEY fehlt" }), {
+        status: 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    assertConfirmationTokenConfiguration();
+
     const body: ReminderRequest = await req.json();
     const { anmeldung_ids } = body;
 
@@ -146,11 +227,16 @@ serve(async (req: Request) => {
       });
     }
 
-    // Anmeldungen laden
+    // Zahlungserinnerungen werden ausschließlich aus den kanonischen Eltern-
+    // Zahlungsfeldern ermittelt. So kann weder ein UI-Fehler noch ein historischer
+    // zahlungsstatus eine gesponserte Anmeldung in diesen Versand bringen.
     const { data: anmeldungen, error: fetchError } = await supabase
       .from("anmeldungen")
-      .select("id, vorname, nachname, eltern_vorname, eltern_nachname, email, betrag_euro, camp_id, zahlungsstatus, camps(name, datum_von, datum_bis, stripe_link)")
-      .in("id", anmeldung_ids);
+      .select("id, vorname, nachname, eltern_vorname, eltern_nachname, email, parent_amount_euro, payer_type, parent_payment_status, notizen, camp_id, zahlungsstatus, camps(name, datum_von, datum_bis, stripe_link)")
+      .in("id", anmeldung_ids)
+      .eq("payer_type", "parent")
+      .eq("parent_payment_status", "open")
+      .gt("parent_amount_euro", 0);
 
     if (fetchError) {
       return new Response(JSON.stringify({ error: "Fehler beim Laden: " + fetchError.message }), {
@@ -159,9 +245,14 @@ serve(async (req: Request) => {
       });
     }
 
-    // Nur offene Anmeldungen mit E-Mail
+    // Die expliziten Zahlungsfelder sind kanonisch. Ein frei eingegebener
+    // Notizmarker darf den Zahlungsstatus nicht mehr beeinflussen.
     const openOnes = (anmeldungen || []).filter(
-      (a: any) => a.email && (!a.zahlungsstatus || a.zahlungsstatus === "offen" || a.zahlungsstatus === "pending")
+      (a: any) =>
+        a.email &&
+        a.payer_type === "parent" &&
+        a.parent_payment_status === "open" &&
+        Number(a.parent_amount_euro) > 0
     );
 
     if (openOnes.length === 0) {
@@ -179,10 +270,38 @@ serve(async (req: Request) => {
       const campDates = camp?.datum_von && camp?.datum_bis
         ? formatDate(camp.datum_von) + " – " + formatDate(camp.datum_bis)
         : "";
-      const stripeLink = camp?.stripe_link || null;
+      const confirmationToken = await createConfirmationToken(
+        String(row.id),
+        confirmationExpiryForCamp(camp?.datum_bis),
+      );
+      const confirmationLink =
+        "https://www.talentexperte.de/bestaetigung.html?id=" +
+        encodeURIComponent(String(row.id)) + "#token=" +
+        encodeURIComponent(confirmationToken);
+      const directStripeLink = camp?.stripe_link
+        ? String(camp.stripe_link) +
+          (String(camp.stripe_link).includes("?") ? "&" : "?") +
+          "client_reference_id=" + encodeURIComponent(String(row.id)) +
+          "&prefilled_email=" + encodeURIComponent(String(row.email))
+        : null;
+      const securePaymentLink = directStripeLink
+        ? paymentStartLink(String(row.id), confirmationToken, directStripeLink)
+        : null;
 
-      const html = buildEmailHtml(row as Anmeldung, campName, campDates, stripeLink);
-      const text = buildPlainText(row as Anmeldung, campName, campDates);
+      const html = buildEmailHtml(
+        row as unknown as Anmeldung,
+        campName,
+        campDates,
+        securePaymentLink,
+        confirmationLink,
+      );
+      const text = buildPlainText(
+        row as unknown as Anmeldung,
+        campName,
+        campDates,
+        securePaymentLink,
+        confirmationLink,
+      );
 
       try {
         const resendResp = await fetch("https://api.resend.com/emails", {
@@ -195,7 +314,7 @@ serve(async (req: Request) => {
             from: FROM_EMAIL,
             to: [row.email],
             reply_to: "kontakt@talentexperte.de",
-            subject: `Zahlungserinnerung – ${campName} | TALENTEXPERTE`,
+            subject: `Zahlungserinnerung – ${String(campName).replace(/[\r\n]+/g, " ")} | TALENTEXPERTE`,
             html,
             text,
           }),

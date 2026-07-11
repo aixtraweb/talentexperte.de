@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; object-src 'none'; base-uri 'none'; form-action 'none'; navigate-to 'self' https://buy.stripe.com https://*.stripe.com">
+<title>Sichere Zahlung wird geöffnet – TALENTEXPERTE</title>
+<style>
+html,body{height:100%;margin:0;background:#0b0b0b;color:#fff;font-family:Arial,sans-serif}main{min-height:100%;display:grid;place-items:center;padding:24px;box-sizing:border-box;text-align:center}.box{max-width:520px}.mark{width:42px;height:42px;margin:0 auto 18px;border:4px solid rgba(255,255,255,.15);border-top-color:#e50000;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}h1{font-size:1.35rem;margin:0 0 10px}p{color:#aaa;line-height:1.5}a{display:inline-block;margin-top:12px;padding:12px 20px;border-radius:999px;background:#e50000;color:#fff;text-decoration:none;font-weight:700}a[hidden]{display:none}
+</style>
+</head>
+<body>
+<main><div class="box"><div class="mark" aria-hidden="true"></div><h1 id="title">Sichere Zahlung wird geöffnet</h1><p id="message">Deine persönliche Bestätigung wird für diesen Tab geschützt hinterlegt. Anschließend wirst du zu Stripe weitergeleitet.</p><a id="continueLink" href="#" rel="noreferrer" hidden>Weiter zu Stripe</a></div></main>
+<script>
+(function(){
+  var params=new URLSearchParams(location.hash.replace(/^#/,''));
+  var id=params.get('id')||'';
+  var token=params.get('token')||'';
+  var stripe=params.get('stripe')||'';
+  var validId=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+  var target;
+  try{target=new URL(stripe)}catch(e){target=null}
+  var localTest=target&&target.protocol==='http:'&&(target.hostname==='127.0.0.1'||target.hostname==='localhost');
+  var stripeHost=target&&target.protocol==='https:'&&(target.hostname==='buy.stripe.com'||target.hostname.endsWith('.stripe.com'));
+  if(!validId||token.length<20||!target||(!stripeHost&&!localTest)){
+    document.querySelector('.mark').style.display='none';
+    document.getElementById('title').textContent='Zahlungslink nicht gültig';
+    document.getElementById('message').innerHTML='Bitte öffne den Zahlungslink erneut aus deiner Anmeldung oder E-Mail. Bei Fragen: <a href="mailto:kontakt@talentexperte.de">kontakt@talentexperte.de</a>';
+    history.replaceState(null,'',location.pathname);
+    return;
+  }
+  try{
+    sessionStorage.setItem('te_anmeldung_id',id);
+    sessionStorage.setItem('te_confirmation_token',token);
+  }catch(e){}
+  var continueLink=document.getElementById('continueLink');
+  continueLink.href=target.href;
+  continueLink.hidden=false;
+  history.replaceState(null,'',location.pathname);
+  setTimeout(function(){continueLink.click()},50);
+})();
+</script>
+</body>
+</html>

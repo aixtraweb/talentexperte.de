@@ -40,7 +40,7 @@
       "name": "Ostercamp I Aachen",
       "startDate": "2026-03-30T09:00:00+02:00",
       "endDate": "2026-04-02T15:00:00+02:00",
-      "eventStatus": "https://schema.org/EventScheduled",
+      "eventStatus": "https://schema.org/EventCompleted",
       "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
       "location": {
         "@type": "Place",
@@ -63,7 +63,7 @@
         "url": "https://www.talentexperte.de/anmeldung.html",
         "price": "149",
         "priceCurrency": "EUR",
-        "availability": "https://schema.org/InStock"
+        "availability": "https://schema.org/SoldOut"
       }
     },
     {
@@ -72,7 +72,7 @@
       "name": "Ostercamp II Aachen",
       "startDate": "2026-04-07T09:00:00+02:00",
       "endDate": "2026-04-10T15:00:00+02:00",
-      "eventStatus": "https://schema.org/EventScheduled",
+      "eventStatus": "https://schema.org/EventCompleted",
       "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
       "location": {
         "@type": "Place",
@@ -95,7 +95,7 @@
         "url": "https://www.talentexperte.de/anmeldung.html",
         "price": "149",
         "priceCurrency": "EUR",
-        "availability": "https://schema.org/InStock"
+        "availability": "https://schema.org/SoldOut"
       }
     },
     {
@@ -259,7 +259,7 @@
 <section class="hero-mini"><div class="container">
   <div class="badge">⚽ Online-Anmeldung</div>
   <h1>JETZT <span class="accent">ANMELDEN</span></h1>
-  <p>In 2 Minuten zum Camp-Platz. Wähle dein Camp, fülle das Formular aus und sichere den Platz mit einer Online-Zahlung.</p>
+  <p id="heroIntro">In 2 Minuten zum Camp-Platz. Wähle dein Camp und fülle das Formular aus. Falls ein Verein die Teilnahme finanziert, kannst du deinen persönlichen Code direkt bei den Kinderdaten prüfen.</p>
 </div></section>
 
 <!-- PROGRESS STEPPER -->
@@ -282,7 +282,7 @@
   <!-- CAMP AUSWAHL -->
   <div class="camp-select form-reveal" id="stepSection1">
     <h2><span class="form-step-badge">1</span> Camp auswählen</h2>
-    <p class="camp-select-hint">Mehrere Camps wählbar – Preisberechnung erfolgt automatisch</p>
+    <p class="camp-select-hint">Regulär gilt der angezeigte Listenpreis. Mit bestätigtem Fördercode beträgt der Elternanteil 0 €; gesponserte Plätze bitte einzeln anmelden.</p>
     <div class="camp-grid" id="campGrid">
       <div class="camp-loading"><div class="spinner"></div>Camps werden geladen…</div>
     </div>
@@ -291,6 +291,7 @@
         <div><span class="price-summary-label" id="priceLabel">0 Camps gewählt</span></div>
         <div class="price-summary-total" id="priceTotal">0€</div>
       </div>
+      <div class="sponsor-price-details" id="sponsorPriceDetails" hidden></div>
     </div>
   </div>
 
@@ -328,6 +329,21 @@
         <label>Geburtsdatum <span class="req">*</span></label>
         <input type="text" id="geburtsdatum" name="geburtsdatum" inputmode="numeric" autocomplete="bday" placeholder="dd.mm.yyyy" maxlength="10" required>
         <span class="error-msg">Bitte Geburtsdatum eingeben</span>
+      </div>
+    </div>
+
+    <div class="sponsor-code-panel" id="sponsorCodePanel">
+      <div class="sponsor-code-copy">
+        <span class="sponsor-kicker">Optional</span>
+        <h3>Gutschein-Nummer</h3>
+      </div>
+      <div class="sponsor-code-control">
+        <label for="sponsor_code">Gutschein-Nummer</label>
+        <div class="sponsor-code-row">
+          <input type="text" id="sponsor_code" name="sponsor_code" placeholder="z. B. 1118 (die letzten 4 Ziffern genügen)" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="sponsorCodeStatus">
+        </div>
+        <div class="sponsor-code-status" id="sponsorCodeStatus" role="status" aria-live="polite"></div>
+        <p class="sponsor-privacy">Code, Kindesname, Geburtsdatum und Camp werden ausschließlich zur Prüfung der Förderberechtigung und zur Vermeidung einer Mehrfacheinlösung mit der hinterlegten Vereinsliste abgeglichen. Mehr dazu in der <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a>.</p>
       </div>
     </div>
   </div>
@@ -397,7 +413,7 @@
       <span class="btn-text">Verbindlich anmelden</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </button>
-    <p class="submit-note">Nach der Anmeldung wirst du zur sicheren Bezahlung über Stripe weitergeleitet.<br>Der Platz wird erst nach Zahlungseingang verbindlich reserviert.</p>
+    <p class="submit-note" id="submitNote">Nach der Anmeldung wirst du zur sicheren Bezahlung über Stripe weitergeleitet.<br>Der Platz wird erst nach Zahlungseingang verbindlich reserviert.</p>
   </div>
   </form>
   </div><!-- /form-column -->
@@ -405,7 +421,7 @@
   <aside class="summary-sidebar" id="summarySidebar">
     <div class="sidebar-card" style="text-align:center">
       <div class="sidebar-total" id="sidebarTotal"></div>
-      <div class="sidebar-trust">
+      <div class="sidebar-trust" id="sidebarTrust">
         <p>🔒 Sichere Zahlung via Stripe</p>
         <p>✓ Platz wird nach Zahlung reserviert</p>
         <p>↩ Stornierung möglich (lt. AGB)</p>
@@ -429,11 +445,20 @@
         <path class="checkmark-check" fill="none" d="M14 26l9 9 16-16"/>
       </svg>
     </div>
-    <h2>Anmeldung erfolgreich!</h2>
+    <h2 id="successTitle">Anmeldung erfolgreich!</h2>
     <p id="successMessage">Die Anmeldung wurde gespeichert. Bitte bezahle jetzt, um den Platz verbindlich zu reservieren.</p>
+    <div class="overlay-partial-warning" id="partialFailureBox" hidden>
+      <strong>Ein Teil der Auswahl wurde nicht gespeichert.</strong>
+      <p id="partialFailureMessage"></p>
+    </div>
+    <div class="overlay-sponsor-confirmation" id="overlaySponsorConfirmation" hidden>
+      <span>Finanzierung bestätigt</span>
+      <strong id="overlaySponsorPartner">–</strong>
+      <p>Elternanteil 0 € · Keine Zahlung erforderlich</p>
+    </div>
     <div id="bookingIdBox" style="margin:12px 0;padding:10px 16px;background:rgba(255,255,255,.07);border-radius:8px;font-size:.85rem;color:#aaa;display:none;">
       Buchungs-Nr.: <strong id="overlayBookingId" style="color:#fff;letter-spacing:.08em;"></strong>
-      <br><span style="font-size:.75rem;">Notiere diese Nummer – du kannst damit deine Bestätigung jederzeit erneut abrufen.</span>
+      <br><span style="font-size:.75rem;">Für Rückfragen bereithalten. Den sicheren persönlichen Bestätigungslink erhältst du per E-Mail.</span>
     </div>
     <a href="#" class="btn-overlay btn-pay" id="payBtn">Jetzt bezahlen →</a>
     <br>
@@ -471,9 +496,121 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // ============================================================
 let camps = [];
 let selectedCampIds = [];
+let sponsorState = {
+  status: 'idle',
+  code: '',
+  partnerName: '',
+  partnerSlug: '',
+  fingerprint: '',
+  validations: [],
+  message: ''
+};
 const formStartedAtField = document.getElementById('form_started_at');
 const formTokenField = document.getElementById('form_token');
 let registrationTokenPromise = null;
+
+function getSponsorCode() {
+  return (document.getElementById('sponsor_code').value || '').trim();
+}
+
+function getSelectedCamps() {
+  return camps.filter(function(camp) { return selectedCampIds.indexOf(camp.id) > -1; });
+}
+
+function getSelectedListPrice() {
+  return getSelectedCamps().reduce(function(sum, camp) {
+    return sum + Number(camp.aktueller_preis || camp.preis_euro || 0);
+  }, 0);
+}
+
+function getSponsorValidationFingerprint() {
+  return JSON.stringify({
+    code: getSponsorCode().toUpperCase(),
+    vorname: document.getElementById('vorname').value.trim(),
+    nachname: document.getElementById('nachname').value.trim(),
+    geburtsdatum: parseGermanDate(document.getElementById('geburtsdatum').value) || '',
+    camps: selectedCampIds.slice().sort()
+  });
+}
+
+function setSponsorState(status, details) {
+  details = details || {};
+  sponsorState.status = status;
+  sponsorState.code = details.code !== undefined ? details.code : getSponsorCode();
+  sponsorState.partnerName = details.partnerName || '';
+  sponsorState.partnerSlug = details.partnerSlug || '';
+  sponsorState.fingerprint = details.fingerprint || '';
+  sponsorState.validations = details.validations || [];
+  sponsorState.message = details.message || '';
+  renderSponsorState();
+}
+
+function resetSponsorValidation(message) {
+  if (!getSponsorCode()) {
+    setSponsorState('idle');
+    return;
+  }
+  if (selectedCampIds.length > 1) {
+    setSponsorState('invalid', {
+      code: getSponsorCode(),
+      message: 'Gesponserte Plätze bitte einzeln anmelden. Wähle für diesen Code genau ein Camp aus.'
+    });
+    return;
+  }
+  setSponsorState('pending', {
+    code: getSponsorCode(),
+    message: message || 'Die Gutschein-Nummer wird automatisch geprüft …'
+  });
+}
+
+function renderSponsorState() {
+  var panel = document.getElementById('sponsorCodePanel');
+  var statusEl = document.getElementById('sponsorCodeStatus');
+  var input = document.getElementById('sponsor_code');
+  var isValid = sponsorState.status === 'valid';
+  var isChecking = sponsorState.status === 'checking';
+  var hasSponsorCode = !!getSponsorCode();
+
+  panel.dataset.state = sponsorState.status;
+  document.body.classList.toggle('sponsor-active', isValid);
+  input.setAttribute('aria-invalid', sponsorState.status === 'invalid' ? 'true' : 'false');
+
+  var statusText = '';
+  if (sponsorState.status === 'checking') statusText = 'Die Gutschein-Nummer wird geprüft …';
+  if (sponsorState.status === 'pending') statusText = sponsorState.message;
+  if (sponsorState.status === 'valid') {
+    statusText = '✓ Gutschein bestätigt: Finanzierung durch ' + sponsorState.partnerName + '. Für dich entstehen keine Kosten.';
+  }
+  if (sponsorState.status === 'invalid') {
+    statusText = sponsorState.message;
+  }
+  statusEl.textContent = statusText;
+
+  var btnText = document.querySelector('#submitBtn .btn-text');
+  var submitNote = document.getElementById('submitNote');
+  if (isValid) {
+    btnText.textContent = 'Kostenfrei anmelden';
+    submitNote.innerHTML = 'Die Teilnahme wird vollständig durch <strong>' + escapeHtml(sponsorState.partnerName) + '</strong> finanziert.<br>Elternanteil 0 € · Keine Zahlung erforderlich.';
+  } else if (hasSponsorCode) {
+    btnText.textContent = isChecking ? 'Gutschein wird geprüft' : 'Verbindlich anmelden';
+    submitNote.textContent = 'Die Gutschein-Nummer wird vor dem Absenden automatisch geprüft. Mit gültigem Gutschein wird keine Zahlung gestartet.';
+  } else {
+    btnText.textContent = 'Verbindlich anmelden';
+    submitNote.innerHTML = 'Nach der Anmeldung wirst du zur sicheren Bezahlung über Stripe weitergeleitet.<br>Der Platz wird erst nach Zahlungseingang verbindlich reserviert.';
+  }
+
+  updateSummary();
+  checkFormReady();
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 if (formStartedAtField) {
   formStartedAtField.value = String(Math.floor(Date.now() / 1000));
@@ -540,10 +677,18 @@ async function loadCamps() {
       return;
     }
 
+    // Abgelaufene Camps bleiben sichtbar, sind aber klar als Vergangenheit
+    // markiert, nicht auswählbar und stehen am Ende der Liste.
+    const heute = new Date();
+    heute.setHours(0, 0, 0, 0);
+    const istAbgelaufen = c => Boolean(c.datum_bis) && new Date(c.datum_bis + 'T23:59:59') < heute;
+    camps.sort((a, b) => Number(istAbgelaufen(a)) - Number(istAbgelaufen(b)));
+
     grid.innerHTML = camps.map(camp => {
+      const abgelaufen = istAbgelaufen(camp);
       const frei = camp.freie_plaetze;
       const voll = frei <= 0;
-      const wenig = frei > 0 && frei <= 5;
+      const wenig = !abgelaufen && frei > 0 && frei <= 5;
       const preis = camp.aktueller_preis || camp.preis_euro;
       const fruehbucher = camp.fruehbucher_aktiv;
 
@@ -555,8 +700,8 @@ async function loadCamps() {
       const datumBis = formatDate(camp.datum_bis);
 
       return `
-        <label class="camp-option ${voll ? 'disabled' : ''}" data-id="${camp.id}">
-          <input type="checkbox" name="camp" value="${camp.id}" ${voll ? 'disabled' : ''}>
+        <label class="camp-option ${abgelaufen ? 'disabled expired' : voll ? 'disabled' : ''}" data-id="${camp.id}">
+          <input type="checkbox" name="camp" value="${camp.id}" ${(voll || abgelaufen) ? 'disabled' : ''}>
           <div class="camp-radio"></div>
           <div class="camp-info">
             <h3>${saisonEmoji} ${camp.name}</h3>
@@ -568,10 +713,10 @@ async function loadCamps() {
           <div class="camp-right">
             <div>
               <div class="camp-price-tag">${preis}€</div>
-              <div class="camp-spots ${voll ? 'full' : wenig ? 'few' : 'available'}">
-                ${voll ? '✕ Ausgebucht' : wenig ? `⚡ Nur noch ${frei} Plätze` : `✓ ${frei} Plätze frei`}
+              <div class="camp-spots ${abgelaufen ? 'expired' : voll ? 'full' : wenig ? 'few' : 'available'}">
+                ${abgelaufen ? '⏳ Abgelaufen · Vergangenheit' : voll ? '✕ Ausgebucht' : wenig ? `⚡ Nur noch ${frei} Plätze` : `✓ ${frei} Plätze frei`}
               </div>
-              ${fruehbucher ? '<div class="camp-fruehbucher">🏷️ Frühbucher-Preis</div>' : ''}
+              ${(fruehbucher && !abgelaufen) ? '<div class="camp-fruehbucher">🏷️ Frühbucher-Preis</div>' : ''}
             </div>
           </div>
         </label>
@@ -592,6 +737,10 @@ async function loadCamps() {
           selectedCampIds.push(id);
           el.classList.add('selected');
           el.querySelector('input').checked = true;
+        }
+        if (getSponsorCode()) {
+          resetSponsorValidation('Die Gutschein-Nummer wird automatisch geprüft …');
+          scheduleSponsorValidation(300);
         }
         updateSummary();
         checkFormReady();
@@ -617,22 +766,33 @@ function updateSummary() {
   const campEl = document.getElementById('summaryCamp');
   const priceEl = document.getElementById('summaryPrice');
   const priceSummary = document.getElementById('priceSummary');
+  const sponsorDetails = document.getElementById('sponsorPriceDetails');
+  const sponsored = sponsorState.status === 'valid';
 
   if (selectedCampIds.length > 0) {
     var selected = camps.filter(c => selectedCampIds.indexOf(c.id) > -1);
     var total = selected.reduce(function(s, c) { return s + (c.aktueller_preis || c.preis_euro); }, 0);
     var names = selected.map(c => c.name).join(', ');
 
-    campEl.innerHTML = '<strong>' + selected.length + ' Camp' + (selected.length > 1 ? 's' : '') + '</strong>' + names;
-    priceEl.textContent = total + '€';
+    campEl.innerHTML = '<strong>' + selected.length + ' Camp' + (selected.length > 1 ? 's' : '') + '</strong> · ' + names;
+    priceEl.textContent = sponsored ? '0 € für Sie' : total + '€';
     bar.classList.add('visible');
 
     // Price summary box
-    document.getElementById('priceLabel').textContent = selected.length + ' Camp' + (selected.length > 1 ? 's' : '') + ' gewählt: ' + names;
-    document.getElementById('priceTotal').textContent = total + '€';
+    document.getElementById('priceLabel').textContent = sponsored
+      ? selected.length + ' Camp' + (selected.length > 1 ? 's' : '') + ' · Finanzierung bestätigt'
+      : selected.length + ' Camp' + (selected.length > 1 ? 's' : '') + ' gewählt: ' + names;
+    document.getElementById('priceTotal').textContent = sponsored ? '0 € für Sie' : total + '€';
+    priceSummary.classList.toggle('sponsored', sponsored);
+    sponsorDetails.hidden = !sponsored;
+    sponsorDetails.textContent = sponsored
+      ? 'Listenpreis ' + total + ' € · ' + sponsorState.partnerName + ' übernimmt ' + total + ' € · Elternanteil 0 €'
+      : '';
     priceSummary.style.display = 'block';
   } else {
     bar.classList.remove('visible');
+    priceSummary.classList.remove('sponsored');
+    sponsorDetails.hidden = true;
     priceSummary.style.display = 'none';
   }
 }
@@ -681,13 +841,18 @@ function checkFormReady() {
   const agbChecked = document.getElementById('agb').checked;
   const campSelected = selectedCampIds.length > 0;
   const geburtsdatumValid = !!parseGermanDate(document.getElementById('geburtsdatum').value);
-  document.getElementById('submitBtn').disabled = !(allFilled && agbChecked && campSelected && geburtsdatumValid);
+  const sponsorReady = !getSponsorCode() || sponsorState.status === 'valid';
+  document.getElementById('submitBtn').disabled = !(allFilled && agbChecked && campSelected && geburtsdatumValid && sponsorReady);
 }
 
 // Live-Validation
 requiredFields.forEach(id => {
   document.getElementById(id).addEventListener('input', () => {
     document.getElementById(id).closest('.field').classList.remove('error');
+    if (['vorname', 'nachname', 'geburtsdatum'].indexOf(id) > -1 && getSponsorCode()) {
+      resetSponsorValidation('Die Gutschein-Nummer wird automatisch geprüft …');
+      scheduleSponsorValidation();
+    }
     checkFormReady();
   });
 });
@@ -732,8 +897,162 @@ function validateForm() {
 }
 
 // ============================================================
+// SPONSORCODE PRÜFEN
+// ============================================================
+async function validateSponsorSelection(options) {
+  options = options || {};
+  var code = getSponsorCode();
+  var geburtsdatum = parseGermanDate(document.getElementById('geburtsdatum').value);
+  var vorname = document.getElementById('vorname').value.trim();
+  var nachname = document.getElementById('nachname').value.trim();
+
+  if (!code) {
+    setSponsorState('idle');
+    return false;
+  }
+
+  if (selectedCampIds.length > 1) {
+    setSponsorState('invalid', {
+      code: code,
+      message: 'Gesponserte Plätze bitte einzeln anmelden. Wähle für diesen Code genau ein Camp aus.'
+    });
+    if (options.scroll !== false) {
+      document.getElementById('sponsorCodePanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return false;
+  }
+
+  if (selectedCampIds.length === 0) {
+    setSponsorState('pending', {
+      code: code,
+      message: 'Bitte wähle oben ein Camp aus – die Gutschein-Nummer wird dann automatisch geprüft.'
+    });
+    if (options.scroll !== false) {
+      document.getElementById('sponsorCodePanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return false;
+  }
+
+  var currentFingerprint = getSponsorValidationFingerprint();
+  if (
+    sponsorState.status === 'valid' &&
+    sponsorState.code === code &&
+    sponsorState.fingerprint === currentFingerprint
+  ) return true;
+
+  if (!await prepareRegistrationToken()) {
+    setSponsorState('invalid', {
+      code: code,
+      message: 'Die sichere Codeprüfung konnte nicht vorbereitet werden. Bitte lade die Seite neu und versuche es erneut.'
+    });
+    return false;
+  }
+
+  setSponsorState('checking', { code: code });
+  var validationFingerprint = getSponsorValidationFingerprint();
+
+  try {
+    var checks = await Promise.all(selectedCampIds.map(async function(campId) {
+      var response = await fetch(SUPABASE_URL + '/functions/v1/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'validate_sponsor',
+          sponsor_code: code,
+          vorname: vorname,
+          nachname: nachname,
+          geburtsdatum: geburtsdatum,
+          camp_id: campId,
+          website_url: document.getElementById('website_url').value,
+          contact_url: document.getElementById('contact_url').value,
+          fax_number: document.getElementById('fax_number').value,
+          form_started_at: Number(formStartedAtField.value || 0),
+          form_token: formTokenField.value
+        })
+      });
+      var payload = {};
+      try { payload = await response.json(); } catch (e) {}
+      if (!response.ok || !payload.valid) {
+        var serverMessage = payload.error && payload.error !== 'Validierungsfehler' ? payload.error : '';
+        throw new Error(serverMessage || 'Diese Gutschein-Nummer wurde nicht gefunden. Bitte prüfe die Ziffern und das gewählte Camp.');
+      }
+      return payload;
+    }));
+
+    var partnerName = checks[0].partner_name || 'dem Förderpartner';
+    var allSamePartner = checks.every(function(check) {
+      return (check.partner_name || partnerName) === partnerName;
+    });
+    if (!allSamePartner) throw new Error('Die gewählten Camps sind unterschiedlichen Förderpartnern zugeordnet. Bitte melde dich bei uns.');
+    if (getSponsorValidationFingerprint() !== validationFingerprint) {
+      resetSponsorValidation('Die Angaben haben sich während der Prüfung geändert. Bitte prüfe den Code erneut.');
+      return false;
+    }
+
+    setSponsorState('valid', {
+      code: code,
+      fingerprint: validationFingerprint,
+      partnerName: partnerName,
+      partnerSlug: checks[0].partner_slug || '',
+      validations: checks,
+      message: checks[0].message || ''
+    });
+    return true;
+  } catch (error) {
+    setSponsorState('invalid', {
+      code: code,
+      message: error && error.message
+        ? error.message
+        : 'Der Code konnte gerade nicht geprüft werden. Bitte versuche es erneut.'
+    });
+    if (options.scroll !== false) {
+      document.getElementById('sponsorCodePanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return false;
+  }
+}
+
+// Automatische Prüfung im Hintergrund: sobald eine Nummer (mind. 4 Zeichen)
+// eingegeben und ein Camp gewählt ist. Kein manueller Prüf-Button nötig;
+// der Submit prüft zusätzlich immer selbst, bevor etwas gesendet wird.
+var sponsorAutoTimer = null;
+function scheduleSponsorValidation(delayMs) {
+  clearTimeout(sponsorAutoTimer);
+  var code = getSponsorCode();
+  if (!code) {
+    setSponsorState('idle');
+    return;
+  }
+  if (code.replace(/[^A-Za-z0-9]/g, '').length < 4) return;
+  sponsorAutoTimer = setTimeout(function() {
+    if (sponsorState.status === 'checking') return;
+    validateSponsorSelection({ scroll: false });
+  }, delayMs === undefined ? 700 : delayMs);
+}
+
+document.getElementById('sponsor_code').addEventListener('input', function() {
+  resetSponsorValidation('Die Gutschein-Nummer wird automatisch geprüft …');
+  scheduleSponsorValidation();
+});
+document.getElementById('sponsor_code').addEventListener('blur', function() {
+  this.value = this.value.trim().toUpperCase();
+  scheduleSponsorValidation(0);
+});
+
+// ============================================================
 // FORM SUBMIT
 // ============================================================
+function buildPaymentStartUrl(result) {
+  if (!result || !result.anmeldung_id || !result.confirmation_token || !result.stripe_link) {
+    throw new Error('Für den sicheren Zahlweg fehlen Bestätigungsdaten. Bitte verwende den persönlichen Link aus der E-Mail oder kontaktiere uns.');
+  }
+  return 'zahlung-start.html#' + new URLSearchParams({
+    id: result.anmeldung_id,
+    token: result.confirmation_token,
+    stripe: result.stripe_link
+  }).toString();
+}
+
 document.getElementById('registrationForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   
@@ -744,8 +1063,23 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
     return;
   }
 
+  const sponsorAttempt = !!getSponsorCode();
+  if (sponsorAttempt && !await validateSponsorSelection({ scroll: true })) {
+    // Ein angegebener Sponsorcode darf niemals still in den normalen Zahlweg fallen.
+    return;
+  }
+  const sponsorFingerprint = sponsorAttempt ? getSponsorValidationFingerprint() : '';
+  const verifiedSponsorCode = sponsorAttempt ? sponsorState.code : '';
+
   if (!await prepareRegistrationToken()) {
     showRegistrationError('Die Anmeldung konnte nicht vorbereitet werden. Bitte lade die Seite neu und versuche es erneut.');
+    return;
+  }
+  if (sponsorAttempt && (
+    sponsorState.status !== 'valid' ||
+    getSponsorValidationFingerprint() !== sponsorFingerprint
+  )) {
+    resetSponsorValidation('Die Angaben haben sich geändert. Bitte prüfe den Code erneut.');
     return;
   }
 
@@ -770,15 +1104,17 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
     fax_number: document.getElementById('fax_number').value,
     form_started_at: Number(document.getElementById('form_started_at').value || 0),
     form_token: document.getElementById('form_token').value,
+    sponsor_code: sponsorAttempt ? verifiedSponsorCode : null,
   };
+  const campIdsForSubmit = selectedCampIds.slice();
 
   try {
     // Für jedes gewählte Camp eine Anmeldung senden
     var results = [];
     var errors = [];
 
-    for (var i = 0; i < selectedCampIds.length; i++) {
-      var cid = selectedCampIds[i];
+    for (var i = 0; i < campIdsForSubmit.length; i++) {
+      var cid = campIdsForSubmit[i];
       var data = Object.assign({}, formData, { camp_id: cid });
 
       var res = await fetch(SUPABASE_URL + '/functions/v1/register', {
@@ -795,61 +1131,131 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
       }
 
       if (res.ok && result.success) {
-        results.push(result);
+        if (sponsorAttempt && !(
+          result.payment_required === false &&
+          result.payer_type === 'sponsor' &&
+          result.parent_payment_status === 'not_required' &&
+          Number(result.parent_amount) === 0 &&
+          !result.stripe_link
+        )) {
+          errors.push('Der Sponsorstatus wurde vom Server nicht eindeutig bestätigt. Es wurde kein Zahlweg geöffnet. Bitte wende dich mit dem Namen des Kindes an uns.');
+        } else {
+          results.push(result);
+        }
       } else {
         errors.push(result.error || 'Fehler bei Camp ' + (i+1));
       }
     }
 
+    if (sponsorAttempt && errors.length > 0) {
+      document.getElementById('errorMessage').textContent = errors.join('. ');
+      document.getElementById('errorOverlay').classList.add('visible');
+      return;
+    }
+
     if (results.length > 0) {
       // Daten für Bestätigungsseite speichern
       var campNames = results.map(function(r) { return r.camp_name; });
-      var totalBetrag = results.reduce(function(s, r) { return s + r.betrag; }, 0);
+      var isSponsored = sponsorAttempt && results.every(function(r) {
+        return r.payment_required === false && r.payer_type === 'sponsor';
+      });
+      var listPriceTotal = results.reduce(function(s, r) {
+        return s + Number(r.list_price !== undefined ? r.list_price : (r.betrag || 0));
+      }, 0);
+      var parentAmountTotal = results.reduce(function(s, r) {
+        return s + Number(r.parent_amount !== undefined ? r.parent_amount : (r.betrag || 0));
+      }, 0);
+      var sponsorAmountTotal = results.reduce(function(s, r) {
+        return s + Number(r.sponsor_amount || 0);
+      }, 0);
+      var totalBetrag = parentAmountTotal;
       var firstResult = results[0];
+      var partnerName = firstResult.partner_name || sponsorState.partnerName || '';
+      var payerType = firstResult.payer_type || (isSponsored ? 'sponsor' : 'parent');
+      var parentPaymentStatus = firstResult.parent_payment_status || (isSponsored ? 'not_required' : 'open');
 
-      localStorage.setItem('te_anmeldung_id', firstResult.anmeldung_id);
-      localStorage.setItem('te_camp_name', campNames.join(', '));
-      localStorage.setItem('te_betrag', totalBetrag);
-      localStorage.setItem('te_kind_name', formData.vorname + ' ' + formData.nachname);
-      localStorage.setItem('te_eltern_name', formData.eltern_vorname + ' ' + formData.eltern_nachname);
-      localStorage.setItem('te_email', formData.email);
-      localStorage.setItem('te_telefon', formData.telefon);
-      localStorage.setItem('te_geburtsdatum', document.getElementById('geburtsdatum').value.trim());
-      localStorage.setItem('te_camp_id', selectedCampIds[0]);
-      localStorage.setItem('te_camp_ids', JSON.stringify(selectedCampIds));
-      localStorage.setItem('te_camp_count', results.length);
-      try{localStorage.removeItem('te_form_draft');}catch(e){}
+      sessionStorage.setItem('te_confirmation_credentials', JSON.stringify(results.map(function(r) {
+        return { id: r.anmeldung_id, token: r.confirmation_token || '', camp: r.camp_name || '' };
+      })));
+
+      sessionStorage.setItem('te_anmeldung_id', firstResult.anmeldung_id);
+      if (firstResult.confirmation_token) {
+        sessionStorage.setItem('te_confirmation_token', firstResult.confirmation_token);
+      } else {
+        sessionStorage.removeItem('te_confirmation_token');
+      }
+      sessionStorage.setItem('te_camp_name', campNames.join(', '));
+      sessionStorage.setItem('te_betrag', totalBetrag);
+      sessionStorage.setItem('te_payment_required', String(!isSponsored));
+      sessionStorage.setItem('te_payer_type', payerType);
+      sessionStorage.setItem('te_parent_payment_status', parentPaymentStatus);
+      sessionStorage.setItem('te_partner_name', partnerName);
+      sessionStorage.setItem('te_list_price', listPriceTotal);
+      sessionStorage.setItem('te_parent_amount', parentAmountTotal);
+      sessionStorage.setItem('te_sponsor_amount', sponsorAmountTotal);
+      sessionStorage.setItem('te_kind_name', formData.vorname + ' ' + formData.nachname);
+      sessionStorage.setItem('te_eltern_name', formData.eltern_vorname + ' ' + formData.eltern_nachname);
+      sessionStorage.setItem('te_email', formData.email);
+      sessionStorage.setItem('te_telefon', formData.telefon);
+      sessionStorage.setItem('te_geburtsdatum', document.getElementById('geburtsdatum').value.trim());
+      sessionStorage.setItem('te_camp_id', campIdsForSubmit[0]);
+      sessionStorage.setItem('te_camp_ids', JSON.stringify(campIdsForSubmit));
+      sessionStorage.setItem('te_camp_count', results.length);
+      try{sessionStorage.removeItem('te_form_draft');localStorage.removeItem('te_form_draft');}catch(e){}
 
       // Buchungsnummer anzeigen
-      var shortId = firstResult.anmeldung_id ? firstResult.anmeldung_id.slice(0, 8).toUpperCase() : '';
-      if (shortId) {
-        document.getElementById('overlayBookingId').textContent = shortId;
+      var bookingRefs = results.filter(function(r){return r.anmeldung_id}).map(function(r){
+        return (r.camp_name ? r.camp_name + ': ' : '') + r.anmeldung_id.slice(0, 8).toUpperCase();
+      });
+      if (bookingRefs.length) {
+        document.getElementById('overlayBookingId').textContent = bookingRefs.join(' · ');
         document.getElementById('bookingIdBox').style.display = 'block';
       }
 
       // Erfolgsmeldung
-      var successMsg = formData.vorname + ' wurde erfolgreich zu ' + results.length + ' Camps angemeldet (' + campNames.join(', ') + ')! Bitte bezahle jedes Camp einzeln über die Buttons unten (' + totalBetrag + '€ gesamt), um die Plätze verbindlich zu reservieren.';
-      if (results.length === 1) {
-        successMsg = formData.vorname + ' wurde erfolgreich zum ' + campNames[0] + ' angemeldet! Bitte bezahle jetzt ' + totalBetrag + '€, um den Platz verbindlich zu reservieren.';
+      var successMsg;
+      if (isSponsored) {
+        successMsg = formData.vorname + ' wurde erfolgreich ' + (results.length > 1 ? 'zu ' + results.length + ' Camps' : 'zum ' + campNames[0]) + ' angemeldet. Die Teilnahme wird vollständig durch ' + partnerName + ' finanziert. Für dich ist keine Zahlung erforderlich.';
+      } else {
+        successMsg = formData.vorname + ' wurde erfolgreich zu ' + results.length + ' Camps angemeldet (' + campNames.join(', ') + ')! Bitte bezahle jedes Camp einzeln über die Buttons unten (' + totalBetrag + '€ gesamt), um die Plätze verbindlich zu reservieren.';
+        if (results.length === 1) {
+          successMsg = formData.vorname + ' wurde erfolgreich zum ' + campNames[0] + ' angemeldet! Bitte bezahle jetzt ' + totalBetrag + '€, um den Platz verbindlich zu reservieren.';
+        }
       }
+      var partialFailureBox = document.getElementById('partialFailureBox');
+      partialFailureBox.hidden = errors.length === 0;
+      document.getElementById('partialFailureMessage').textContent = errors.join(' · ');
+      document.getElementById('successTitle').textContent = errors.length
+        ? 'Teilweise erfolgreich – bitte prüfen'
+        : isSponsored ? 'Kostenfreie Anmeldung bestätigt!' : 'Anmeldung erfolgreich!';
+      if(errors.length)successMsg += ' Für '+errors.length+' weitere ausgewählte Anmeldung'+(errors.length===1?'':'en')+' ist ein Fehler aufgetreten; bitte beachte den Hinweis unten.';
       document.getElementById('successMessage').textContent = successMsg;
 
       var payBtn = document.getElementById('payBtn');
+      var sponsorConfirmation = document.getElementById('overlaySponsorConfirmation');
       // Dynamische Buttons eines früheren Submits entfernen
       document.querySelectorAll('.btn-pay-multi').forEach(function(b) { b.remove(); });
 
-      if (results.length === 1 && firstResult.stripe_link) {
-        payBtn.href = firstResult.stripe_link;
+      if (isSponsored) {
+        payBtn.style.display = 'none';
+        payBtn.removeAttribute('href');
+        payBtn.onclick = null;
+        sponsorConfirmation.hidden = false;
+        document.getElementById('overlaySponsorPartner').textContent = partnerName;
+      } else if (results.length === 1 && firstResult.stripe_link) {
+        sponsorConfirmation.hidden = true;
+        payBtn.href = buildPaymentStartUrl(firstResult);
         payBtn.style.display = 'inline-flex';
 
         // Auto-PDF beim Stripe-Klick: PDF speichern, dann weiterleiten
         payBtn.onclick = async function(e) {
           e.preventDefault();
-          var stripeUrl = firstResult.stripe_link;
+          var stripeUrl = buildPaymentStartUrl(firstResult);
           try { await downloadRegistrationPDF(); } catch (ex) {}
           setTimeout(function() { window.location.href = stripeUrl; }, 800);
         };
       } else if (results.length > 1) {
+        sponsorConfirmation.hidden = true;
         // Jeder Stripe-Payment-Link deckt genau ein Camp ab → ein Button pro Camp,
         // in neuem Tab, damit alle Camps nacheinander bezahlt werden können
         payBtn.style.display = 'none';
@@ -858,7 +1264,7 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
           if (!r.stripe_link) return;
           var a = document.createElement('a');
           a.className = 'btn-overlay btn-pay btn-pay-multi';
-          a.href = r.stripe_link;
+          a.href = buildPaymentStartUrl(r);
           a.target = '_blank';
           a.rel = 'noopener';
           a.textContent = r.camp_name + ' – ' + r.betrag + '€ bezahlen →';
@@ -869,6 +1275,7 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
           payBtn.parentNode.insertBefore(a, payBtn);
         });
       } else {
+        sponsorConfirmation.hidden = true;
         payBtn.style.display = 'none';
       }
 
@@ -922,15 +1329,22 @@ async function downloadRegistrationPDF() {
 
   var logoBase64 = await loadLogoBase64();
 
-  var kindName   = (localStorage.getItem('te_kind_name') || '').trim();
-  var elternName = (localStorage.getItem('te_eltern_name') || '').trim();
-  var email      = (localStorage.getItem('te_email') || '').trim();
-  var telefon    = (localStorage.getItem('te_telefon') || '').trim();
-  var geburt     = (localStorage.getItem('te_geburtsdatum') || '').trim();
-  var campName   = (localStorage.getItem('te_camp_name') || '').trim();
-  var betrag     = localStorage.getItem('te_betrag') || '0';
-  var campCount  = localStorage.getItem('te_camp_count') || '1';
-  var anmId      = localStorage.getItem('te_anmeldung_id') || '';
+  var kindName   = (sessionStorage.getItem('te_kind_name') || '').trim();
+  var elternName = (sessionStorage.getItem('te_eltern_name') || '').trim();
+  var email      = (sessionStorage.getItem('te_email') || '').trim();
+  var telefon    = (sessionStorage.getItem('te_telefon') || '').trim();
+  var geburt     = (sessionStorage.getItem('te_geburtsdatum') || '').trim();
+  var campName   = (sessionStorage.getItem('te_camp_name') || '').trim();
+  var betrag     = sessionStorage.getItem('te_betrag') || '0';
+  var campCount  = sessionStorage.getItem('te_camp_count') || '1';
+  var anmId      = sessionStorage.getItem('te_anmeldung_id') || '';
+  var payerType  = sessionStorage.getItem('te_payer_type') || 'parent';
+  var paymentStatus = sessionStorage.getItem('te_parent_payment_status') || 'open';
+  var partnerName = sessionStorage.getItem('te_partner_name') || '';
+  var listPrice = Number(sessionStorage.getItem('te_list_price') || betrag || 0);
+  var parentAmount = Number(sessionStorage.getItem('te_parent_amount') || betrag || 0);
+  var sponsorAmount = Number(sessionStorage.getItem('te_sponsor_amount') || 0);
+  var isSponsored = payerType === 'sponsor' && paymentStatus === 'not_required';
   var heute      = new Date().toLocaleDateString('de-DE');
 
   function fmtD(s) {
@@ -958,7 +1372,7 @@ async function downloadRegistrationPDF() {
   doc.text('TALENTEXPERTE', textX, 18);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text(u('Fußballschule seit 2005 | Anmeldung eingegangen'), textX, 26);
+  doc.text(u(isSponsored ? 'Fußballschule seit 2005 | Kostenfreie Anmeldung bestätigt' : 'Fußballschule seit 2005 | Anmeldung eingegangen'), textX, 26);
   doc.setFontSize(8);
   doc.text('Buchungs-Nr: ' + (anmId ? anmId.slice(0, 8).toUpperCase() : '–'), w - margin, 18, { align: 'right' });
   doc.text('Datum: ' + heute, w - margin, 25, { align: 'right' });
@@ -974,7 +1388,9 @@ async function downloadRegistrationPDF() {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  doc.text(u('Ihre Anmeldung ist eingegangen \u2013 ein Platz wird nach Zahlungseingang verbindlich reserviert.'), margin, y);
+  doc.text(u(isSponsored
+    ? 'Der Camp-Platz ist verbindlich reserviert. Für Sie ist keine Zahlung erforderlich.'
+    : 'Ihre Anmeldung ist eingegangen \u2013 ein Platz wird nach Zahlungseingang verbindlich reserviert.'), margin, y);
   y += 14;
 
   // Teilnehmer-Box
@@ -1021,16 +1437,32 @@ async function downloadRegistrationPDF() {
   doc.text(u(campName) || '–', margin + 45, y + 17);
   y += 30;
 
-  // Betrag-Box (gelb = ausstehend)
-  doc.setFillColor(251, 191, 36);
-  doc.roundedRect(margin, y, col, 16, 3, 3, 'F');
-  doc.setTextColor(80, 50, 0);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  var betragLabel = betrag + ',00 EUR';
-  if (parseInt(campCount) > 1) betragLabel += ' (' + campCount + ' Camps)';
-  doc.text('Betrag: ' + betragLabel, margin + 8, y + 11);
-  y += 26;
+  if (isSponsored) {
+    // Sponsor-Box: unmissverständlich, ohne Zahlungsaufforderung
+    doc.setFillColor(13, 148, 136);
+    doc.roundedRect(margin, y, col, 35, 3, 3, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text(u('Vollständig durch ' + partnerName + ' finanziert'), margin + 8, y + 10);
+    doc.setFontSize(9);
+    doc.text('Listenpreis: ' + listPrice + ',00 EUR', margin + 8, y + 19);
+    doc.text(u('Übernahme durch ' + partnerName + ': ' + sponsorAmount + ',00 EUR'), margin + 8, y + 26);
+    doc.text('Elternanteil: ' + parentAmount + ',00 EUR', w - margin - 8, y + 19, { align: 'right' });
+    doc.text('KEINE ZAHLUNG ERFORDERLICH', w - margin - 8, y + 28, { align: 'right' });
+    y += 45;
+  } else {
+    // Betrag-Box (gelb = ausstehend)
+    doc.setFillColor(251, 191, 36);
+    doc.roundedRect(margin, y, col, 16, 3, 3, 'F');
+    doc.setTextColor(80, 50, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    var betragLabel = betrag + ',00 EUR';
+    if (parseInt(campCount) > 1) betragLabel += ' (' + campCount + ' Camps)';
+    doc.text('Betrag: ' + betragLabel, margin + 8, y + 11);
+    y += 26;
+  }
 
   // Footer
   doc.setFillColor(229, 0, 0);
@@ -1050,6 +1482,8 @@ async function downloadRegistrationPDF() {
 (function() {
   var s = document.createElement('script');
   s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  s.integrity = 'sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk';
+  s.crossOrigin = 'anonymous';
   s.async = true;
   document.head.appendChild(s);
 })();
@@ -1100,19 +1534,22 @@ applyGermanDateMask('geburtsdatum');
 // ============================================================
 var _draftTimer=null;
 function saveFormDraft(){
-  var draft={};
+  var draft={_savedAt:Date.now()};
   ['vorname','nachname','geburtsdatum','eltern_vorname','eltern_nachname','email','telefon','adresse','erfahrung'].forEach(function(id){
     var el=document.getElementById(id);
     if(el)draft[id]=el.value;
   });
-  try{localStorage.setItem('te_form_draft',JSON.stringify(draft));}catch(e){}
+  try{sessionStorage.setItem('te_form_draft',JSON.stringify(draft));}catch(e){}
 }
 function loadFormDraft(){
   try{
-    var raw=localStorage.getItem('te_form_draft');
+    localStorage.removeItem('te_form_draft');
+    var raw=sessionStorage.getItem('te_form_draft');
     if(!raw)return;
     var draft=JSON.parse(raw);
+    if(!draft._savedAt||Date.now()-Number(draft._savedAt)>2*60*60*1000){sessionStorage.removeItem('te_form_draft');return}
     Object.keys(draft).forEach(function(id){
+      if(id==='_savedAt')return;
       var el=document.getElementById(id);
       if(el&&draft[id])el.value=draft[id];
     });
@@ -1135,10 +1572,17 @@ var _origUpdateSummary=updateSummary;
 updateSummary=function(){
   _origUpdateSummary();
   var sidebarTotal=document.getElementById('sidebarTotal');
+  var sidebarTrust=document.getElementById('sidebarTrust');
   if(selectedCampIds.length>0){
     var sel=camps.filter(function(c){return selectedCampIds.indexOf(c.id)>-1});
     var total=sel.reduce(function(s,c){return s+(c.aktueller_preis||c.preis_euro);},0);
-    sidebarTotal.textContent=total+'€';
+    if(sponsorState.status==='valid'){
+      sidebarTotal.textContent='0 € für Sie';
+      sidebarTrust.innerHTML='<p>✓ Finanzierung bestätigt</p><p>✓ '+escapeHtml(sponsorState.partnerName)+' übernimmt '+total+' €</p><p>✓ Keine Zahlung erforderlich</p>';
+    }else{
+      sidebarTotal.textContent=total+'€';
+      sidebarTrust.innerHTML='<p>🔒 Sichere Zahlung via Stripe</p><p>✓ Platz wird nach Zahlung reserviert</p><p>↩ Stornierung möglich (lt. AGB)</p>';
+    }
   }else{
     sidebarTotal.textContent='';
   }

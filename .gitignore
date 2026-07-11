@@ -20,12 +20,45 @@
 
 # Node
 node_modules/
+.venv/
 
 # Local credentials / generated publish payloads
 .env.social
 social-posts.json
+social-posts.pending.json
+social-posts.approved.json
 social-published.json
 client_secret_*.json
+.env.automation
+.env.sponsoring*
+automation-runs/
+drafts/
+logs/
 
 # Steuerberater / private Belege
 steuerberater/
+
+# Vereinslisten mit Klartext-Gutscheincodes (niemals committen/deployen)
+*.ods
+gutschein-nummern*
+
+# Agent-/CLI-Tooling und lokale Arbeitsverzeichnisse
+.agent/
+.agents/
+.claude/
+.orchids/
+skills-lock.json
+supabase/.temp/
+__pycache__/
+*.bak2
+
+# Rohfotos, Videos und generierte Social-Bilder: liegen nur lokal + auf dem
+# Webserver (rsync-Deploy), nicht in Git
+images/IMG_*
+images/*.MOV
+images/social-input/
+images/social-output/
+images/camps/
+images/ostercamps/
+animation/
+social-posts.now.json

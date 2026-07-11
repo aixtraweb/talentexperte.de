@@ -128,10 +128,19 @@ Aktueller Beobachtungsstand:
 - richtige Stripe-Events sind im Endpoint eingetragen:
   - `checkout.session.completed`
   - `payment_intent.succeeded`
+- **Stripe-Backfill erfolgreich ausgefuehrt** (2026-03-25):
+  - 25 Anmeldungen von `offen` auf `bezahlt` gesetzt
+  - Aktuell: 35 bezahlt / 24 offen, 5.215 EUR Umsatz
+- **Bulk-Aktionen im Dashboard** verfuegbar:
+  - Checkbox-Auswahl, Status-Aenderung, Loeschen, Zahlungserinnerung
+- **Zahlungserinnerung per E-Mail** vorbereitet:
+  - Resend Edge Function (`send-reminder`) fertig
+  - DNS-Eintraege fuer Domain-Verifizierung erstellt
+  - Noch zu deployen (siehe Naechste Schritte)
 
 ### Was noch nicht abschliessend verifiziert ist
 - ob neue echte Stripe-Zahlungen jetzt wieder korrekt `anmeldungen` aktualisieren
-- ob alte Stripe-Zahlungen vollstaendig nachgezogen werden koennen
+- ob die verbleibenden 24 offenen Anmeldungen tatsaechlich unbezahlt sind oder nur Email-/Betrags-Mismatch
 
 ## Neue Werkzeuge im Repo
 
@@ -166,18 +175,17 @@ Hinweis:
 
 ## Naechste Schritte / Aufgaben
 
-### Prioritaet 1: Dry Run des Stripe-Backfills ausfuehren
-Ziel:
-- sehen, wie viele historische Stripe-Zahlungen sauber einer Anmeldung zugeordnet werden koennen
+### Prioritaet 1: Resend E-Mail-Versand aktivieren
+Schritte:
+1. DNS-Eintraege beim Provider setzen (siehe `dns-eintraege-resend.txt`)
+2. Domain in Resend-Dashboard verifizieren
+3. Den bisherigen Resend-Key widerrufen, einen neuen Key erzeugen und sicher setzen: `supabase secrets set RESEND_API_KEY='<NEUER_RESEND_API_KEY>'`
+4. `supabase functions deploy send-reminder --no-verify-jwt`
+5. `ALTER TABLE anmeldungen ADD COLUMN IF NOT EXISTS erinnerung_gesendet_am timestamptz;`
 
-Erwartung:
-- wenn viele Matches gefunden werden, danach `--apply` ausfuehren
-
-### Prioritaet 2: Nach dem Backfill Dashboard erneut pruefen
-Pruefen:
-- Anzahl `bezahlt`
-- Anzahl `offen`
-- Stichprobe einzelner betroffener Anmeldungen
+### Prioritaet 2: Admin-Dashboard + CSS deployen
+Befehl:
+- `bash ci/deploy.sh` vom Mac ausfuehren
 
 ### Prioritaet 3: Neue echte Stripe-Zahlung verifizieren
 Ziel:
@@ -205,4 +213,6 @@ Sinnvoll:
 - Datenschutz-Fix fuer Views bleibt erhalten.
 - Frontend/Admin wurden darauf angepasst.
 - der groesste Stripe-Bug war der JWT-Schutz des Webhooks.
-- fuer alte Zahlungen braucht es jetzt sehr wahrscheinlich einen einmaligen Stripe-Backfill.
+- **Stripe-Backfill wurde erfolgreich ausgefuehrt**: 25 Zahlungen nachgezogen.
+- **Bulk-Aktionen und Zahlungserinnerung** sind im Dashboard implementiert.
+- **Resend-Integration** ist code-seitig fertig, DNS-Verifizierung und Deploy stehen noch aus.
