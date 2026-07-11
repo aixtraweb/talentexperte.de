@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_G2ujXv1n_FTUDFVHMmvRU8G15Bd6qCdc8'
+const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
 const GOOGLE_REVIEW_LINK = 'https://g.page/r/CRwplaTKzL7VEBM/review'
 
 function createReviewRequestHTML(familienname, kinderText, campName) {
@@ -93,6 +93,9 @@ function createReviewRequestHTML(familienname, kinderText, campName) {
 }
 
 async function sendTestEmail() {
+  if (!RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY fehlt. Der Schlüssel muss als Umgebungsvariable gesetzt werden.')
+  }
   const testData = {
     email: 'aixtraweb@icloud.com',
     familienname: 'Mustermann',

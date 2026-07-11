@@ -5,13 +5,27 @@
   "description": "Static website for talentexperte.de",
   "scripts": {
     "dev": "browser-sync start --server --files \"**/*.html,css/**/*.css,**/*.js\" --port 3000 --host 127.0.0.1 --no-open --no-ui --no-notify",
-    "social:dry": "node scripts/social-publish.mjs --posts social-posts.sample.json",
+    "social:dry": "node scripts/social-publish.mjs --posts social-posts.json",
     "social:publish": "node scripts/social-publish.mjs --posts social-posts.json --publish",
     "social:google:url": "node scripts/social-auth.mjs google-url",
     "social:google:list": "node scripts/social-auth.mjs google-list",
     "social:meta:url": "node scripts/social-auth.mjs meta-url",
     "social:meta:list": "node scripts/social-auth.mjs meta-list",
-    "social:meta:save": "node scripts/social-auth.mjs meta-save-page"
+    "social:meta:save": "node scripts/social-auth.mjs meta-save-page",
+    "blog:create": "node scripts/blog-create.mjs",
+    "social:image:create": "node scripts/social-image-create.mjs",
+    "automation:install-deps": "python3 -m venv .venv && .venv/bin/python -m pip install -r requirements-automation.txt",
+    "automation:notify:test": "node scripts/notify-automation.mjs --title \"TALENTEXPERTE Test\" --message \"Automatisierungs-Benachrichtigung funktioniert.\"",
+    "weekly:blog-social": "node scripts/weekly-blog-social.mjs",
+    "launchd:install:blog-social": "bash scripts/install-launchd-weekly-blog-social.sh",
+    "launchd:install:blog-social-once": "bash scripts/install-launchd-weekly-blog-social-once.sh",
+    "blog-social:weekly": "node scripts/weekly-blog-social.mjs",
+    "blog-social:launchd:install": "bash scripts/install-launchd-weekly-blog-social.sh",
+    "sommercamp:plan": "node scripts/sommercamp-plan.mjs",
+    "sommercamp:plan:deploy": "node scripts/sommercamp-plan.mjs --deploy",
+    "sommercamp:approve": "node scripts/sommercamp-approve.mjs",
+    "sommercamp:publish-approved": "node scripts/sommercamp-publish-approved.mjs",
+    "launchd:install:sommercamp": "bash scripts/install-launchd-sommercamp-social.sh"
   },
   "devDependencies": {
     "browser-sync": "^3.0.4"

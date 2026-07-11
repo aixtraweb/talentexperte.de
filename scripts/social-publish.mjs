@@ -2,6 +2,12 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  collectSocialMediaUsage,
+  duplicateUsageForPost,
+  formatUsageRecords,
+  mediaKeys
+} from './social-media-guard.mjs';
 
 const root = process.cwd();
 const envPath = path.join(root, '.env.social');
@@ -13,10 +19,13 @@ const graphVersion = env('META_GRAPH_VERSION') || 'v24.0';
 const args = new Set(process.argv.slice(2));
 const publish = args.has('--publish');
 const force = args.has('--force');
+const ignoreSchedule = args.has('--ignore-schedule');
 const postsPath = getArgValue('--posts') || 'social-posts.sample.json';
 const publishedPath = path.join(root, 'social-published.json');
 const publishedLog = loadPublishedLog(publishedPath);
 const posts = JSON.parse(fs.readFileSync(path.resolve(root, postsPath), 'utf8'));
+const usage = collectSocialMediaUsage(root);
+let duplicateBlocked = false;
 
 if (!Array.isArray(posts) || posts.length === 0) {
   throw new Error('Posts file must contain a non-empty array.');
@@ -25,9 +34,14 @@ if (!Array.isArray(posts) || posts.length === 0) {
 for (const post of posts) {
   validatePost(post);
   console.log(`\n=== ${post.id} ===`);
+  const due = isDue(post);
   const pendingPlatforms = force
     ? post.platforms
     : post.platforms.filter((platform) => !isPublished(publishedLog, post.id, platform));
+  const canPublishNow = due || ignoreSchedule || force || !post.scheduledAt;
+  const duplicateRecords = !force && pendingPlatforms.length > 0 && (!publish || canPublishNow)
+    ? duplicateUsageForPost(post, usage)
+    : [];
 
   if (!publish) {
     console.log('Dry run only. Add --publish to post live.');
@@ -37,7 +51,23 @@ for (const post of posts) {
       console.log(`Already published: ${skipped.join(', ')}`);
     }
     console.log(`Pending: ${pendingPlatforms.join(', ') || 'none'}`);
+    if (post.scheduledAt) console.log(`Scheduled: ${post.scheduledAt} (${due ? 'due' : 'not due yet'})`);
     console.log(`Media: ${post.mediaUrl}`);
+    if (duplicateRecords.length) {
+      duplicateBlocked = true;
+      console.log(`Duplicate image blocked: ${formatUsageRecords(duplicateRecords)}`);
+    }
+    continue;
+  }
+
+  if (duplicateRecords.length) {
+    duplicateBlocked = true;
+    console.log(`Skipped: duplicate image blocked for ${post.id}: ${formatUsageRecords(duplicateRecords)}`);
+    continue;
+  }
+
+  if (!due && !ignoreSchedule && !force) {
+    console.log(`Skipped: scheduled for ${post.scheduledAt}. Use --ignore-schedule to publish anyway.`);
     continue;
   }
 
@@ -48,20 +78,22 @@ for (const post of posts) {
 
   if (pendingPlatforms.includes('facebook')) {
     const result = await publishFacebookPhoto(post);
-    markPublished(publishedLog, post.id, 'facebook', result);
+    markPublished(publishedLog, post, 'facebook', result);
     savePublishedLog(publishedPath, publishedLog);
   }
   if (pendingPlatforms.includes('instagram')) {
     const result = await publishInstagramPhoto(post);
-    markPublished(publishedLog, post.id, 'instagram', result);
+    markPublished(publishedLog, post, 'instagram', result);
     savePublishedLog(publishedPath, publishedLog);
   }
   if (pendingPlatforms.includes('googleBusiness')) {
     const result = await publishGoogleBusinessPost(post);
-    markPublished(publishedLog, post.id, 'googleBusiness', result);
+    markPublished(publishedLog, post, 'googleBusiness', result);
     savePublishedLog(publishedPath, publishedLog);
   }
 }
+
+if (duplicateBlocked) process.exitCode = 1;
 
 function loadEnv(file) {
   if (!fs.existsSync(file)) return;
@@ -99,12 +131,24 @@ function isPublished(log, postId, platform) {
   return Boolean(log[postId]?.[platform]?.publishedAt);
 }
 
-function markPublished(log, postId, platform, result) {
-  log[postId] ||= {};
-  log[postId][platform] = {
+function markPublished(log, post, platform, result) {
+  log[post.id] ||= {};
+  log[post.id][platform] = {
     publishedAt: new Date().toISOString(),
+    mediaUrl: post.mediaUrl,
+    mediaKey: mediaKeys(post.mediaUrl)[0] || '',
+    ...(post.sourceAsset ? { sourceAsset: post.sourceAsset } : {}),
     result
   };
+}
+
+function isDue(post) {
+  if (!post.scheduledAt) return true;
+  const scheduled = new Date(post.scheduledAt);
+  if (Number.isNaN(scheduled.getTime())) {
+    throw new Error(`${post.id}: scheduledAt is not a valid date.`);
+  }
+  return scheduled.getTime() <= Date.now();
 }
 
 function validatePost(post) {
@@ -132,23 +176,47 @@ async function publishFacebookPhoto(post) {
 }
 
 async function publishInstagramPhoto(post) {
-  requireEnv(['INSTAGRAM_USER_ID', 'INSTAGRAM_ACCESS_TOKEN']);
+  requireEnv(['INSTAGRAM_USER_ID']);
+  const token = instagramToken();
+  if (!token) throw new Error('Missing Instagram access token. Set META_USER_ACCESS_TOKEN (preferred) or INSTAGRAM_ACCESS_TOKEN.');
   const mediaUrl = `https://graph.facebook.com/${graphVersion}/${env('INSTAGRAM_USER_ID')}/media`;
   const mediaBody = new URLSearchParams({
     image_url: post.mediaUrl,
     caption: post.caption,
-    access_token: env('INSTAGRAM_ACCESS_TOKEN')
+    access_token: token
   });
   const media = await postForm(mediaUrl, mediaBody);
+  await waitForInstagramMedia(media.id, token);
 
   const publishUrl = `https://graph.facebook.com/${graphVersion}/${env('INSTAGRAM_USER_ID')}/media_publish`;
   const publishBody = new URLSearchParams({
     creation_id: media.id,
-    access_token: env('INSTAGRAM_ACCESS_TOKEN')
+    access_token: token
   });
   const json = await postForm(publishUrl, publishBody);
   console.log(`Instagram published: ${json.id}`);
   return { id: json.id };
+}
+
+async function waitForInstagramMedia(containerId, token) {
+  const attempts = 10;
+  for (let i = 1; i <= attempts; i += 1) {
+    const url = new URL(`https://graph.facebook.com/${graphVersion}/${containerId}`);
+    url.searchParams.set('fields', 'status_code,status');
+    url.searchParams.set('access_token', token);
+    const json = await getJson(url);
+    if (json.status_code === 'FINISHED') return;
+    if (json.status_code === 'ERROR' || json.status_code === 'EXPIRED') {
+      throw new Error(`Instagram media container failed: ${JSON.stringify(json)}`);
+    }
+    console.log(`Instagram media not ready yet (${json.status_code || 'unknown'}), waiting...`);
+    await sleep(i < 4 ? 5000 : 10000);
+  }
+  throw new Error(`Instagram media container ${containerId} was not ready in time.`);
+}
+
+function instagramToken() {
+  return env('META_USER_ACCESS_TOKEN') || env('INSTAGRAM_ACCESS_TOKEN');
 }
 
 async function publishGoogleBusinessPost(post) {
@@ -207,6 +275,15 @@ async function postJson(url, body, token) {
     body: JSON.stringify(body)
   });
   return parseResponse(res);
+}
+
+async function getJson(url) {
+  const res = await fetch(url);
+  return parseResponse(res);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function parseResponse(res) {
