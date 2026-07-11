@@ -4,6 +4,7 @@ Allow: /
 # Nicht indexieren/crawlen
 Disallow: /admin.html
 Disallow: /bestaetigung.html
+Disallow: /zahlung-start.html
 Disallow: /bestaetigung-firma.html
 
 Sitemap: https://www.talentexperte.de/sitemap.xml

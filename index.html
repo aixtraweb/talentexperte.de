@@ -3,14 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="preload" as="video" href="images/hero-video.mp4" type="video/mp4">
-<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<title>Fußballcamp Aachen | Feriencamp Aachen & Fußballschule – TALENTEXPERTE seit 2005</title>
+<link rel="preload" as="image" href="images/hero.avif" type="image/avif" fetchpriority="high">
+<link rel="preload" as="font" href="fonts/bebas-neue-latin-400-normal.woff2" type="font/woff2" crossorigin>
+<title>Fußballcamp Aachen – TALENTEXPERTE | Feriencamp seit 2005</title>
 <link rel="stylesheet" href="css/fonts.css" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="css/main.css">
-<meta name="description" content="Fußballcamp Aachen für Kinder 5–14 Jahre – Feriencamp Aachen auf Kunstrasen. Fußballschule Aachen TALENTEXPERTE: Training, Spaß & Freunde seit 2005. Oster-, Sommer- & Herbstcamp. Jetzt anmelden!">
-<meta name="keywords" content="Fußballcamp Aachen, Feriencamp Aachen, Fußballschule Aachen, Fußball Feriencamp Aachen, Fußball Ferienkurs Aachen, Kinder Fußballcamp Aachen, Fußballschule Kinder Aachen">
+<meta name="description" content="Fußballcamp Aachen für Kinder 5–14 Jahre. 4 Tage Training, Mittagessen & Spaß auf Kunstrasen. Oster-, Sommer- & Herbstcamp. Jetzt anmelden!">
 <meta name="geo.region" content="DE-NW">
 <meta name="geo.placename" content="Aachen">
 <meta name="geo.position" content="50.7624155;6.1042797">
@@ -46,13 +44,16 @@
       "alternateName": ["Fußballcamp Aachen", "Feriencamp Aachen", "Fußballschule Aachen"],
       "description": "Fußballcamp Aachen und Feriencamp Aachen für Kinder von 5 bis 14 Jahren. Die Fußballschule TALENTEXPERTE bietet seit 2005 anspruchsvolles Training auf Kunstrasen in Aachen-Burtscheid – Oster-, Sommer- und Herbstcamp.",
       "url": "https://www.talentexperte.de/",
-      "logo": "https://www.talentexperte.de/ci/logo.png",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.talentexperte.de/ci/logo.png"
+      },
       "image": "https://www.talentexperte.de/images/galerie/fussballcamp-aachen-1.jpeg",
       "telephone": "+49 1523 4678108",
       "email": "kontakt@talentexperte.de",
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "Branderhofer Weg",
+        "streetAddress": "Branderhofer Weg 15",
         "postalCode": "52066",
         "addressLocality": "Aachen",
         "addressRegion": "Nordrhein-Westfalen",
@@ -76,27 +77,52 @@
         "opens": "09:00",
         "closes": "15:00"
       },
-      "founder": {
-        "@type": "Person",
-        "name": "Elias Medina"
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5.0",
+        "bestRating": "5",
+        "worstRating": "1",
+        "ratingCount": "87"
       },
+      "founder": {"@id": "https://www.talentexperte.de/#inhaber-alejandro-medina"},
+      "employee": {"@id": "https://www.talentexperte.de/#trainer-elias-medina"},
       "foundingDate": "2005",
       "sameAs": [
         "https://instagram.com/talentexperte"
       ]
     },
     {
+      "@type": "Person",
+      "@id": "https://www.talentexperte.de/#inhaber-alejandro-medina",
+      "name": "Alejandro Medina",
+      "jobTitle": "Gründer und Inhaber",
+      "worksFor": {"@id": "https://www.talentexperte.de/#organization"},
+      "url": "https://www.talentexperte.de/"
+    },
+    {
+      "@type": "Person",
+      "@id": "https://www.talentexperte.de/#trainer-elias-medina",
+      "name": "Elias Medina",
+      "jobTitle": "Sportlicher Leiter und Cheftrainer",
+      "image": "https://www.talentexperte.de/images/trainer-elias-medina-urkunden.jpg",
+      "worksFor": {"@id": "https://www.talentexperte.de/#organization"},
+      "url": "https://www.talentexperte.de/"
+    },
+    {
       "@type": "Organization",
       "@id": "https://www.talentexperte.de/#organization",
       "name": "TALENTEXPERTE – Fußballschule Aachen",
       "url": "https://www.talentexperte.de/",
-      "logo": "https://www.talentexperte.de/ci/logo.png",
-      "founder": {"@type": "Person", "name": "Elias Medina"},
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.talentexperte.de/ci/logo.png"
+      },
+      "founder": {"@id": "https://www.talentexperte.de/#inhaber-alejandro-medina"},
       "email": "kontakt@talentexperte.de",
       "telephone": "+49 1523 4678108",
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "Branderhofer Weg",
+        "streetAddress": "Branderhofer Weg 15",
         "postalCode": "52066",
         "addressLocality": "Aachen",
         "addressCountry": "DE"
@@ -109,12 +135,7 @@
       "url": "https://www.talentexperte.de/",
       "name": "TALENTEXPERTE – Fußballcamp Aachen",
       "publisher": {"@id": "https://www.talentexperte.de/#organization"},
-      "inLanguage": "de-DE",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://www.talentexperte.de/?s={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+      "inLanguage": "de-DE"
     },
     {
       "@type": "Event",
@@ -123,7 +144,7 @@
       "description": "Fußballcamp Aachen für Kinder von 5 bis 14 Jahren. 4 Tage Feriencamp Aachen auf Kunstrasen bei der Fußballschule TALENTEXPERTE. Inklusive Mittagessen, Urkunde und Medaille.",
       "startDate": "2026-03-30T09:00:00+02:00",
       "endDate": "2026-04-02T15:00:00+02:00",
-      "eventStatus": "https://schema.org/EventScheduled",
+      "eventStatus": "https://schema.org/EventCompleted",
       "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
       "image": "https://www.talentexperte.de/images/galerie/fussballcamp-aachen-1.jpeg",
       "location": {
@@ -131,7 +152,7 @@
         "name": "JSC Blau-Weiss Aachen – Fußballschule TALENTEXPERTE",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "Branderhofer Weg",
+          "streetAddress": "Branderhofer Weg 15",
           "postalCode": "52066",
           "addressLocality": "Aachen",
           "addressCountry": "DE"
@@ -144,7 +165,7 @@
         "url": "https://www.talentexperte.de/anmeldung.html",
         "price": "149",
         "priceCurrency": "EUR",
-        "availability": "https://schema.org/InStock",
+        "availability": "https://schema.org/SoldOut",
         "validFrom": "2026-01-01"
       }
     },
@@ -155,17 +176,17 @@
       "description": "Fußballcamp Aachen für Kinder von 5 bis 14 Jahren. Feriencamp Aachen auf Kunstrasen. Fußballschule TALENTEXPERTE Aachen.",
       "startDate": "2026-04-07T09:00:00+02:00",
       "endDate": "2026-04-10T15:00:00+02:00",
-      "eventStatus": "https://schema.org/EventScheduled",
+      "eventStatus": "https://schema.org/EventCompleted",
       "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
       "image": "https://www.talentexperte.de/images/galerie/fussballcamp-aachen-2.jpeg",
       "location": {
         "@type": "Place",
         "name": "JSC Blau-Weiss Aachen – Fußballschule TALENTEXPERTE",
-        "address": {"@type": "PostalAddress","streetAddress": "Branderhofer Weg","postalCode": "52066","addressLocality": "Aachen","addressCountry": "DE"},
+        "address": {"@type": "PostalAddress","streetAddress": "Branderhofer Weg 15","postalCode": "52066","addressLocality": "Aachen","addressCountry": "DE"},
         "geo": {"@type": "GeoCoordinates","latitude": 50.7624155,"longitude": 6.1042797}
       },
       "organizer": {"@id": "https://www.talentexperte.de/#organization"},
-      "offers": {"@type": "Offer","url": "https://www.talentexperte.de/anmeldung.html","price": "149","priceCurrency": "EUR","availability": "https://schema.org/InStock","validFrom": "2026-01-01"}
+      "offers": {"@type": "Offer","url": "https://www.talentexperte.de/anmeldung.html","price": "149","priceCurrency": "EUR","availability": "https://schema.org/SoldOut","validFrom": "2026-01-01"}
     },
     {
       "@type": "Event",
@@ -180,7 +201,7 @@
       "location": {
         "@type": "Place",
         "name": "JSC Blau-Weiss Aachen – Fußballschule TALENTEXPERTE",
-        "address": {"@type": "PostalAddress","streetAddress": "Branderhofer Weg","postalCode": "52066","addressLocality": "Aachen","addressCountry": "DE"},
+        "address": {"@type": "PostalAddress","streetAddress": "Branderhofer Weg 15","postalCode": "52066","addressLocality": "Aachen","addressCountry": "DE"},
         "geo": {"@type": "GeoCoordinates","latitude": 50.7624155,"longitude": 6.1042797}
       },
       "organizer": {"@id": "https://www.talentexperte.de/#organization"},
@@ -199,7 +220,7 @@
       "location": {
         "@type": "Place",
         "name": "JSC Blau-Weiss Aachen – Fußballschule TALENTEXPERTE",
-        "address": {"@type": "PostalAddress","streetAddress": "Branderhofer Weg","postalCode": "52066","addressLocality": "Aachen","addressCountry": "DE"},
+        "address": {"@type": "PostalAddress","streetAddress": "Branderhofer Weg 15","postalCode": "52066","addressLocality": "Aachen","addressCountry": "DE"},
         "geo": {"@type": "GeoCoordinates","latitude": 50.7624155,"longitude": 6.1042797}
       },
       "organizer": {"@id": "https://www.talentexperte.de/#organization"},
@@ -218,7 +239,7 @@
       "location": {
         "@type": "Place",
         "name": "JSC Blau-Weiss Aachen – Fußballschule TALENTEXPERTE",
-        "address": {"@type": "PostalAddress","streetAddress": "Branderhofer Weg","postalCode": "52066","addressLocality": "Aachen","addressCountry": "DE"},
+        "address": {"@type": "PostalAddress","streetAddress": "Branderhofer Weg 15","postalCode": "52066","addressLocality": "Aachen","addressCountry": "DE"},
         "geo": {"@type": "GeoCoordinates","latitude": 50.7624155,"longitude": 6.1042797}
       },
       "organizer": {"@id": "https://www.talentexperte.de/#organization"},
@@ -237,7 +258,7 @@
       "location": {
         "@type": "Place",
         "name": "JSC Blau-Weiss Aachen – Fußballschule TALENTEXPERTE",
-        "address": {"@type": "PostalAddress","streetAddress": "Branderhofer Weg","postalCode": "52066","addressLocality": "Aachen","addressCountry": "DE"},
+        "address": {"@type": "PostalAddress","streetAddress": "Branderhofer Weg 15","postalCode": "52066","addressLocality": "Aachen","addressCountry": "DE"},
         "geo": {"@type": "GeoCoordinates","latitude": 50.7624155,"longitude": 6.1042797}
       },
       "organizer": {"@id": "https://www.talentexperte.de/#organization"},
@@ -266,7 +287,7 @@
   <a href="#" class="nav-logo"><img src="ci/logo.png" alt="TALENTEXPERTE Logo" loading="eager" width="88" height="88"></a>
   <ul class="nav-links" id="navLinks">
     <li><a href="#camps">Camps</a></li><li><a href="#about">Über uns</a></li><li><a href="#training">Training</a></li><li><a href="#galerie">Galerie</a></li><li><a href="#reviews">Bewertungen</a></li><li><a href="#faq">FAQ</a></li><li><a href="#standorte">Standort</a></li>
-    <li><a href="#camps" class="btn btn-red nav-cta">Jetzt anmelden</a></li>
+    <li><a href="#sommercamp" class="btn btn-red nav-cta">Jetzt anmelden</a></li>
   </ul>
   <button class="nav-mobile-btn" id="navToggle" aria-label="Menü">☰</button>
 </div></nav>
@@ -274,7 +295,7 @@
 <!-- HERO -->
 <section class="hero" id="hero">
   <div class="hero-bg">
-    <video class="hero-video" autoplay muted loop playsinline preload="auto" poster="images/hero.jpg" aria-hidden="true">
+    <video class="hero-video" autoplay muted loop playsinline preload="none" poster="images/hero.jpg" aria-hidden="true">
       <source src="images/hero-video.mp4" type="video/mp4">
     </video>
   </div>
@@ -284,7 +305,7 @@
     <h1>FUSSBALL<br><span class="accent">FERIEN</span><span class="outline-text">CAMPS</span><br>IN AACHEN</h1>
     <p class="hero-text">4 Tage intensives Training, neue Freundschaften, echte Fortschritte. Dein Kind kommt besser zurück, als es gegangen ist.</p>
     <div class="hero-buttons">
-      <a href="#camps" class="btn btn-red">Platz sichern <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+      <a href="#sommercamp" class="btn btn-red">Platz sichern <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
       <a href="#about" class="btn btn-outline">Mehr erfahren</a>
     </div>
     <div class="hero-stats">
@@ -297,8 +318,8 @@
 
 <!-- PHOTO STRIP -->
 <div class="photo-strip"><div class="photo-strip-inner">
-  <picture><source type="image/avif" srcset="images/jubel-480.avif 480w, images/jubel-768.avif 768w, images/jubel.avif 800w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/jubel-480.webp 480w, images/jubel-768.webp 768w, images/jubel.webp 800w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/jubel.jpg" alt="Jubel" loading="lazy"></picture><picture><source type="image/avif" srcset="images/training-480.avif 480w, images/training-768.avif 768w, images/training.avif 800w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/training-480.webp 480w, images/training-768.webp 768w, images/training.webp 800w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/training.jpg" alt="Training" loading="lazy"></picture><picture><source type="image/avif" srcset="images/freunde-480.avif 480w, images/freunde-768.avif 768w, images/freunde.avif 1920w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/freunde-480.webp 480w, images/freunde-768.webp 768w, images/freunde.webp 1920w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/freunde.jpg" alt="Freunde" loading="lazy"></picture><picture><source type="image/avif" srcset="images/spielszene1-480.avif 480w, images/spielszene1-768.avif 768w, images/spielszene1.avif 2784w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/spielszene1-480.webp 480w, images/spielszene1-768.webp 768w, images/spielszene1.webp 2784w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/spielszene1.jpg" alt="Spielszene" loading="lazy"></picture><picture><source type="image/avif" srcset="images/mittagessen-480.avif 480w, images/mittagessen-768.avif 768w, images/mittagessen.avif 800w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/mittagessen-480.webp 480w, images/mittagessen-768.webp 768w, images/mittagessen.webp 800w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/mittagessen.jpg" alt="Mittagessen" loading="lazy"></picture><picture><source type="image/avif" srcset="images/atmosphaere-480.avif 480w, images/atmosphaere-768.avif 768w, images/atmosphaere.avif 2784w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/atmosphaere-480.webp 480w, images/atmosphaere-768.webp 768w, images/atmosphaere.webp 2784w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/atmosphaere.jpg" alt="Atmosphäre" loading="lazy"></picture>
-  <picture><source type="image/avif" srcset="images/jubel-480.avif 480w, images/jubel-768.avif 768w, images/jubel.avif 800w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/jubel-480.webp 480w, images/jubel-768.webp 768w, images/jubel.webp 800w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/jubel.jpg" alt="Jubel" loading="lazy"></picture><picture><source type="image/avif" srcset="images/training-480.avif 480w, images/training-768.avif 768w, images/training.avif 800w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/training-480.webp 480w, images/training-768.webp 768w, images/training.webp 800w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/training.jpg" alt="Training" loading="lazy"></picture><picture><source type="image/avif" srcset="images/freunde-480.avif 480w, images/freunde-768.avif 768w, images/freunde.avif 1920w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/freunde-480.webp 480w, images/freunde-768.webp 768w, images/freunde.webp 1920w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/freunde.jpg" alt="Freunde" loading="lazy"></picture><picture><source type="image/avif" srcset="images/spielszene1-480.avif 480w, images/spielszene1-768.avif 768w, images/spielszene1.avif 2784w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/spielszene1-480.webp 480w, images/spielszene1-768.webp 768w, images/spielszene1.webp 2784w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/spielszene1.jpg" alt="Spielszene" loading="lazy"></picture><picture><source type="image/avif" srcset="images/mittagessen-480.avif 480w, images/mittagessen-768.avif 768w, images/mittagessen.avif 800w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/mittagessen-480.webp 480w, images/mittagessen-768.webp 768w, images/mittagessen.webp 800w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/mittagessen.jpg" alt="Mittagessen" loading="lazy"></picture><picture><source type="image/avif" srcset="images/atmosphaere-480.avif 480w, images/atmosphaere-768.avif 768w, images/atmosphaere.avif 2784w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/atmosphaere-480.webp 480w, images/atmosphaere-768.webp 768w, images/atmosphaere.webp 2784w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/atmosphaere.jpg" alt="Atmosphäre" loading="lazy"></picture>
+  <picture><source type="image/avif" srcset="images/jubel-480.avif 480w, images/jubel-768.avif 768w, images/jubel.avif 800w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/jubel-480.webp 480w, images/jubel-768.webp 768w, images/jubel.webp 800w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/jubel.jpg" alt="Kinder jubeln beim Fußballcamp Aachen" loading="lazy" width="800" height="600"></picture><picture><source type="image/avif" srcset="images/training-480.avif 480w, images/training-768.avif 768w, images/training.avif 800w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/training-480.webp 480w, images/training-768.webp 768w, images/training.webp 800w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/training.jpg" alt="Fußballtraining beim Feriencamp Aachen" loading="lazy" width="800" height="600"></picture><picture><source type="image/avif" srcset="images/freunde-480.avif 480w, images/freunde-768.avif 768w, images/freunde.avif 1920w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/freunde-480.webp 480w, images/freunde-768.webp 768w, images/freunde.webp 1920w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/freunde.jpg" alt="Neue Freundschaften beim Fußballcamp Aachen" loading="lazy" width="1920" height="1280"></picture><picture><source type="image/avif" srcset="images/spielszene1-480.avif 480w, images/spielszene1-768.avif 768w, images/spielszene1.avif 2784w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/spielszene1-480.webp 480w, images/spielszene1-768.webp 768w, images/spielszene1.webp 2784w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/spielszene1.jpg" alt="Spielszene Fußballcamp Aachen Kunstrasen" loading="lazy" width="2784" height="1856"></picture><picture><source type="image/avif" srcset="images/mittagessen-480.avif 480w, images/mittagessen-768.avif 768w, images/mittagessen.avif 800w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/mittagessen-480.webp 480w, images/mittagessen-768.webp 768w, images/mittagessen.webp 800w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/mittagessen.jpg" alt="Mittagessen im Fußballcamp Aachen" loading="lazy" width="800" height="1067"></picture><picture><source type="image/avif" srcset="images/atmosphaere-480.avif 480w, images/atmosphaere-768.avif 768w, images/atmosphaere.avif 2784w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/atmosphaere-480.webp 480w, images/atmosphaere-768.webp 768w, images/atmosphaere.webp 2784w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/atmosphaere.jpg" alt="Tolle Atmosphäre beim Feriencamp Aachen" loading="lazy" width="2784" height="1856"></picture>
+  <picture><source type="image/avif" srcset="images/jubel-480.avif 480w, images/jubel-768.avif 768w, images/jubel.avif 800w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/jubel-480.webp 480w, images/jubel-768.webp 768w, images/jubel.webp 800w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/jubel.jpg" alt="Kinder jubeln beim Fußballcamp Aachen" loading="lazy" width="800" height="600"></picture><picture><source type="image/avif" srcset="images/training-480.avif 480w, images/training-768.avif 768w, images/training.avif 800w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/training-480.webp 480w, images/training-768.webp 768w, images/training.webp 800w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/training.jpg" alt="Fußballtraining beim Feriencamp Aachen" loading="lazy" width="800" height="600"></picture><picture><source type="image/avif" srcset="images/freunde-480.avif 480w, images/freunde-768.avif 768w, images/freunde.avif 1920w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/freunde-480.webp 480w, images/freunde-768.webp 768w, images/freunde.webp 1920w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/freunde.jpg" alt="Neue Freundschaften beim Fußballcamp Aachen" loading="lazy" width="1920" height="1280"></picture><picture><source type="image/avif" srcset="images/spielszene1-480.avif 480w, images/spielszene1-768.avif 768w, images/spielszene1.avif 2784w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/spielszene1-480.webp 480w, images/spielszene1-768.webp 768w, images/spielszene1.webp 2784w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/spielszene1.jpg" alt="Spielszene Fußballcamp Aachen Kunstrasen" loading="lazy" width="2784" height="1856"></picture><picture><source type="image/avif" srcset="images/mittagessen-480.avif 480w, images/mittagessen-768.avif 768w, images/mittagessen.avif 800w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/mittagessen-480.webp 480w, images/mittagessen-768.webp 768w, images/mittagessen.webp 800w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/mittagessen.jpg" alt="Mittagessen im Fußballcamp Aachen" loading="lazy" width="800" height="1067"></picture><picture><source type="image/avif" srcset="images/atmosphaere-480.avif 480w, images/atmosphaere-768.avif 768w, images/atmosphaere.avif 2784w" sizes="(max-width: 768px) 40vw, 25vw"><source type="image/webp" srcset="images/atmosphaere-480.webp 480w, images/atmosphaere-768.webp 768w, images/atmosphaere.webp 2784w" sizes="(max-width: 768px) 40vw, 25vw"><img src="images/atmosphaere.jpg" alt="Tolle Atmosphäre beim Feriencamp Aachen" loading="lazy" width="2784" height="1856"></picture>
 </div></div>
 
 <!-- ABOUT -->
@@ -371,10 +392,11 @@
   <div class="section-label reveal">Termine 2026</div>
   <h2 class="section-title reveal reveal-delay-1">Finde dein <span class="text-red">Camp</span></h2>
   <p class="section-subtitle reveal reveal-delay-2">Alle Camps finden auf Kunstrasen statt. Täglich von 09:00 – 15:00 Uhr, inklusive Mittagessen, Getränke &amp; Obst.</p>
+  <div class="camps-notice reveal reveal-delay-2"><span class="camps-notice-tag">Hinweis</span><span>Die <strong>Ostercamps 2026 sind bereits abgeschlossen.</strong> Sichere dir jetzt einen Platz in den Sommercamps.</span><a href="#sommercamp" class="camps-notice-link">Zu den Sommercamps →</a></div>
   <div class="camps-grid">
-    <div class="camp-card reveal"><div class="camp-card-header"><span class="camp-season">🐣 Ostercamp I</span><span class="camp-spots available">✓ Plätze frei</span></div><div class="camp-card-body"><h3 class="camp-name">Ostercamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>30.03. – 02.04.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="anmeldung.html" class="btn btn-red camp-btn">Anmelden</a></div></div></div>
-    <div class="camp-card reveal reveal-delay-1"><div class="camp-card-header"><span class="camp-season">🐣 Ostercamp II</span><span class="camp-spots available">✓ Plätze frei</span></div><div class="camp-card-body"><h3 class="camp-name">Ostercamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>07.04. – 10.04.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="anmeldung.html" class="btn btn-red camp-btn">Anmelden</a></div></div></div>
-    <div class="camp-card reveal reveal-delay-2"><div class="camp-card-header"><span class="camp-season">☀️ Sommercamp I</span><span class="camp-spots few">⚡ Letzte Plätze!</span></div><div class="camp-card-body"><h3 class="camp-name">Sommercamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>20.07. – 23.07.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="anmeldung.html" class="btn btn-red camp-btn">Anmelden</a></div></div></div>
+    <div class="camp-card reveal camp-done"><div class="camp-card-header"><span class="camp-season">🐣 Ostercamp I</span><span class="camp-spots done">✓ Abgeschlossen</span></div><div class="camp-card-body"><h3 class="camp-name">Ostercamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>30.03. – 02.04.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="camps-in/ostercamp-I-2026.html" class="btn btn-camp-edit" style="padding:12px 28px;font-size:.85rem">📸 Galerie</a></div></div></div>
+    <div class="camp-card reveal reveal-delay-1 camp-done"><div class="camp-card-header"><span class="camp-season">🐣 Ostercamp II</span><span class="camp-spots done">✓ Abgeschlossen</span></div><div class="camp-card-body"><h3 class="camp-name">Ostercamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>07.04. – 10.04.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><span class="camp-done-badge">Abgeschlossen</span></div></div></div>
+    <div class="camp-card reveal reveal-delay-2" id="sommercamp" style="scroll-margin-top:100px"><div class="camp-card-header"><span class="camp-season">☀️ Sommercamp I</span><span class="camp-spots few">⚡ Letzte Plätze!</span></div><div class="camp-card-body"><h3 class="camp-name">Sommercamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>20.07. – 23.07.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="anmeldung.html" class="btn btn-red camp-btn">Anmelden</a></div></div></div>
     <div class="camp-card reveal"><div class="camp-card-header"><span class="camp-season">☀️ Sommercamp II</span><span class="camp-spots available">✓ Plätze frei</span></div><div class="camp-card-body"><h3 class="camp-name">Sommercamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>24.08. – 27.08.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="anmeldung.html" class="btn btn-red camp-btn">Anmelden</a></div></div></div>
     <div class="camp-card reveal reveal-delay-1"><div class="camp-card-header"><span class="camp-season">🍂 Herbstcamp I</span><span class="camp-spots available">✓ Plätze frei</span></div><div class="camp-card-body"><h3 class="camp-name">Herbstcamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>19.10. – 22.10.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="anmeldung.html" class="btn btn-red camp-btn">Anmelden</a></div></div></div>
     <div class="camp-card reveal reveal-delay-2"><div class="camp-card-header"><span class="camp-season">🍂 Herbstcamp II</span><span class="camp-spots available">✓ Plätze frei</span></div><div class="camp-card-body"><h3 class="camp-name">Herbstcamp Aachen</h3><div class="camp-details"><div class="camp-detail"><span class="camp-detail-icon">📅</span><span>26.10. – 29.10.2026 (4 Tage)</span></div><div class="camp-detail"><span class="camp-detail-icon">📍</span><span>JSC BW Aachen · Branderhofer Weg</span></div><div class="camp-detail"><span class="camp-detail-icon">👦</span><span>5 – 14 Jahre · Alle Spielstärken</span></div></div><div class="camp-divider"></div><div class="camp-footer"><div><span class="camp-price">149€</span><span class="camp-price-sub">pro Kind · alles inklusive</span></div><a href="anmeldung.html" class="btn btn-red camp-btn">Anmelden</a></div></div></div>
@@ -438,7 +460,7 @@
   <div class="text-center">
     <div class="section-label section-label--center reveal">Folge uns</div>
     <h2 class="section-title reveal reveal-delay-1">Wir halten Sie auf dem <span class="text-red">Laufenden</span></h2>
-    <p class="section-subtitle reveal reveal-delay-2">Bitte teilen Sie unsere Posts und unterstützen Sie damit unsere Fußballschule.</p>
+    <p class="section-subtitle reveal reveal-delay-2">Teile deine liebsten Camp-Momente und unterstütze damit unsere Fußballschule.</p>
   </div>
   <div class="insta-feed reveal reveal-delay-3">
     <div class="elfsight-app-53f9643a-8f40-4f11-917b-7ec3410b68bd" data-elfsight-app-lazy></div>
@@ -486,7 +508,7 @@
 <section class="cta-banner section-pad"><div class="container">
   <h2 class="reveal">Nur noch wenige<br><span style="opacity:.85">Plätze verfügbar</span></h2>
   <p class="reveal reveal-delay-1">Jedes Jahr sind die Camps schnell ausgebucht. Sichere heute den Platz für dein Kind.</p>
-  <a href="#camps" class="btn btn-white reveal reveal-delay-2">Jetzt Platz sichern <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+  <a href="#sommercamp" class="btn btn-white reveal reveal-delay-2">Jetzt Platz sichern <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
 </div></section>
 
 <!-- FOOTER -->
