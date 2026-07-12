@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-07-12 — Hotfix: Camp-Auswahl lud nicht mehr („Camps konnten nicht geladen werden")
+
+Die RLS-Härtung aus `20260710090000` entzog `anon` den Lesezugriff auf `anmeldungen`/`firmen_anmeldungen`. Die öffentliche View `camp_verfuegbarkeit_public` lief aber mit `security_invoker=true` und zählt `freie_plaetze` über genau diese Tabellen → `permission denied` beim `select *` des Anmeldeformulars (Teilselektionen ohne `freie_plaetze` funktionierten weiter, daher fiel es erst im Formular auf). Fix: View auf Besitzerrechte umgestellt (`security_invoker=false`, Migration `20260712100000`) — sie liefert ausschließlich Camp-Metadaten und aggregierte Zahlen. Direkt in Prod angewendet und verifiziert; alle übrigen Views bleiben invoker-basiert und ohne anon-Zugriff.
+
 ## 2026-07-10 (Sitzung 3) — Gutschein-Prüfung automatisch, ohne Button
 
 - **„Code prüfen"-Button entfernt** (`anmeldung.html` + CSS): Die Nummer wird automatisch im Hintergrund geprüft, sobald mind. 4 Zeichen eingegeben und ein Camp gewählt sind (debounced, 700 ms; auch bei Camp-/Namensänderung). Ohne Camp: neutraler Hinweis „Bitte wähle oben ein Camp aus …" statt Fehlermeldung.
