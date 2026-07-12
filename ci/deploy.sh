@@ -44,4 +44,8 @@ rsync -avz --delete \
   ./ "${USER}@${HOST}:${REMOTE_PATH}/"
 
 echo
-echo "3) Deploy finished successfully."
+echo "3) Pruning old backups (keep last 3)..."
+ssh "${USER}@${HOST}" "cd '${BACKUP_DIR}' && ls -t backup_*.tar.gz 2>/dev/null | tail -n +4 | xargs -r rm -f"
+
+echo
+echo "4) Deploy finished successfully."

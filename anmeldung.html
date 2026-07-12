@@ -343,7 +343,7 @@
           <input type="text" id="sponsor_code" name="sponsor_code" placeholder="z. B. 1118 (die letzten 4 Ziffern genügen)" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="sponsorCodeStatus">
         </div>
         <div class="sponsor-code-status" id="sponsorCodeStatus" role="status" aria-live="polite"></div>
-        <p class="sponsor-privacy">Code, Kindesname, Geburtsdatum und Camp werden ausschließlich zur Prüfung der Förderberechtigung und zur Vermeidung einer Mehrfacheinlösung mit der hinterlegten Vereinsliste abgeglichen. Mehr dazu in der <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a>.</p>
+        <p class="sponsor-privacy">Die eingegebene Nummer wird ausschließlich mit der hinterlegten Gutscheinliste abgeglichen und ist nach Einlösung gesperrt. Mehr dazu in der <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a>.</p>
       </div>
     </div>
   </div>
@@ -524,11 +524,10 @@ function getSelectedListPrice() {
 }
 
 function getSponsorValidationFingerprint() {
+  // Die Gutschein-Prüfung ist rein code- und camp-gebunden; Kinderdaten
+  // spielen keine Rolle und werden bei der Prüfung nicht übertragen.
   return JSON.stringify({
     code: getSponsorCode().toUpperCase(),
-    vorname: document.getElementById('vorname').value.trim(),
-    nachname: document.getElementById('nachname').value.trim(),
-    geburtsdatum: parseGermanDate(document.getElementById('geburtsdatum').value) || '',
     camps: selectedCampIds.slice().sort()
   });
 }
@@ -849,10 +848,6 @@ function checkFormReady() {
 requiredFields.forEach(id => {
   document.getElementById(id).addEventListener('input', () => {
     document.getElementById(id).closest('.field').classList.remove('error');
-    if (['vorname', 'nachname', 'geburtsdatum'].indexOf(id) > -1 && getSponsorCode()) {
-      resetSponsorValidation('Die Gutschein-Nummer wird automatisch geprüft …');
-      scheduleSponsorValidation();
-    }
     checkFormReady();
   });
 });
@@ -902,9 +897,6 @@ function validateForm() {
 async function validateSponsorSelection(options) {
   options = options || {};
   var code = getSponsorCode();
-  var geburtsdatum = parseGermanDate(document.getElementById('geburtsdatum').value);
-  var vorname = document.getElementById('vorname').value.trim();
-  var nachname = document.getElementById('nachname').value.trim();
 
   if (!code) {
     setSponsorState('idle');
@@ -959,9 +951,6 @@ async function validateSponsorSelection(options) {
         body: JSON.stringify({
           action: 'validate_sponsor',
           sponsor_code: code,
-          vorname: vorname,
-          nachname: nachname,
-          geburtsdatum: geburtsdatum,
           camp_id: campId,
           website_url: document.getElementById('website_url').value,
           contact_url: document.getElementById('contact_url').value,
@@ -973,6 +962,10 @@ async function validateSponsorSelection(options) {
       var payload = {};
       try { payload = await response.json(); } catch (e) {}
       if (!response.ok || !payload.valid) {
+        if (payload.code === 'sponsor_code_mismatch') {
+          var campName = (camps.find(function(c) { return c.id === campId; }) || {}).name || 'dem gewählten Camp';
+          throw new Error('Diese Gutschein-Nummer ist für ' + campName + ' nicht hinterlegt. Bitte prüfe die Ziffern – und ob das richtige Camp ausgewählt ist (jede Nummer gilt nur für ihr Camp).');
+        }
         var serverMessage = payload.error && payload.error !== 'Validierungsfehler' ? payload.error : '';
         throw new Error(serverMessage || 'Diese Gutschein-Nummer wurde nicht gefunden. Bitte prüfe die Ziffern und das gewählte Camp.');
       }
