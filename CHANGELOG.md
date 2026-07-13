@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-07-13 — Bewertungsbereich repariert und live deployt
+
+- Das nicht mehr initialisierende Elfsight-Bewertungswidget auf der Startseite wurde durch einen nativen, responsiven Bewertungsblock ersetzt. Dadurch bleiben die Bewertungen ohne externe Widget-Konfiguration sichtbar und für Suchmaschinen sowie Screenreader lesbar.
+- Eingebunden sind drei öffentlich verifizierte Google-Rezensionen, die Gesamtbewertung von 5,0 Sternen bei 43 Rezensionen und ein Link zum Google-Unternehmensprofil.
+- Desktop- und Mobilansicht geprüft: drei Spalten auf Desktop, eine Spalte auf Mobilgeräten; das alte Bewertungswidget ist nicht mehr im DOM vorhanden.
+- Sicherheitsprüfungen `npm run test:security` und `npm run test:security:deployment` bestanden. Der rsync-Dry-Run enthielt ausschließlich `index.html` und `css/main.css`; keine Live-Dateien wurden gelöscht.
+- Deployment mit `ci/deploy.sh` nach `/srv/www/medina-82/public/talentexperte`. Vor dem Upload wurde das Remote-Backup `/srv/www/medina-82/backups/talentexperte/backup_2026-07-13_22-09-13.tar.gz` erstellt.
+- Live-Verifikation bestanden: lokale, ausgelieferte und serverseitige SHA-256-Prüfsummen von `index.html` und `css/main.css` stimmen überein; Startseite, Anmeldung, Impressum, Datenschutz, Sitemap, robots.txt und Stylesheet liefern HTTP 200.
+
 ## 2026-07-12 — Hotfix: Camp-Auswahl lud nicht mehr („Camps konnten nicht geladen werden")
 
 Die RLS-Härtung aus `20260710090000` entzog `anon` den Lesezugriff auf `anmeldungen`/`firmen_anmeldungen`. Die öffentliche View `camp_verfuegbarkeit_public` lief aber mit `security_invoker=true` und zählt `freie_plaetze` über genau diese Tabellen → `permission denied` beim `select *` des Anmeldeformulars (Teilselektionen ohne `freie_plaetze` funktionierten weiter, daher fiel es erst im Formular auf). Fix: View auf Besitzerrechte umgestellt (`security_invoker=false`, Migration `20260712100000`) — sie liefert ausschließlich Camp-Metadaten und aggregierte Zahlen. Direkt in Prod angewendet und verifiziert; alle übrigen Views bleiben invoker-basiert und ohne anon-Zugriff.
