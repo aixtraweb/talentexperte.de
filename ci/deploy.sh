@@ -58,6 +58,7 @@ rsync -avz --delete --delete-excluded --prune-empty-dirs \
   --include "/favicon/***" \
   --include "/camps-in/***" \
   --include "/newsreader/***" \
+  --include "/ci/" \
   --include "/ci/logo.png" \
   --include "/ci/logo.webp" \
   --include "/ci/talentexperte-logo-jubilaeum-2005-2025.png" \
