@@ -1,22 +1,13 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import {
-  assertConfirmationTokenConfiguration,
-  confirmationExpiryForCamp,
-  createConfirmationToken,
-} from "../_shared/confirmation-token.ts";
+import { createStoredConfirmationToken } from "../_shared/stored-confirmation-token.ts";
+import { enqueueEmail } from "../_shared/email-outbox.ts";
+import { AdminAuthError, requireDashboardAdmin } from "../_shared/admin-auth.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const ADMIN_EMAILS = (Deno.env.get("ADMIN_EMAILS") ?? "")
-  .split(",")
-  .map((email) => email.trim().toLowerCase())
-  .filter(Boolean);
 const FROM_EMAIL = "TALENTEXPERTE Fußballschule <kontakt@talentexperte.de>";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://www.talentexperte.de",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
@@ -168,48 +159,14 @@ serve(async (req: Request) => {
   }
 
   try {
-    // Auth: Nur eingeloggte Admin-User
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Nicht autorisiert" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    // JWT prüfen
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !userData?.user) {
-      return new Response(JSON.stringify({ error: "Ungültiger Token" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const adminEmail = String(userData.user.email || "").toLowerCase();
-    if (ADMIN_EMAILS.length === 0) {
-      return new Response(JSON.stringify({ error: "ADMIN_EMAILS ist nicht konfiguriert" }), {
-        status: 503,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    if (!adminEmail || !ADMIN_EMAILS.includes(adminEmail)) {
-      return new Response(JSON.stringify({ error: "Keine Admin-Berechtigung" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const admin = await requireDashboardAdmin(req);
+    const supabase = admin.serviceClient;
     if (!RESEND_API_KEY) {
       return new Response(JSON.stringify({ error: "RESEND_API_KEY fehlt" }), {
         status: 503,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    assertConfirmationTokenConfiguration();
-
     const body: ReminderRequest = await req.json();
     const { anmeldung_ids } = body;
 
@@ -270,9 +227,11 @@ serve(async (req: Request) => {
       const campDates = camp?.datum_von && camp?.datum_bis
         ? formatDate(camp.datum_von) + " – " + formatDate(camp.datum_bis)
         : "";
-      const confirmationToken = await createConfirmationToken(
+      const confirmationToken = await createStoredConfirmationToken(
+        supabase,
+        "registration",
         String(row.id),
-        confirmationExpiryForCamp(camp?.datum_bis),
+        camp?.datum_bis,
       );
       const confirmationLink =
         "https://www.talentexperte.de/bestaetigung.html?id=" +
@@ -330,9 +289,18 @@ serve(async (req: Request) => {
 
           results.push({ id: row.id, email: row.email, success: true });
         } else {
-          results.push({ id: row.id, email: row.email, success: false, error: resendData?.message || "Resend-Fehler" });
+          const sendError = resendData?.message || "Resend-Fehler";
+          await enqueueEmail(supabase, "payment_reminder", row.email, {
+            from: FROM_EMAIL, to: [row.email], reply_to: "kontakt@talentexperte.de",
+            subject: `Zahlungserinnerung – ${String(campName).replace(/[\r\n]+/g, " ")} | TALENTEXPERTE`, html, text,
+          }, sendError);
+          results.push({ id: row.id, email: row.email, success: false, error: sendError });
         }
       } catch (sendErr: any) {
+        await enqueueEmail(supabase, "payment_reminder", row.email, {
+          from: FROM_EMAIL, to: [row.email], reply_to: "kontakt@talentexperte.de",
+          subject: `Zahlungserinnerung – ${String(campName).replace(/[\r\n]+/g, " ")} | TALENTEXPERTE`, html, text,
+        }, sendErr.message);
         results.push({ id: row.id, email: row.email, success: false, error: sendErr.message });
       }
     }
@@ -345,6 +313,12 @@ serve(async (req: Request) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err: any) {
+    if (err instanceof AdminAuthError) {
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: err.status,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

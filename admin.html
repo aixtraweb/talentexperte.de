@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://elfsightcdn.com https://*.elfsight.com; connect-src 'self' https://yxygwwoocsdnneqykiym.supabase.co https://elfsightcdn.com https://*.elfsight.com; frame-src https://buy.stripe.com https://*.stripe.com https://*.elfsight.com; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin – TALENTEXPERTE</title>
 <meta name="robots" content="noindex, nofollow">
@@ -27,24 +28,24 @@
   <div class="login-card">
     <h1>TALENT<span>EXPERTE</span></h1>
     <p>Admin-Dashboard – Bitte einloggen</p>
-    <div class="login-field"><label>E-Mail</label><input type="email" id="loginEmail" placeholder="kontakt@talentexperte.de"></div>
-    <div class="login-field"><label>Passwort</label><input type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="login-field"><label for="loginEmail">E-Mail</label><input type="email" id="loginEmail" name="email" autocomplete="username" spellcheck="false" placeholder="kontakt@talentexperte.de"></div>
+    <div class="login-field"><label for="loginPassword">Passwort</label><input type="password" id="loginPassword" name="password" autocomplete="current-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="login-btn" onclick="doLogin()">Einloggen</button>
-    <div class="login-error" id="loginError"></div>
+    <div class="login-error" id="loginError" role="alert" aria-live="assertive"></div>
   </div>
 </div>
 
 <div class="dashboard" id="dashboard">
   <nav class="dash-nav">
     <div class="dash-nav-left"><h1>TALENT<span>EXPERTE</span></h1><span class="dash-nav-badge">Admin</span></div>
-    <div class="dash-nav-right"><span class="dash-time" id="dashTime"></span><button class="dash-logout" onclick="doLogout()">Abmelden ↗</button></div>
+    <div class="dash-nav-right"><span class="dash-time" id="dashTime"></span><button class="dash-logout" onclick="processEmailOutbox()">E-Mail-Warteschlange</button><button class="dash-logout" onclick="doLogout()">Abmelden ↗</button></div>
   </nav>
   <div class="dash-content">
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-label">Camps aktiv</div><div class="stat-value" id="statCamps">–</div><div class="stat-sub" id="statCampsSub"></div></div>
       <div class="stat-card"><div class="stat-label">Anmeldungen</div><div class="stat-value red" id="statAnmeldungen">–</div><div class="stat-sub" id="statAnmeldungenSub"></div></div>
       <div class="stat-card"><div class="stat-label">Elternzahlungen bezahlt</div><div class="stat-value green" id="statBezahlt">–</div><div class="stat-sub" id="statBezahltSub"></div></div>
-      <div class="stat-card" id="statCardOffen" style="cursor:pointer;"><div class="stat-label">Elternzahlungen offen</div><div class="stat-value yellow" id="statOffen">–</div><div class="stat-sub" id="statOffenSub"></div></div>
+      <button type="button" class="stat-card" id="statCardOffen"><span class="stat-label">Elternzahlungen offen</span><span class="stat-value yellow" id="statOffen">–</span><span class="stat-sub" id="statOffenSub"></span></button>
       <div class="stat-card"><div class="stat-label">Elternumsatz (bezahlt)</div><div class="stat-value green" id="statUmsatz">–</div><div class="stat-sub" id="statUmsatzSub"></div></div>
       <div class="stat-card"><div class="stat-label">Auslastung ∅</div><div class="stat-value" id="statAuslastung">–</div><div class="stat-sub" id="statAuslastungSub"></div></div>
     </div>
@@ -56,7 +57,7 @@
     <div class="tab-content active" id="tabCamps"><div class="camp-cards" id="campCards"><div class="empty-state"><div class="icon">⏳</div>Laden…</div></div></div>
     <div class="tab-content" id="tabAnwesenheit">
       <div class="anwesenheit-controls">
-        <select class="filter-select" id="anwesenheitCampSel" onchange="onAnwesenheitCampChange(this.value)"><option value="">– Camp auswählen –</option></select>
+        <select class="filter-select" id="anwesenheitCampSel" aria-label="Camp für Anwesenheit" onchange="onAnwesenheitCampChange(this.value)"><option value="">– Camp auswählen –</option></select>
         <button class="btn-sm btn-refresh" onclick="reloadAnwesenheit()">↻ Aktualisieren</button>
         <span id="syncIndicator" class="sync-indicator sync-ok"></span>
       </div>
@@ -64,10 +65,10 @@
     </div>
     <div class="tab-content" id="tabAnmeldungen">
       <div class="table-controls">
-        <input type="text" class="table-search" id="searchInput" placeholder="🔍 Name, E-Mail, Telefon…" oninput="filterTable()">
+        <label class="sr-only" for="searchInput">Anmeldungen durchsuchen</label><input type="search" class="table-search" id="searchInput" name="dashboard_search" autocomplete="off" placeholder="Name, E-Mail oder Telefon…" oninput="filterTable()">
         <div class="table-filters">
-          <select class="filter-select" id="filterCamp" onchange="filterTable()"><option value="">Alle Camps</option></select>
-          <select class="filter-select" id="filterStatus" onchange="filterTable()"><option value="">Alle Status</option><option value="offen">⏳ Elternzahlung offen</option><option value="bezahlt">✅ Elternzahlung bezahlt</option><option value="gesponsert">🤝 Voll gesponsert</option><option value="storniert">❌ Storniert</option><option value="erstattet">↩ Erstattet</option></select>
+          <select class="filter-select" id="filterCamp" aria-label="Nach Camp filtern" onchange="filterTable()"><option value="">Alle Camps</option></select>
+          <select class="filter-select" id="filterStatus" aria-label="Nach Status filtern" onchange="filterTable()"><option value="">Alle Status</option><option value="offen">⏳ Elternzahlung offen</option><option value="bezahlt">✅ Elternzahlung bezahlt</option><option value="gesponsert">🤝 Voll gesponsert</option><option value="storniert">❌ Storniert</option><option value="erstattet">↩ Erstattet</option></select>
           <button class="btn-sm" id="filterMitarbeiterBtn" onclick="toggleMitarbeiterFilter()">🏭 Saint-Gobain</button>
           <button class="btn-sm btn-sponsor-filter" id="filterOefBtn" onclick="toggleOefFilter()">🤝 ÖF / Sponsoring</button>
           <button class="btn-sm btn-col-toggle" id="toggleElternBtn" onclick="toggleCol('eltern')" title="Spalte Eltern ein-/ausblenden">👤 Eltern</button>
@@ -92,66 +93,66 @@
 </div>
 
 <!-- CAMP EDIT MODAL -->
-<div class="modal-overlay" id="campModal">
-  <div class="modal">
-    <div class="modal-header"><h2 id="campModalTitle">Camp bearbeiten</h2><button class="modal-close" onclick="closeCampModal()">✕</button></div>
+<div class="modal-overlay" id="campModal" role="dialog" aria-modal="true" aria-labelledby="campModalTitle" aria-hidden="true">
+  <div class="modal" tabindex="-1">
+    <div class="modal-header"><h2 id="campModalTitle">Camp bearbeiten</h2><button class="modal-close" aria-label="Camp-Dialog schließen" onclick="closeCampModal()">✕</button></div>
     <div class="modal-body">
       <input type="hidden" id="editCampId">
-      <div class="modal-field"><label>Name</label><input type="text" id="editCampName"></div>
-      <div class="modal-row"><div class="modal-field"><label>Datum von</label><input type="date" id="editCampVon"></div><div class="modal-field"><label>Datum bis</label><input type="date" id="editCampBis"></div></div>
-      <div class="modal-row"><div class="modal-field"><label>Uhrzeit von</label><input type="time" id="editCampUhrzeitVon"></div><div class="modal-field"><label>Uhrzeit bis</label><input type="time" id="editCampUhrzeitBis"></div></div>
-      <div class="modal-row"><div class="modal-field"><label>Preis (€)</label><input type="number" id="editCampPreis" step="0.01"></div><div class="modal-field"><label>Max. Plätze</label><input type="number" id="editCampPlaetze"></div></div>
-      <div class="modal-row"><div class="modal-field"><label>Frühbucher-Preis (€)</label><input type="number" id="editCampFruehPreis" step="0.01" placeholder="Leer = kein Frühbucher"></div><div class="modal-field"><label>Frühbucher bis</label><input type="date" id="editCampFruehBis"></div></div>
-      <div class="modal-field"><label>Status</label><select id="editCampStatus"><option value="aktiv">Aktiv</option><option value="ausgebucht">Ausgebucht</option><option value="archiviert">Archiviert</option></select></div>
-      <div class="modal-field"><label>Stripe Payment Link</label><input type="url" id="editCampStripe" placeholder="https://buy.stripe.com/..."><span class="hint">Bezahl-Link nach Anmeldung</span></div>
-      <div class="modal-field"><label>Beschreibung</label><textarea id="editCampBeschreibung" rows="3"></textarea></div>
+      <div class="modal-field"><label for="editCampName">Name</label><input type="text" id="editCampName"></div>
+      <div class="modal-row"><div class="modal-field"><label for="editCampVon">Datum von</label><input type="date" id="editCampVon"></div><div class="modal-field"><label for="editCampBis">Datum bis</label><input type="date" id="editCampBis"></div></div>
+      <div class="modal-row"><div class="modal-field"><label for="editCampUhrzeitVon">Uhrzeit von</label><input type="time" id="editCampUhrzeitVon"></div><div class="modal-field"><label for="editCampUhrzeitBis">Uhrzeit bis</label><input type="time" id="editCampUhrzeitBis"></div></div>
+      <div class="modal-row"><div class="modal-field"><label for="editCampPreis">Preis (€)</label><input type="number" id="editCampPreis" step="0.01"></div><div class="modal-field"><label for="editCampPlaetze">Max. Plätze</label><input type="number" id="editCampPlaetze"></div></div>
+      <div class="modal-row"><div class="modal-field"><label for="editCampFruehPreis">Frühbucher-Preis (€)</label><input type="number" id="editCampFruehPreis" step="0.01" placeholder="Leer = kein Frühbucher"></div><div class="modal-field"><label for="editCampFruehBis">Frühbucher bis</label><input type="date" id="editCampFruehBis"></div></div>
+      <div class="modal-field"><label for="editCampStatus">Status</label><select id="editCampStatus"><option value="aktiv">Aktiv</option><option value="ausgebucht">Ausgebucht</option><option value="archiviert">Archiviert</option></select></div>
+      <div class="modal-field"><label for="editCampStripe">Stripe Payment Link</label><input type="url" id="editCampStripe" placeholder="https://buy.stripe.com/..."><span class="hint">Bezahl-Link nach Anmeldung</span></div>
+      <div class="modal-field"><label for="editCampBeschreibung">Beschreibung</label><textarea id="editCampBeschreibung" rows="3"></textarea></div>
     </div>
     <div class="modal-footer"><button class="btn-modal btn-modal-cancel" onclick="closeCampModal()">Abbrechen</button><button class="btn-modal btn-modal-save" onclick="saveCamp()">Speichern</button></div>
   </div>
 </div>
 
 <!-- MANUELLE ANMELDUNG MODAL -->
-<div class="modal-overlay" id="manualModal">
-  <div class="modal" style="max-width:640px;max-height:90vh;overflow-y:auto;">
-    <div class="modal-header"><h2 id="manualModalTitle">Manuelle Anmeldung erfassen</h2><button class="modal-close" onclick="closeManualAnmeldung()">✕</button></div>
+<div class="modal-overlay" id="manualModal" role="dialog" aria-modal="true" aria-labelledby="manualModalTitle" aria-hidden="true">
+  <div class="modal" tabindex="-1" style="max-width:640px;max-height:90vh;overflow-y:auto;">
+    <div class="modal-header"><h2 id="manualModalTitle">Manuelle Anmeldung erfassen</h2><button class="modal-close" aria-label="Anmeldedialog schließen" onclick="closeManualAnmeldung()">✕</button></div>
     <div class="modal-body">
-      <div class="modal-field"><label>Camp *</label><select id="mCamp" onchange="mCampChanged()"><option value="">– Bitte wählen –</option></select></div>
+      <div class="modal-field"><label for="mCamp">Camp *</label><select id="mCamp" onchange="mCampChanged()"><option value="">– Bitte wählen –</option></select></div>
       <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;margin:16px 0 8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);">Kind</div>
       <div class="modal-row">
-        <div class="modal-field"><label>Vorname Kind *</label><input type="text" id="mVorname" placeholder="Max"></div>
-        <div class="modal-field"><label>Nachname Kind *</label><input type="text" id="mNachname" placeholder="Mustermann"></div>
+        <div class="modal-field"><label for="mVorname">Vorname Kind *</label><input type="text" id="mVorname" placeholder="Max"></div>
+        <div class="modal-field"><label for="mNachname">Nachname Kind *</label><input type="text" id="mNachname" placeholder="Mustermann"></div>
       </div>
       <div class="modal-row">
-        <div class="modal-field"><label>Geburtsdatum *</label><input type="date" id="mGeburtsdatum"></div>
-        <div class="modal-field"><label>Trikotgröße</label><select id="mTrikot"><option value="">–</option><option>116</option><option>128</option><option>140</option><option>152</option><option>164</option><option>S</option><option>M</option><option>L</option><option>XL</option></select></div>
+        <div class="modal-field"><label for="mGeburtsdatum">Geburtsdatum *</label><input type="date" id="mGeburtsdatum"></div>
+        <div class="modal-field"><label for="mTrikot">Trikotgröße</label><select id="mTrikot"><option value="">–</option><option>116</option><option>128</option><option>140</option><option>152</option><option>164</option><option>S</option><option>M</option><option>L</option><option>XL</option></select></div>
       </div>
       <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;margin:16px 0 8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);">Eltern / Kontakt</div>
       <div class="modal-row">
-        <div class="modal-field"><label>Vorname Elternteil *</label><input type="text" id="mElternVorname"></div>
-        <div class="modal-field"><label>Nachname Elternteil *</label><input type="text" id="mElternNachname"></div>
+        <div class="modal-field"><label for="mElternVorname">Vorname Elternteil *</label><input type="text" id="mElternVorname"></div>
+        <div class="modal-field"><label for="mElternNachname">Nachname Elternteil *</label><input type="text" id="mElternNachname"></div>
       </div>
       <div class="modal-row">
-        <div class="modal-field"><label>E-Mail *</label><input type="email" id="mEmail" placeholder="eltern@beispiel.de"></div>
-        <div class="modal-field"><label>Telefon</label><input type="tel" id="mTelefon" placeholder="+49 …"></div>
+        <div class="modal-field"><label for="mEmail">E-Mail *</label><input type="email" id="mEmail" placeholder="eltern@beispiel.de"></div>
+        <div class="modal-field"><label for="mTelefon">Telefon</label><input type="tel" id="mTelefon" placeholder="+49 …"></div>
       </div>
-      <div class="modal-field"><label>Adresse</label><input type="text" id="mAdresse" placeholder="Musterstraße 1, 52066 Aachen"></div>
+      <div class="modal-field"><label for="mAdresse">Adresse</label><input type="text" id="mAdresse" placeholder="Musterstraße 1, 52066 Aachen"></div>
       <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;margin:16px 0 8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);">Weitere Angaben</div>
       <div class="modal-row">
-        <div class="modal-field"><label>Erfahrung</label><input type="text" id="mErfahrung" placeholder="z.B. Vereinsspieler, Anfänger…"></div>
-        <div class="modal-field"><label id="mBetragLabel">Elternbetrag (€) *</label><input type="number" id="mBetrag" step="0.01" min="0" placeholder="0.00"><span class="hint" id="mBetragHint">Betrag, den die Eltern selbst zahlen.</span></div>
+        <div class="modal-field"><label for="mErfahrung">Erfahrung</label><input type="text" id="mErfahrung" placeholder="z.B. Vereinsspieler, Anfänger…"></div>
+        <div class="modal-field"><label for="mBetrag" id="mBetragLabel">Elternbetrag (€) *</label><input type="number" id="mBetrag" step="0.01" min="0" placeholder="0.00"><span class="hint" id="mBetragHint">Betrag, den die Eltern selbst zahlen.</span></div>
       </div>
-      <div class="modal-field"><label>Allergien / Besonderheiten</label><textarea id="mAllergien" rows="2" placeholder="Keine Angabe"></textarea></div>
-      <div class="modal-field"><label>Notizen</label><textarea id="mNotizen" rows="2" placeholder="Interne Notizen"></textarea></div>
+      <div class="modal-field"><label for="mAllergien">Allergien / Besonderheiten</label><textarea id="mAllergien" rows="2" placeholder="Keine Angabe"></textarea></div>
+      <div class="modal-field"><label for="mNotizen">Notizen</label><textarea id="mNotizen" rows="2" placeholder="Interne Notizen"></textarea></div>
       <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;margin:16px 0 8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);">Zahlung &amp; Herkunft</div>
       <div class="modal-row">
-        <div class="modal-field"><label>Anmeldungstyp</label>
+        <div class="modal-field"><label for="mTyp">Anmeldungstyp</label>
           <select id="mTyp" onchange="mTypChanged()">
             <option value="Privat">👤 Privat</option>
             <option value="Sponsor">🤝 Voll gesponsert</option>
             <option value="Saint-Gobain">🏢 Saint-Gobain – Mitarbeiter</option>
           </select>
         </div>
-        <div class="modal-field"><label>Zahlungsstatus</label>
+        <div class="modal-field"><label for="mZahlungsstatus">Zahlungsstatus</label>
           <select id="mZahlungsstatus">
             <option value="offen">⏳ Offen – noch nicht bezahlt</option>
             <option value="bezahlt">✅ Bezahlt – Banküberweisung erhalten</option>
@@ -159,15 +160,15 @@
             <option value="not_required">🤝 Nicht erforderlich – voll gesponsert</option>
           </select>
         </div>
-        <div class="modal-field"><label>Anmeldekanal</label><input type="text" id="mKanal" placeholder="z.B. Telefon, Vor Ort, E-Mail…"></div>
+        <div class="modal-field"><label for="mKanal">Anmeldekanal</label><input type="text" id="mKanal" placeholder="z.B. Telefon, Vor Ort, E-Mail…"></div>
       </div>
       <div class="sponsor-admin-fields" id="mSponsorFields" hidden>
         <div class="sponsor-admin-note"><strong>Voll gesponsert:</strong> Die Eltern zahlen 0 €. Der Sponsor-Betrag wird getrennt von der Elternzahlung geführt.</div>
         <div class="modal-row">
-          <div class="modal-field"><label>Sponsoring-Partner *</label><select id="mSponsorPartner"><option value="">– Partner auswählen –</option></select></div>
-          <div class="modal-field"><label>Sponsor-Betrag (voller Listenpreis)</label><input type="number" id="mSponsorAmount" step="0.01" min="0" placeholder="149.00" readonly></div>
+          <div class="modal-field"><label for="mSponsorPartner">Sponsoring-Partner *</label><select id="mSponsorPartner"><option value="">– Partner auswählen –</option></select></div>
+          <div class="modal-field"><label for="mSponsorAmount">Sponsor-Betrag (voller Listenpreis)</label><input type="number" id="mSponsorAmount" step="0.01" min="0" placeholder="149.00" readonly></div>
         </div>
-        <div class="modal-field"><label>Sponsor-Abrechnung</label>
+        <div class="modal-field"><label for="mSponsorSettlement">Sponsor-Abrechnung</label>
           <select id="mSponsorSettlement">
             <option value="open">Offen</option>
             <option value="invoiced">In Rechnung gestellt</option>
@@ -186,12 +187,12 @@
 
 <!-- DETAIL PANEL -->
 <div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
-<div class="detail-panel" id="detailPanel">
-  <div class="detail-header"><h2 id="detailTitle">Details</h2><button class="modal-close" onclick="closeDetail()">✕</button></div>
+<div class="detail-panel" id="detailPanel" role="dialog" aria-modal="true" aria-labelledby="detailTitle" aria-hidden="true" tabindex="-1">
+  <div class="detail-header"><h2 id="detailTitle">Details</h2><button class="modal-close" aria-label="Details schließen" onclick="closeDetail()">✕</button></div>
   <div id="detailContent"></div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
 var SUPABASE_URL='https://yxygwwoocsdnneqykiym.supabase.co';
@@ -204,6 +205,8 @@ var lastAnwCampId=null;
 var campReadMode='private';
 var allDashboardRows=[],privateKpi=null;
 var KNOWN_STATUS={offen:true,bezahlt:true,gesponsert:true,storniert:true,erstattet:true};
+var dialogReturnFocus={};
+function setDialogState(id,open){var el=document.getElementById(id);if(!el)return;if(open){dialogReturnFocus[id]=document.activeElement;el.setAttribute('aria-hidden','false');requestAnimationFrame(function(){var target=el.querySelector('.modal,[tabindex="-1"]')||el;target.focus()})}else{el.setAttribute('aria-hidden','true');var previous=dialogReturnFocus[id];if(previous&&previous.focus)previous.focus();delete dialogReturnFocus[id]}}
 function statusToken(v){var s=String(v||'').toLowerCase().trim();if(s==='paid'||s==='zahlung_erfolgt'||s==='bezahlt')return 'bezahlt';if(s==='cancelled'||s==='storniert')return 'storniert';if(s==='refunded'||s==='erstattet')return 'erstattet';if(s==='open'||s==='offen'||s==='pending')return 'offen';return ''}
 
 function hasLegacySponsorMarker(a){return /\[TYP:(?:ÖF|OEF)\]/i.test(String((a&&a.notizen)||''))}
@@ -246,6 +249,14 @@ return j
 }
 async function apiPatch(t,id,d){var r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?id=eq.'+id,{method:'PATCH',headers:apiH(),body:JSON.stringify(d)});if(r.status===401){doLogout();return null}return r}
 async function apiDelete(t,id){var r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?id=eq.'+id,{method:'DELETE',headers:apiH()});if(r.status===401){doLogout();return null}return r}
+async function apiRpc(name,payload){var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:apiH(),body:JSON.stringify(payload||{})});if(r.status===401){doLogout();return null}return r}
+async function processEmailOutbox(){
+await ensureFreshToken();
+var r=await fetch(SUPABASE_URL+'/functions/v1/process-email-outbox',{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:'{}'});
+var p=await r.json().catch(function(){return{}});
+if(!r.ok){showToast(p.error||'E-Mail-Warteschlange konnte nicht verarbeitet werden',true);return}
+showToast('E-Mail-Warteschlange: '+Number(p.sent||0)+' versendet, '+Number(p.failed||0)+' weiter offen')
+}
 async function apiPost(t,d){
 var h=Object.assign({},apiH(),{'Prefer':'return=minimal'});
 var r=await fetch(SUPABASE_URL+'/rest/v1/'+t,{method:'POST',headers:h,body:JSON.stringify(d)});
@@ -430,6 +441,10 @@ allDashboardRows=[];
 var rows=[];
 if(Array.isArray(priv))rows=rows.concat(priv.map(function(a){return normalize(a,'anmeldungen')}));
 if(Array.isArray(firm))rows=rows.concat(firm.map(function(a){return normalize(a,'firmen_anmeldungen')}));
+// Historische company-Mirrorzeilen aus anmeldungen nicht zusätzlich zur
+// kanonischen Firmenanmeldung anzeigen oder in Kapazitäten zählen.
+var companyKeys=new Set(rows.filter(function(a){return a.__table==='firmen_anmeldungen'}).map(function(a){return[a.camp_id,String(a.vorname||'').toLowerCase(),String(a.nachname||'').toLowerCase(),String(a.email||'').toLowerCase()].join('|')}));
+rows=rows.filter(function(a){if(a.__table!=='anmeldungen'||a.payer_type!=='company')return true;var key=[a.camp_id,String(a.vorname||'').toLowerCase(),String(a.nachname||'').toLowerCase(),String(a.email||'').toLowerCase()].join('|');return!companyKeys.has(key)});
 var merged={};
 rows.forEach(function(a){
 var k=(a.__table||'')+':'+a.id;
@@ -538,9 +553,9 @@ document.getElementById('editCampPreis').value=c.preis_euro;document.getElementB
 document.getElementById('editCampFruehPreis').value=c.fruehbucher_preis||'';document.getElementById('editCampFruehBis').value=c.fruehbucher_bis||'';
 document.getElementById('editCampStatus').value=c.status;document.getElementById('editCampStripe').value=c.stripe_link||'';
 document.getElementById('editCampBeschreibung').value=c.beschreibung||'';
-document.getElementById('campModalTitle').textContent=c.name+' bearbeiten';document.getElementById('campModal').classList.add('visible')}
+document.getElementById('campModalTitle').textContent=c.name+' bearbeiten';document.getElementById('campModal').classList.add('visible');setDialogState('campModal',true)}
 
-function closeCampModal(){document.getElementById('campModal').classList.remove('visible')}
+function closeCampModal(){document.getElementById('campModal').classList.remove('visible');setDialogState('campModal',false)}
 
 async function saveCamp(){var id=document.getElementById('editCampId').value;
 var u={name:document.getElementById('editCampName').value,datum_von:document.getElementById('editCampVon').value,datum_bis:document.getElementById('editCampBis').value,
@@ -657,9 +672,9 @@ var waNum=a.telefon.replace(/[^0-9]/g,'').replace(/^0/,'');
 h+='<a class="detail-action-btn btn-wa" href="https://wa.me/49'+waNum+'?text='+encodeURIComponent(waMsg)+'" target="_blank" rel="noopener">💬 WhatsApp</a>';
 h+='<a class="detail-action-btn btn-mail" href="'+esc(safeMailto(a.email,'Feriencamp TALENTEXPERTE'))+'" target="_blank" rel="noopener">📧 E-Mail</a></div>';
 document.getElementById('detailContent').innerHTML=h;
-document.getElementById('detailOverlay').classList.add('visible');document.getElementById('detailPanel').classList.add('open')}
+document.getElementById('detailOverlay').classList.add('visible');document.getElementById('detailPanel').classList.add('open');setDialogState('detailPanel',true)}
 
-function closeDetail(){document.getElementById('detailOverlay').classList.remove('visible');document.getElementById('detailPanel').classList.remove('open')}
+function closeDetail(){document.getElementById('detailOverlay').classList.remove('visible');document.getElementById('detailPanel').classList.remove('open');setDialogState('detailPanel',false)}
 function rw(l,v,trustedHtml){return '<div class="detail-row"><span class="label">'+esc(l)+'</span><span class="value">'+(trustedHtml?String(v):esc(v))+'</span></div>'}
 
 function getFiltered(){var s=document.getElementById('searchInput').value.toLowerCase(),cf=document.getElementById('filterCamp').value,sf=document.getElementById('filterStatus').value;
@@ -708,8 +723,9 @@ function sortTable(f){if(currentSort.field===f){currentSort.dir=currentSort.dir=
 function populateCampFilter(){var s=document.getElementById('filterCamp'),c=s.value;s.replaceChildren(new Option('Alle Camps',''));allCamps.forEach(function(x){s.appendChild(new Option(String(x.name||''),String(x.id||'')))});s.value=c}
 
 async function setStatus(id,st){var lb={bezahlt:'als bezahlt markieren',storniert:'stornieren',erstattet:'als erstattet markieren'};
-if(!confirm('Anmeldung wirklich '+lb[st]+'?'))return;
 var a=allAnmeldungen.find(function(x){return x.id===id});
+if(st==='erstattet'&&a&&a.__table==='anmeldungen'){await refundRegistration(id);return}
+if(!confirm('Anmeldung wirklich '+lb[st]+'?'))return;
 if(a&&isSponsored(a)&&st==='bezahlt'){showToast('Gesponserte Anmeldung: keine Elternzahlung erforderlich',true);return}
 var table=(a&&a.__table)||'anmeldungen';
 var u={};
@@ -726,6 +742,21 @@ if(st==='storniert')u.storniert_am=new Date().toISOString();
 }
 var r=await apiPatch(table,id,u);if(r&&r.ok){showToast('Status: '+st+' ✓');closeDetail();await loadAll()}else{showToast('Fehler',true)}}
 
+async function refundRegistration(id){
+var a=allAnmeldungen.find(function(x){return x.id===id});
+if(!a||a.__table!=='anmeldungen'||a.payer_type!=='parent'||a.__effectiveStatus!=='bezahlt'){showToast('Nur eindeutig bezahlte Elternanmeldungen können über Stripe erstattet werden',true);return}
+var reason=window.prompt('Grund für die Stripe-Erstattung (mindestens 5 Zeichen):','Stornierung durch Familie');
+if(reason===null)return;
+reason=reason.trim();
+if(reason.length<5){showToast('Bitte einen nachvollziehbaren Erstattungsgrund angeben',true);return}
+if(!confirm('Stripe-Zahlung für '+a.vorname+' '+a.nachname+' in Höhe von '+money(getParentAmount(a))+' jetzt vollständig erstatten?'))return;
+await ensureFreshToken();
+var response=await fetch(SUPABASE_URL+'/functions/v1/admin-payment-action',{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({registration_id:id,reason:reason})});
+var payload=await response.json().catch(function(){return{}});
+if(!response.ok||!payload.success){showToast(payload.error||'Erstattung fehlgeschlagen; Zahlung wurde nicht als erstattet markiert',true);return}
+showToast('Stripe-Erstattung bestätigt ✓');closeDetail();await loadAll()
+}
+
 async function deleteAnmeldung(id){
 var a=allAnmeldungen.find(function(x){return x.id===id});
 if(!a){showToast('Eintrag nicht gefunden',true);return}
@@ -735,12 +766,10 @@ var doStorno=confirm('Anmeldung von '+name+'\n\nEmpfehlung: STORNIEREN statt lö
 if(doStorno){await setStatus(id,'storniert');return}
 if(a.sponsoring_entitlement_id){showToast('Codegebundene Sponsorplätze werden aus Nachweisgründen storniert, nicht gelöscht',true);return}
 /* Stufe 2: Doppelte Bestätigung für echten DELETE */
-if(!confirm('⚠️ ENDGÜLTIG LÖSCHEN?\n\n'+name+' wird unwiderruflich aus der Datenbank entfernt. Verknüpfte Anwesenheits-Daten bleiben als verwaiste Einträge zurück.\n\nNur fortfahren, wenn Stornieren nicht passt.\n\nOK = Löschen\nAbbrechen = Nichts tun'))return;
+if(!confirm('⚠️ ENDGÜLTIG LÖSCHEN?\n\n'+name+' und die verknüpften Anwesenheits-Daten werden unwiderruflich entfernt.\n\nNur fortfahren, wenn Stornieren nicht passt.\n\nOK = Löschen\nAbbrechen = Nichts tun'))return;
 if(!confirm('Letzte Bestätigung: '+name+' wirklich löschen?'))return;
-var tables=[(a.__table)||'anmeldungen'];
-var alt=(tables[0]==='anmeldungen')?'firmen_anmeldungen':'anmeldungen';
-if(tables.indexOf(alt)===-1)tables.push(alt);
-for(var i=0;i<tables.length;i++){await apiDelete(tables[i],id)}
+var deleteResponse=await apiRpc('dashboard_delete_registration',{p_table:(a.__table)||'anmeldungen',p_registration_id:id});
+if(!deleteResponse||!deleteResponse.ok){showToast('Löschen fehlgeschlagen; es wurden keine verknüpften Daten entfernt',true);return}
 closeDetail();
 await loadAll();
 var stillThere=allAnmeldungen.some(function(x){return x.id===id});
@@ -820,15 +849,12 @@ if(doStorno){await bulkSetStatus('storniert');return}
 var codeBound=sel.filter(function(a){return !!a.sponsoring_entitlement_id});
 if(codeBound.length){showToast(codeBound.length+' codegebundene Sponsorplätze können nur storniert werden',true);return}
 /* Stufe 2: Doppelte Bestätigung für echten DELETE */
-if(!confirm('⚠️ '+sel.length+' Anmeldung(en) ENDGÜLTIG LÖSCHEN?\n\nUnwiderruflich. Verknüpfte Anwesenheits-Daten bleiben als verwaiste Einträge zurück.\n\nNur fortfahren, wenn Stornieren nicht passt.\n\nOK = Löschen\nAbbrechen = Nichts tun'))return;
+if(!confirm('⚠️ '+sel.length+' Anmeldung(en) ENDGÜLTIG LÖSCHEN?\n\nUnwiderruflich. Verknüpfte Anwesenheits-Daten werden mit entfernt.\n\nNur fortfahren, wenn Stornieren nicht passt.\n\nOK = Löschen\nAbbrechen = Nichts tun'))return;
 if(!confirm('Letzte Bestätigung: '+sel.length+' Anmeldung(en) wirklich löschen?'))return;
 var ok=0;
 for(var i=0;i<sel.length;i++){
-var a=sel[i];var tables=[(a.__table)||'anmeldungen'];
-var alt=(tables[0]==='anmeldungen')?'firmen_anmeldungen':'anmeldungen';
-if(tables.indexOf(alt)===-1)tables.push(alt);
-for(var t=0;t<tables.length;t++){await apiDelete(tables[t],a.id)}
-ok++}
+var a=sel[i];var response=await apiRpc('dashboard_delete_registration',{p_table:(a.__table)||'anmeldungen',p_registration_id:a.id});
+if(response&&response.ok)ok++}
 selectedIds.clear();
 showToast(ok+' Anmeldung(en) gelöscht ✓');
 await loadAll()}
@@ -910,7 +936,7 @@ document.getElementById('mSponsorPartner').disabled=codeBound;
 document.getElementById('mVorname').disabled=codeBound;
 document.getElementById('mNachname').disabled=codeBound;
 document.getElementById('mGeburtsdatum').disabled=codeBound;
-document.getElementById('manualModal').classList.add('visible')}
+document.getElementById('manualModal').classList.add('visible');setDialogState('manualModal',true)}
 
 function openManualAnmeldung(){
 manualEditId=null;manualEditTable=null;
@@ -935,9 +961,11 @@ document.getElementById('mSponsorAmount').value='';
 document.getElementById('mSponsorSettlement').value='open';
 document.getElementById('manualModalTitle').textContent='Manuelle Anmeldung erfassen';
 document.getElementById('manualModalSaveBtn').textContent='Anmeldung speichern';mTypChanged(true);
-document.getElementById('manualModal').classList.add('visible')}
+document.getElementById('manualModal').classList.add('visible');setDialogState('manualModal',true)}
 
-function closeManualAnmeldung(){document.getElementById('manualModal').classList.remove('visible')}
+function closeManualAnmeldung(){document.getElementById('manualModal').classList.remove('visible');setDialogState('manualModal',false)}
+
+document.addEventListener('keydown',function(event){if(event.key!=='Escape')return;if(document.getElementById('manualModal').classList.contains('visible'))closeManualAnmeldung();else if(document.getElementById('campModal').classList.contains('visible'))closeCampModal();else if(document.getElementById('detailPanel').classList.contains('open'))closeDetail()});
 
 function mTypChanged(preserveAmounts){
 var typ=document.getElementById('mTyp').value;

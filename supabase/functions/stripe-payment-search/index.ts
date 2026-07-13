@@ -11,10 +11,9 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: "Nur POST" }), { status: 405, headers: corsHeaders });
   }
 
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  const myServiceKey = Deno.env.get("MY_SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const adminFunctionSecret = Deno.env.get("ADMIN_FUNCTION_SECRET") ?? "";
   const auth = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
-  if (!auth || (auth !== serviceKey && auth !== myServiceKey)) {
+  if (!adminFunctionSecret || auth !== adminFunctionSecret) {
     return new Response(JSON.stringify({ error: "Nicht autorisiert" }), { status: 401, headers: corsHeaders });
   }
 

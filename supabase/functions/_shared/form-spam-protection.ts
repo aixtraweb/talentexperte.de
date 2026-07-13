@@ -7,6 +7,7 @@ type ProtectionOptions = {
   minAgeSeconds?: number;
   maxAgeSeconds?: number;
   honeypotFields?: string[];
+  consumeToken?: boolean;
 };
 
 type ProtectionResult = {
@@ -65,22 +66,53 @@ export async function createFormToken(purpose: string): Promise<string> {
   return `${payload}:${signature}`;
 }
 
-async function verifyFormToken(token: unknown, purpose: string, maxAgeSeconds: number): Promise<boolean> {
+async function verifyFormToken(
+  token: unknown,
+  purpose: string,
+  maxAgeSeconds: number,
+): Promise<{ nonce: string; expiresAt: number } | null> {
   const value = asString(token, 300);
   const parts = value.split(":");
-  if (parts.length !== 4) return false;
+  if (parts.length !== 4) return null;
 
   const [tokenPurpose, timestampRaw, nonce, signature] = parts;
-  if (tokenPurpose !== purpose) return false;
-  if (!/^\d{10}$/.test(timestampRaw)) return false;
-  if (!/^[a-f0-9]{32}$/.test(nonce)) return false;
-  if (!/^[a-f0-9]{64}$/.test(signature)) return false;
+  if (tokenPurpose !== purpose) return null;
+  if (!/^\d{10}$/.test(timestampRaw)) return null;
+  if (!/^[a-f0-9]{32}$/.test(nonce)) return null;
+  if (!/^[a-f0-9]{64}$/.test(signature)) return null;
 
   const age = nowSeconds() - Number(timestampRaw);
-  if (age < -60 || age > maxAgeSeconds) return false;
+  if (age < -60 || age > maxAgeSeconds) return null;
 
   const expected = await hmac(`${tokenPurpose}:${timestampRaw}:${nonce}`);
-  return signature === expected;
+  return signature === expected
+    ? { nonce, expiresAt: Number(timestampRaw) + maxAgeSeconds }
+    : null;
+}
+
+async function sha256(value: string): Promise<string> {
+  return toHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)));
+}
+
+async function persistentLimit(
+  supabase: any,
+  scope: string,
+  identity: string,
+  limit: number,
+  windowSeconds: number,
+): Promise<boolean> {
+  const identityHash = await hmac(`form-limit:${scope}:${identity || "unknown"}`);
+  const { data, error } = await supabase.rpc("consume_form_rate_limit", {
+    p_scope: scope,
+    p_identity_hash: identityHash,
+    p_limit: limit,
+    p_window_seconds: windowSeconds,
+  });
+  if (error) {
+    console.error("Persistent form rate limit failed:", error.message);
+    return false;
+  }
+  return data === true;
 }
 
 export function asString(value: unknown, maxLength = 5000): string {
@@ -184,6 +216,7 @@ export async function checkFormProtection(
   req: Request,
   body: FormBody,
   options: ProtectionOptions,
+  supabase: any,
 ): Promise<ProtectionResult> {
   const honeypotFields = options.honeypotFields || DEFAULT_HONEYPOT_FIELDS;
   for (const field of honeypotFields) {
@@ -194,9 +227,32 @@ export async function checkFormProtection(
   }
 
   const maxAgeSeconds = options.maxAgeSeconds || DEFAULT_MAX_AGE_SECONDS;
-  if (!await verifyFormToken(body.form_token, options.purpose, maxAgeSeconds)) {
+  const verifiedToken = await verifyFormToken(body.form_token, options.purpose, maxAgeSeconds);
+  if (!verifiedToken) {
     logRejected("invalid_token", req, body);
     return { ok: false, status: 400, error: "Anfrage konnte nicht verarbeitet werden.", reason: "invalid_token" };
+  }
+
+  if (options.consumeToken !== false) {
+    const { data: nonceConsumed, error: nonceError } = await supabase.rpc(
+      "consume_form_nonce",
+      {
+        p_nonce_hash: await sha256(`${options.purpose}:${verifiedToken.nonce}`),
+        p_purpose: options.purpose,
+        p_expires_at: new Date(verifiedToken.expiresAt * 1000).toISOString(),
+      },
+    );
+    if (nonceError || nonceConsumed !== true) {
+      logRejected(nonceError ? "nonce_store_failed" : "token_replayed", req, body);
+      return {
+        ok: false,
+        status: nonceError ? 503 : 409,
+        error: nonceError
+          ? "Die Anmeldung kann gerade nicht sicher geprüft werden. Bitte versuchen Sie es später erneut."
+          : "Dieses Formular wurde bereits gesendet. Bitte laden Sie die Seite für eine weitere Anmeldung neu.",
+        reason: nonceError ? "nonce_store_failed" : "token_replayed",
+      };
+    }
   }
 
   const age = getFormAge(body);
@@ -213,14 +269,17 @@ export async function checkFormProtection(
   }
 
   const ip = getClientIp(req);
-  if (rateLimitExceeded("ip-minute", ip, 20, 60) || rateLimitExceeded("ip-hour", ip, 60, 3600)) {
+  if (
+    !await persistentLimit(supabase, "ip-minute", ip, 20, 60) ||
+    !await persistentLimit(supabase, "ip-hour", ip, 60, 3600)
+  ) {
     logRejected("ip_rate_limited", req, body);
     return { ok: false, status: 429, error: "Bitte versuchen Sie es spaeter erneut.", reason: "ip_rate_limited" };
   }
 
   if (options.emailField) {
     const email = asString(body[options.emailField], 200).toLowerCase();
-    if (email && rateLimitExceeded("email-hour", email, 12, 3600)) {
+    if (email && !await persistentLimit(supabase, "email-hour", email, 12, 3600)) {
       logRejected("email_rate_limited", req, body);
       return { ok: false, status: 429, error: "Bitte versuchen Sie es spaeter erneut.", reason: "email_rate_limited" };
     }

@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://elfsightcdn.com https://*.elfsight.com; connect-src 'self' https://yxygwwoocsdnneqykiym.supabase.co https://elfsightcdn.com https://*.elfsight.com; frame-src https://buy.stripe.com https://*.stripe.com https://*.elfsight.com; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anmeldung – TALENTEXPERTE Fußball-Feriencamps</title>
 <link rel="stylesheet" href="css/fonts.css">
@@ -316,17 +317,17 @@
     <h2><span class="form-step-badge">2</span> Daten des Kindes</h2>
     <div class="form-grid form-grid-3">
       <div class="field">
-        <label>Vorname <span class="req">*</span></label>
+        <label for="vorname">Vorname <span class="req">*</span></label>
         <input type="text" id="vorname" name="vorname" placeholder="Max" required>
         <span class="error-msg">Bitte Vorname eingeben</span>
       </div>
       <div class="field">
-        <label>Nachname <span class="req">*</span></label>
+        <label for="nachname">Nachname <span class="req">*</span></label>
         <input type="text" id="nachname" name="nachname" placeholder="Mustermann" required>
         <span class="error-msg">Bitte Nachname eingeben</span>
       </div>
       <div class="field">
-        <label>Geburtsdatum <span class="req">*</span></label>
+        <label for="geburtsdatum">Geburtsdatum <span class="req">*</span></label>
         <input type="text" id="geburtsdatum" name="geburtsdatum" inputmode="numeric" autocomplete="bday" placeholder="dd.mm.yyyy" maxlength="10" required>
         <span class="error-msg">Bitte Geburtsdatum eingeben</span>
       </div>
@@ -353,27 +354,27 @@
     <h2><span class="form-step-badge">3</span> Eltern &amp; Kontakt</h2>
     <div class="form-grid">
       <div class="field">
-        <label>Vorname Elternteil <span class="req">*</span></label>
+        <label for="eltern_vorname">Vorname Elternteil <span class="req">*</span></label>
         <input type="text" id="eltern_vorname" name="eltern_vorname" placeholder="Thomas" required>
         <span class="error-msg">Bitte Vorname eingeben</span>
       </div>
       <div class="field">
-        <label>Nachname Elternteil <span class="req">*</span></label>
+        <label for="eltern_nachname">Nachname Elternteil <span class="req">*</span></label>
         <input type="text" id="eltern_nachname" name="eltern_nachname" placeholder="Mustermann" required>
         <span class="error-msg">Bitte Nachname eingeben</span>
       </div>
       <div class="field">
-        <label>E-Mail-Adresse <span class="req">*</span></label>
+        <label for="email">E-Mail-Adresse <span class="req">*</span></label>
         <input type="email" id="email" name="email" placeholder="thomas@example.com" required>
         <span class="error-msg">Bitte gültige E-Mail eingeben</span>
       </div>
       <div class="field">
-        <label>Telefon / Mobil <span class="req">*</span></label>
+        <label for="telefon">Telefon / Mobil <span class="req">*</span></label>
         <input type="tel" id="telefon" name="telefon" placeholder="+49 151 12345678" required>
         <span class="error-msg">Bitte Telefonnummer eingeben</span>
       </div>
       <div class="field form-full">
-        <label>Adresse</label>
+        <label for="adresse">Adresse</label>
         <input type="text" id="adresse" name="adresse" placeholder="Musterstr. 1, 52066 Aachen">
       </div>
     </div>
@@ -384,15 +385,15 @@
     <h2><span class="form-step-badge">4</span> Zusätzliche Infos</h2>
     <div class="form-grid">
       <div class="field form-full">
-        <label>Fußball-Erfahrung</label>
+        <label for="erfahrung">Fußball-Erfahrung</label>
         <input type="text" id="erfahrung" name="erfahrung" placeholder="z.B. Vereinsspieler bei FC Aachen, Anfänger, Hobbykicker…">
       </div>
       <div class="field form-full">
-        <label>Allergien / Unverträglichkeiten / Besonderheiten</label>
+        <label for="allergien">Allergien / Unverträglichkeiten / Besonderheiten</label>
         <textarea id="allergien" name="allergien" placeholder="z.B. Laktoseintoleranz, Asthma, vegetarisches Essen gewünscht…"></textarea>
       </div>
       <div class="field form-full">
-        <label>Sonstige Anmerkungen</label>
+        <label for="notizen">Sonstige Anmerkungen</label>
         <textarea id="notizen" name="notizen" placeholder="z.B. Darf alleine nach Hause gehen, Geschwisterkind in anderem Camp…"></textarea>
       </div>
     </div>
@@ -403,7 +404,7 @@
     <input type="checkbox" id="agb" required>
     <div class="agb-box"></div>
     <div class="agb-text">
-      Ich habe die <a href="agb.html" target="_blank">Teilnahmebedingungen (AGB)</a> und die <a href="datenschutz.html" target="_blank">Datenschutzerklärung</a> gelesen und akzeptiere diese. Ich versichere, dass mein Kind sportlich voll belastbar und gesund ist.
+      Ich habe die <a href="agb.html" target="_blank" rel="noopener">Teilnahmebedingungen (AGB)</a> und die <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a> gelesen und akzeptiere diese. Ich versichere, dass mein Kind sportlich voll belastbar und gesund ist.
     </div>
   </label>
 
@@ -648,6 +649,12 @@ async function prepareRegistrationToken() {
   return registrationTokenPromise;
 }
 
+async function refreshRegistrationToken() {
+  registrationTokenPromise = null;
+  if (formTokenField) formTokenField.value = '';
+  return prepareRegistrationToken();
+}
+
 prepareRegistrationToken();
 
 // ============================================================
@@ -699,19 +706,19 @@ async function loadCamps() {
       const datumBis = formatDate(camp.datum_bis);
 
       return `
-        <label class="camp-option ${abgelaufen ? 'disabled expired' : voll ? 'disabled' : ''}" data-id="${camp.id}">
-          <input type="checkbox" name="camp" value="${camp.id}" ${(voll || abgelaufen) ? 'disabled' : ''}>
+        <label class="camp-option ${abgelaufen ? 'disabled expired' : voll ? 'disabled' : ''}" data-id="${escapeHtml(camp.id)}">
+          <input type="checkbox" name="camp" value="${escapeHtml(camp.id)}" ${(voll || abgelaufen) ? 'disabled' : ''}>
           <div class="camp-radio"></div>
           <div class="camp-info">
-            <h3>${saisonEmoji} ${camp.name}</h3>
+            <h3>${saisonEmoji} ${escapeHtml(camp.name)}</h3>
             <div class="camp-meta">
               <span>📅 ${datumVon} – ${datumBis}</span>
-              <span>📍 ${camp.ort}</span>
+              <span>📍 ${escapeHtml(camp.ort)}</span>
             </div>
           </div>
           <div class="camp-right">
             <div>
-              <div class="camp-price-tag">${preis}€</div>
+              <div class="camp-price-tag">${escapeHtml(preis)}€</div>
               <div class="camp-spots ${abgelaufen ? 'expired' : voll ? 'full' : wenig ? 'few' : 'available'}">
                 ${abgelaufen ? '⏳ Abgelaufen · Vergangenheit' : voll ? '✕ Ausgebucht' : wenig ? `⚡ Nur noch ${frei} Plätze` : `✓ ${frei} Plätze frei`}
               </div>
@@ -1064,7 +1071,9 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
   const sponsorFingerprint = sponsorAttempt ? getSponsorValidationFingerprint() : '';
   const verifiedSponsorCode = sponsorAttempt ? sponsorState.code : '';
 
-  if (!await prepareRegistrationToken()) {
+  // Der endgültige POST erhält immer einen frischen Einmal-Token. Die
+  // Sponsor-Vorprüfung verbraucht ihn bewusst nicht.
+  if (!await refreshRegistrationToken()) {
     showRegistrationError('Die Anmeldung konnte nicht vorbereitet werden. Bitte lade die Seite neu und versuche es erneut.');
     return;
   }
@@ -1108,6 +1117,13 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
 
     for (var i = 0; i < campIdsForSubmit.length; i++) {
       var cid = campIdsForSubmit[i];
+      if (i > 0) {
+        if (!await refreshRegistrationToken()) {
+          errors.push('Sicherheits-Token für Camp ' + (i + 1) + ' konnte nicht erneuert werden');
+          continue;
+        }
+        formData.form_token = formTokenField.value;
+      }
       var data = Object.assign({}, formData, { camp_id: cid });
 
       var res = await fetch(SUPABASE_URL + '/functions/v1/register', {

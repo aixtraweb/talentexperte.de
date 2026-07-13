@@ -1,238 +1,134 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { AdminAuthError, requireDashboardAdmin } from "../_shared/admin-auth.ts";
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
-const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
+const GOOGLE_REVIEW_LINK = "https://g.page/r/CRwplaTKzL7VEBM/review";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "https://www.talentexperte.de",
+  "Access-Control-Allow-Headers": "authorization, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Content-Type": "application/json",
+};
 
-const GOOGLE_REVIEW_LINK = 'https://g.page/r/CRwplaTKzL7VEBM/review'
-
-interface Participant {
-  id: string
-  vorname: string
-  nachname: string
-  email: string
-  camp_name: string
+function json(body: Record<string, unknown>, status = 200): Response {
+  return new Response(JSON.stringify(body), { status, headers: corsHeaders });
 }
 
-interface Recipient {
-  email: string
-  familienname: string
-  kinder: string[]
-  camp_name: string
+function escapeHtml(value: unknown): string {
+  return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function mailHtml(familyName: string, children: string, campName: string): string {
+  return `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222">
+    <h1 style="color:#111">TALENTEXPERTE Fußballschule</h1>
+    <p>Guten Tag Familie ${escapeHtml(familyName)},</p>
+    <p>${escapeHtml(children)} war beim ${escapeHtml(campName)} dabei. Wir freuen uns über eine kurze Rückmeldung.</p>
+    <p><a href="${GOOGLE_REVIEW_LINK}" style="display:inline-block;background:#eab308;color:#000;padding:14px 24px;border-radius:6px;text-decoration:none;font-weight:700">Google-Bewertung abgeben</a></p>
+    <p>Vielen Dank für Ihre Unterstützung.</p>
+    <p>Sportliche Grüße<br>TALENTEXPERTE Fußballschule</p>
+  </div>`;
 }
 
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST") return json({ error: "Nur POST" }, 405);
+
   try {
-    const { campId } = await req.json()
+    const admin = await requireDashboardAdmin(req);
+    if (!RESEND_API_KEY) return json({ error: "RESEND_API_KEY fehlt" }, 503);
+    const body = await req.json().catch(() => ({}));
+    const campId = String(body.campId || "").trim();
+    const force = body.force === true;
+    if (!/^[0-9a-f-]{36}$/i.test(campId)) return json({ error: "Gültige campId erforderlich" }, 400);
 
-    if (!campId) {
-      return new Response(
-        JSON.stringify({ error: 'campId required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      )
+    const { data: previous } = await admin.serviceClient.from("email_campaign_runs")
+      .select("id,status,finished_at")
+      .eq("campaign_type", "google_review")
+      .eq("camp_id", campId)
+      .in("status", ["running", "completed", "partial"])
+      .maybeSingle();
+    if (previous && !force) {
+      return json({
+        error: "Für dieses Camp wurde der Review-Versand bereits gestartet oder abgeschlossen.",
+        previous,
+      }, 409);
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-
-    // Get all participants from the specified camp
-    const { data: participants, error } = await supabase
-      .from('anmeldungen')
-      .select('id, vorname, nachname, email')
-      .eq('camp_id', campId)
-      .eq('zahlungsstatus', 'bezahlt')
-      .not('email', 'is', null)
-
-    if (error) {
-      console.error('Database error:', error)
-      return new Response(
-        JSON.stringify({ error: error.message }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      )
+    let runId = previous?.id || "";
+    if (previous) {
+      const { error } = await admin.serviceClient.from("email_campaign_runs").update({
+        requested_by: admin.email,
+        status: "running",
+        sent_count: 0,
+        failed_count: 0,
+        error_summary: null,
+        started_at: new Date().toISOString(),
+        finished_at: null,
+      }).eq("id", previous.id);
+      if (error) return json({ error: "Versandlauf konnte nicht reserviert werden" }, 409);
+    } else {
+      const { data: run, error } = await admin.serviceClient.from("email_campaign_runs").insert({
+        campaign_type: "google_review",
+        camp_id: campId,
+        requested_by: admin.email,
+      }).select("id").single();
+      if (error || !run) return json({ error: "Versand wurde bereits parallel gestartet" }, 409);
+      runId = run.id;
     }
 
-    if (!participants || participants.length === 0) {
-      return new Response(
-        JSON.stringify({ message: 'No participants found' }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      )
+    const [{ data: participants, error: participantsError }, { data: camp }] = await Promise.all([
+      admin.serviceClient.from("anmeldungen")
+        .select("vorname,nachname,email")
+        .eq("camp_id", campId)
+        .eq("zahlungsstatus", "bezahlt")
+        .not("email", "is", null),
+      admin.serviceClient.from("camps").select("name").eq("id", campId).maybeSingle(),
+    ]);
+    if (participantsError) throw new Error(participantsError.message);
+
+    const recipients = new Map<string, { email: string; family: string; children: string[] }>();
+    for (const row of participants || []) {
+      const email = String(row.email || "").trim().toLowerCase();
+      if (!email) continue;
+      if (!recipients.has(email)) recipients.set(email, { email, family: row.nachname, children: [] });
+      recipients.get(email)!.children.push(row.vorname);
     }
 
-    // Get camp name
-    const { data: campData } = await supabase
-      .from('camps')
-      .select('name')
-      .eq('id', campId)
-      .single()
-
-    const campName = campData?.name || 'Camp'
-
-    // Group by email (combine multiple children per family)
-    const recipientMap = new Map<string, Recipient>()
-
-    for (const p of participants) {
-      const email = p.email.trim().toLowerCase()
-
-      if (!recipientMap.has(email)) {
-        recipientMap.set(email, {
-          email: p.email,
-          familienname: p.nachname,
-          kinder: [],
-          camp_name: campName
-        })
-      }
-      recipientMap.get(email)!.kinder.push(p.vorname)
-    }
-
-    const recipients = Array.from(recipientMap.values())
-    const results = { sent: 0, failed: 0, errors: [] as string[] }
-
-    // Send emails with rate limiting
-    for (const recipient of recipients) {
-      try {
-        const kinderText = recipient.kinder.length > 1
-          ? recipient.kinder.slice(0, -1).join(', ') + ' und ' + recipient.kinder[recipient.kinder.length - 1]
-          : recipient.kinder[0]
-
-        const html = createReviewRequestHTML(recipient.familienname, kinderText, recipient.camp_name)
-
-        const response = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${RESEND_API_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            from: 'TALENTEXPERTE <noreply@talentexperte.de>',
-            to: recipient.email,
-            subject: `Wie hat ${kinderText} das ${recipient.camp_name} gefallen? ⚽`,
-            html: html
-          })
-        })
-
-        if (response.ok) {
-          results.sent++
-        } else {
-          const errorText = await response.text()
-          results.failed++
-          results.errors.push(`${recipient.email}: ${errorText}`)
-          console.error(`Failed to send to ${recipient.email}:`, errorText)
-        }
-
-        // Rate limiting: 2 seconds between emails
-        await new Promise(resolve => setTimeout(resolve, 2000))
-
-      } catch (error) {
-        results.failed++
-        results.errors.push(`${recipient.email}: ${error.message}`)
-        console.error(`Error sending to ${recipient.email}:`, error)
+    let sent = 0;
+    let failed = 0;
+    const errors: string[] = [];
+    for (const recipient of recipients.values()) {
+      const children = recipient.children.join(" und ");
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: "TALENTEXPERTE Fußballschule <kontakt@talentexperte.de>",
+          to: [recipient.email],
+          reply_to: "kontakt@talentexperte.de",
+          subject: `Wie hat ${children.replace(/[\r\n]+/g, " ")} das Camp gefallen?`,
+          html: mailHtml(recipient.family, children, camp?.name || "Feriencamp"),
+        }),
+      });
+      if (response.ok) sent++;
+      else {
+        failed++;
+        errors.push(`Resend ${response.status}: ${(await response.text()).slice(0, 200)}`);
       }
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        total: recipients.length,
-        sent: results.sent,
-        failed: results.failed,
-        errors: results.errors
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    )
-
+    await admin.serviceClient.from("email_campaign_runs").update({
+      status: failed ? (sent ? "partial" : "failed") : "completed",
+      sent_count: sent,
+      failed_count: failed,
+      error_summary: errors.join(" | ").slice(0, 2000) || null,
+      finished_at: new Date().toISOString(),
+    }).eq("id", runId);
+    return json({ success: failed === 0, sent, failed, total: recipients.size });
   } catch (error) {
-    console.error('Function error:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    )
+    if (error instanceof AdminAuthError) return json({ error: error.message }, error.status);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Review campaign failed:", message);
+    return json({ error: "Review-Versand fehlgeschlagen" }, 500);
   }
-})
-
-function createReviewRequestHTML(familienname: string, kinderText: string, campName: string): string {
-  return `
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Google-Bewertung</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px 0;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 100%;">
-
-          <!-- Header -->
-          <tr>
-            <td style="background-color: #eab308; padding: 30px 40px; text-align: center;">
-              <h1 style="margin: 0; color: #000000; font-size: 28px; font-weight: 700;">
-                ⚽ TALENTEXPERTE
-              </h1>
-              <p style="margin: 8px 0 0; color: #000000; font-size: 14px; opacity: 0.9;">
-                Fußballschule
-              </p>
-            </td>
-          </tr>
-
-          <!-- Main Content -->
-          <tr>
-            <td style="padding: 40px;">
-              <p style="margin: 0 0 20px; font-size: 16px; color: #333333; line-height: 1.6;">
-                Hallo Familie ${familienname},
-              </p>
-
-              <p style="margin: 0 0 20px; font-size: 16px; color: #333333; line-height: 1.6;">
-                vielen Dank, dass ${kinderText} beim ${campName} dabei war! Wir hoffen, es hat viel Spaß gemacht und ${kinderText} konnte neue Fußball-Tricks lernen.
-              </p>
-
-              <p style="margin: 0 0 30px; font-size: 16px; color: #333333; line-height: 1.6;">
-                Unser Trainer-Team freut sich über jede positive Rückmeldung. Würden Sie uns mit einer kurzen Google-Bewertung unterstützen? Das hilft anderen Eltern bei ihrer Entscheidung.
-              </p>
-
-              <!-- CTA Button -->
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td align="center" style="padding: 10px 0 30px;">
-                    <a href="${GOOGLE_REVIEW_LINK}"
-                       style="display: inline-block; background-color: #eab308; color: #000000; text-decoration: none; font-size: 18px; font-weight: 600; padding: 16px 40px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                      ⭐ Jetzt bewerten
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-              <p style="margin: 0 0 20px; font-size: 16px; color: #333333; line-height: 1.6;">
-                Herzlichen Dank für Ihre Unterstützung! 🙏
-              </p>
-
-              <p style="margin: 0; font-size: 16px; color: #333333; line-height: 1.6;">
-                Sportliche Grüße<br>
-                <strong>Ihr TALENTEXPERTE-Team</strong>
-              </p>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #f9f9f9; padding: 30px 40px; text-align: center; border-top: 1px solid #e5e5e5;">
-              <p style="margin: 0 0 10px; font-size: 14px; color: #666666;">
-                <strong>TALENTEXPERTE Fußballschule</strong>
-              </p>
-              <p style="margin: 0 0 15px; font-size: 13px; color: #888888; line-height: 1.5;">
-                www.talentexperte.de
-              </p>
-              <p style="margin: 0; font-size: 12px; color: #999999;">
-                Sie erhalten diese E-Mail, weil Ihr Kind am ${campName} teilgenommen hat.
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `.trim()
-}
+});

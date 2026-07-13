@@ -6,6 +6,11 @@ import {
   cleanText,
   createFormToken,
 } from "../_shared/form-spam-protection.ts";
+import {
+  createStoredConfirmationToken,
+  verifyStoredConfirmationToken,
+} from "../_shared/stored-confirmation-token.ts";
+import { enqueueEmail } from "../_shared/email-outbox.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -102,6 +107,39 @@ Deno.serve(async (req) => {
     );
 
     const data = await req.json();
+    const action = cleanText(data.action, 40).toLowerCase();
+    if (action === "get_confirmation") {
+      const registrationId = cleanText(data.registration_id, 80);
+      const confirmationToken = asString(data.confirmation_token, 160);
+      if (
+        !/^[0-9a-f-]{36}$/i.test(registrationId) ||
+        !await verifyStoredConfirmationToken(
+          supabase,
+          "company_registration",
+          registrationId,
+          confirmationToken,
+        )
+      ) {
+        return new Response(
+          JSON.stringify({ error: "Dieser Bestätigungslink ist ungültig oder abgelaufen." }),
+          { status: 403, headers: corsHeaders },
+        );
+      }
+      const { data: row, error } = await supabase.from("firmen_anmeldungen")
+        .select("id,firma_name,mitarbeiter_email,mitarbeiter_vorname,mitarbeiter_nachname,mitarbeiter_telefon,kind_vorname,kind_nachname,kind_geburtsdatum,rechnungsadresse,betrag_euro,camps(name,ort,datum_von,datum_bis,uhrzeit_von,uhrzeit_bis)")
+        .eq("id", registrationId)
+        .maybeSingle();
+      if (error || !row) {
+        return new Response(JSON.stringify({ error: "Bestätigung nicht gefunden." }), {
+          status: 404,
+          headers: corsHeaders,
+        });
+      }
+      return new Response(JSON.stringify({ success: true, registration: row }), {
+        status: 200,
+        headers: { ...corsHeaders, "Cache-Control": "no-store" },
+      });
+    }
     const emailForProtection = cleanText(data.mitarbeiter_email, 200).toLowerCase() ||
       cleanText(data.firma_email, 200).toLowerCase();
     const protectedBody = { ...data, spam_email: emailForProtection };
@@ -121,7 +159,7 @@ Deno.serve(async (req) => {
         "allergien",
         "notizen",
       ],
-    });
+    }, supabase);
 
     if (!spamCheck.ok) {
       return new Response(
@@ -197,7 +235,10 @@ Deno.serve(async (req) => {
 
     const today = new Date();
     const age = today.getFullYear() - birthDate.getFullYear();
-    if (age < 4 || age > 16) {
+    const birthdayPassed = today.getMonth() > birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+    const exactAge = age - (birthdayPassed ? 0 : 1);
+    if (exactAge < 5 || exactAge > 14) {
       return new Response(
         JSON.stringify({ error: "Das Kind muss zwischen 5 und 14 Jahren alt sein." }),
         { status: 400, headers: corsHeaders },
@@ -212,7 +253,7 @@ Deno.serve(async (req) => {
 
     if (campError || !camp) {
       return new Response(
-        JSON.stringify({ error: "Camp nicht gefunden", debug: campError?.message }),
+        JSON.stringify({ error: "Camp nicht gefunden" }),
         { status: 404, headers: corsHeaders },
       );
     }
@@ -245,7 +286,15 @@ Deno.serve(async (req) => {
     }
 
     const betragEuro = Number(camp.aktueller_preis ?? camp.preis_euro ?? 0);
+    const companyId = crypto.randomUUID();
+    const confirmationToken = await createStoredConfirmationToken(
+      supabase,
+      "company_registration",
+      companyId,
+      camp.datum_bis,
+    );
     const companyPayload = {
+      id: companyId,
       ...registration,
       betrag_euro: betragEuro,
       status: "bezahlt",
@@ -259,87 +308,34 @@ Deno.serve(async (req) => {
 
     if (firmError) {
       console.error("Firmen-Anmeldung Insert Error:", firmError);
+      await supabase.from("confirmation_tokens").delete()
+        .eq("subject_type", "company_registration").eq("subject_id", companyId);
+      const knownError = String(firmError.message || "");
+      const status = knownError.includes("CAMP_FULL") || knownError.includes("CAMP_NOT_BOOKABLE") || knownError.includes("REGISTRATION_DUPLICATE") ? 409 : 500;
       return new Response(
-        JSON.stringify({ error: "Fehler beim Speichern.", debug: firmError.message }),
-        { status: 500, headers: corsHeaders },
+        JSON.stringify({ error: knownError.includes("REGISTRATION_DUPLICATE") ? "Dieses Kind ist bereits für dieses Camp angemeldet." : knownError.includes("CAMP_FULL") ? "Dieses Camp ist leider ausgebucht." : "Fehler beim Speichern." }),
+        { status, headers: corsHeaders },
       );
     }
 
-    const legacyBase = {
-      camp_id: registration.camp_id,
-      vorname: registration.kind_vorname,
-      nachname: registration.kind_nachname,
-      geburtsdatum: registration.kind_geburtsdatum,
-      eltern_vorname: registration.mitarbeiter_vorname,
-      eltern_nachname: registration.mitarbeiter_nachname,
-      email: registration.mitarbeiter_email || registration.firma_email,
-      telefon: registration.mitarbeiter_telefon || registration.firma_telefon,
-      adresse: registration.rechnungsadresse,
-      erfahrung: registration.erfahrung,
-      allergien: registration.allergien,
-      notizen: registration.notizen,
-      betrag_euro: 0,
-    };
-
-    let mirrorError: string | null = null;
-    let mirror = await supabase
-      .from("anmeldungen")
-      .insert({
-        ...legacyBase,
-        zahlungsstatus: "bezahlt",
-        list_price_euro: betragEuro,
-        parent_amount_euro: 0,
-        sponsor_amount_euro: 0,
-        payer_type: "company",
-        parent_payment_status: "not_required",
-        sponsor_settlement_status: null,
-        sponsoring_partner_id: null,
-        sponsoring_entitlement_id: null,
-      });
-
-    if (mirror.error && String(mirror.error.message || "").includes("zahlungsstatus")) {
-      mirror = await supabase
-        .from("anmeldungen")
-        .insert({
-          ...legacyBase,
-          status: "bezahlt",
-          list_price_euro: betragEuro,
-          parent_amount_euro: 0,
-          sponsor_amount_euro: 0,
-          payer_type: "company",
-          parent_payment_status: "not_required",
-          sponsor_settlement_status: null,
-          sponsoring_partner_id: null,
-          sponsoring_entitlement_id: null,
-        });
-    }
-
-    if (mirror.error) {
-      mirrorError = mirror.error.message;
-      console.warn("Mirror insert failed:", mirror.error);
-    }
-
-    const confirmation = {
-      firma_name: registration.firma_name,
-      email: registration.mitarbeiter_email || registration.firma_email,
-      mitarbeiter_vorname: registration.mitarbeiter_vorname,
-      mitarbeiter_nachname: registration.mitarbeiter_nachname,
-      mitarbeiter_telefon: registration.mitarbeiter_telefon,
-      kind_vorname: registration.kind_vorname,
-      kind_nachname: registration.kind_nachname,
-      kind_geburtsdatum: formatDateDE(registration.kind_geburtsdatum),
-      rechnungsadresse: registration.rechnungsadresse,
-      betrag_euro: betragEuro,
-      camp_name: camp.name || "Camp",
-      camp_ort: camp.ort || "",
-      camp_datum_von: camp.datum_von || null,
-      camp_datum_bis: camp.datum_bis || null,
-      camp_uhrzeit_von: camp.uhrzeit_von || "",
-      camp_uhrzeit_bis: camp.uhrzeit_bis || "",
-    };
-
     let emailVersendet = false;
+    let emailFailure = "";
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    const companyEmailPayload = {
+      from: FROM_EMAIL,
+      to: [registration.mitarbeiter_email],
+      reply_to: "kontakt@talentexperte.de",
+      subject: "Firmen-Anmeldung bestätigt – " + camp.name,
+      html: buildCompanyConfirmationHtml({
+        parentName: registration.mitarbeiter_vorname,
+        childName: registration.kind_vorname + " " + registration.kind_nachname,
+        companyName: registration.firma_name,
+        campName: camp.name || "Camp",
+        zeitraum: formatDateDE(camp.datum_von) + " – " + formatDateDE(camp.datum_bis),
+        uhrzeit: formatTime(camp.uhrzeit_von) + " – " + formatTime(camp.uhrzeit_bis),
+        ort: camp.ort || "–",
+      }),
+    };
     if (RESEND_API_KEY && registration.mitarbeiter_email) {
       try {
         const mailRes = await fetch("https://api.resend.com/emails", {
@@ -348,29 +344,26 @@ Deno.serve(async (req) => {
             "Authorization": "Bearer " + RESEND_API_KEY,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            from: FROM_EMAIL,
-            to: [registration.mitarbeiter_email],
-            reply_to: "kontakt@talentexperte.de",
-            subject: "Firmen-Anmeldung bestätigt – " + camp.name,
-            html: buildCompanyConfirmationHtml({
-              parentName: registration.mitarbeiter_vorname,
-              childName: registration.kind_vorname + " " + registration.kind_nachname,
-              companyName: registration.firma_name,
-              campName: camp.name || "Camp",
-              zeitraum: formatDateDE(camp.datum_von) + " – " + formatDateDE(camp.datum_bis),
-              uhrzeit: formatTime(camp.uhrzeit_von) + " – " + formatTime(camp.uhrzeit_bis),
-              ort: camp.ort || "–",
-            }),
-          }),
+          body: JSON.stringify(companyEmailPayload),
         });
         emailVersendet = mailRes.ok;
         if (!mailRes.ok) {
-          console.error("Resend-Fehler Firmen-Anmeldung (" + mailRes.status + "):", await mailRes.text());
+          emailFailure = `Resend ${mailRes.status}: ${(await mailRes.text()).slice(0, 500)}`;
+          console.error("Resend-Fehler Firmen-Anmeldung:", emailFailure);
         }
       } catch (emailErr) {
-        console.error("Email-Fehler Firmen-Anmeldung:", emailErr);
+        emailFailure = emailErr instanceof Error ? emailErr.message : String(emailErr);
+        console.error("Email-Fehler Firmen-Anmeldung:", emailFailure);
       }
+    }
+    if (!emailVersendet && registration.mitarbeiter_email) {
+      await enqueueEmail(
+        supabase,
+        "company_registration_confirmation",
+        registration.mitarbeiter_email,
+        companyEmailPayload,
+        emailFailure || (RESEND_API_KEY ? "Unbekannter Versandfehler" : "RESEND_API_KEY fehlt"),
+      );
     }
 
     return new Response(
@@ -378,16 +371,15 @@ Deno.serve(async (req) => {
         success: true,
         message: "Firmen-Anmeldung erfolgreich!",
         id: firmRow.id,
-        confirmation,
+        confirmation_token: confirmationToken,
         email_versendet: emailVersendet,
-        mirror_error: mirrorError,
       }),
       { status: 200, headers: corsHeaders },
     );
   } catch (err) {
-    console.error("Unerwarteter Fehler:", err);
+    console.error("Unerwarteter Fehler:", err instanceof Error ? err.message : String(err));
     return new Response(
-      JSON.stringify({ error: "Unerwarteter Fehler: " + String(err) }),
+      JSON.stringify({ error: "Die Anmeldung konnte gerade nicht verarbeitet werden." }),
       { status: 500, headers: corsHeaders },
     );
   }

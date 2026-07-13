@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://elfsightcdn.com https://*.elfsight.com; connect-src 'self' https://yxygwwoocsdnneqykiym.supabase.co https://elfsightcdn.com https://*.elfsight.com; frame-src https://buy.stripe.com https://*.stripe.com https://*.elfsight.com; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Firmen-Anmeldung — TALENTEXPERTE Fußball-Feriencamps</title>
 <link rel="stylesheet" href="css/fonts.css">
@@ -77,13 +78,13 @@
     <h2>2. Firma</h2>
     <div class="form-grid">
       <div class="field form-full">
-        <label>Firmenname <span class="req">*</span></label>
-        <input type="text" name="firma_name" required>
+        <label for="firma_name">Firmenname <span class="req">*</span></label>
+        <input type="text" id="firma_name" name="firma_name" autocomplete="organization" required>
         <span class="error-msg">Bitte Firmenname eingeben</span>
       </div>
       <div class="field form-full">
-        <label>Rechnungsadresse (optional)</label>
-        <textarea name="rechnungsadresse" rows="2" placeholder="Straße, PLZ Ort"></textarea>
+        <label for="rechnungsadresse">Rechnungsadresse (optional)</label>
+        <textarea id="rechnungsadresse" name="rechnungsadresse" rows="2" autocomplete="street-address" placeholder="Straße, PLZ Ort"></textarea>
       </div>
     </div>
   </div>
@@ -93,22 +94,22 @@
     <h2>3. Mitarbeiter-Daten (Elternteil)</h2>
     <div class="form-grid">
       <div class="field">
-        <label>Vorname <span class="req">*</span></label>
-        <input type="text" name="mitarbeiter_vorname" required>
+        <label for="mitarbeiter_vorname">Vorname <span class="req">*</span></label>
+        <input type="text" id="mitarbeiter_vorname" name="mitarbeiter_vorname" autocomplete="given-name" required>
         <span class="error-msg">Bitte Vorname eingeben</span>
       </div>
       <div class="field">
-        <label>Nachname <span class="req">*</span></label>
-        <input type="text" name="mitarbeiter_nachname" required>
+        <label for="mitarbeiter_nachname">Nachname <span class="req">*</span></label>
+        <input type="text" id="mitarbeiter_nachname" name="mitarbeiter_nachname" autocomplete="family-name" required>
         <span class="error-msg">Bitte Nachname eingeben</span>
       </div>
       <div class="field">
-        <label>Mitarbeiter-E-Mail</label>
-        <input type="email" name="mitarbeiter_email">
+        <label for="mitarbeiter_email">Mitarbeiter-E-Mail</label>
+        <input type="email" id="mitarbeiter_email" name="mitarbeiter_email" autocomplete="email">
       </div>
       <div class="field">
-        <label>Mitarbeiter-Telefon <span class="req">*</span></label>
-        <input type="tel" name="mitarbeiter_telefon" required>
+        <label for="mitarbeiter_telefon">Mitarbeiter-Telefon <span class="req">*</span></label>
+        <input type="tel" id="mitarbeiter_telefon" name="mitarbeiter_telefon" autocomplete="tel" required>
         <span class="error-msg">Bitte Telefonnummer eingeben</span>
       </div>
     </div>
@@ -119,18 +120,18 @@
     <h2>4. Daten des Kindes</h2>
     <div class="form-grid">
       <div class="field">
-        <label>Vorname <span class="req">*</span></label>
-        <input type="text" name="kind_vorname" required>
+        <label for="kind_vorname">Vorname <span class="req">*</span></label>
+        <input type="text" id="kind_vorname" name="kind_vorname" autocomplete="off" required>
         <span class="error-msg">Bitte Vorname eingeben</span>
       </div>
       <div class="field">
-        <label>Nachname <span class="req">*</span></label>
-        <input type="text" name="kind_nachname" required>
+        <label for="kind_nachname">Nachname <span class="req">*</span></label>
+        <input type="text" id="kind_nachname" name="kind_nachname" autocomplete="off" required>
         <span class="error-msg">Bitte Nachname eingeben</span>
       </div>
       <div class="field">
-        <label>Geburtsdatum <span class="req">*</span></label>
-        <input type="text" name="kind_geburtsdatum" inputmode="numeric" autocomplete="bday" placeholder="dd.mm.yyyy" maxlength="10" required>
+        <label for="kind_geburtsdatum">Geburtsdatum <span class="req">*</span></label>
+        <input type="text" id="kind_geburtsdatum" name="kind_geburtsdatum" inputmode="numeric" autocomplete="bday" placeholder="dd.mm.yyyy" maxlength="10" required>
         <span class="error-msg">Bitte Geburtsdatum eingeben</span>
       </div>
     </div>
@@ -141,8 +142,8 @@
     <h2>5. Zusatzinformationen</h2>
     <div class="form-grid">
       <div class="field">
-        <label>Fußball-Erfahrung</label>
-        <select name="erfahrung">
+        <label for="firma_erfahrung">Fußball-Erfahrung</label>
+        <select id="firma_erfahrung" name="erfahrung">
           <option value="">Bitte wählen</option>
           <option value="Anfänger, kein Verein">Anfänger, kein Verein</option>
           <option value="Anfänger, Hobby">Anfänger, Hobby</option>
@@ -153,12 +154,12 @@
         </select>
       </div>
       <div class="field form-full">
-        <label>Allergien / Unverträglichkeiten</label>
-        <input type="text" name="allergien">
+        <label for="firma_allergien">Allergien / Unverträglichkeiten</label>
+        <input type="text" id="firma_allergien" name="allergien">
       </div>
       <div class="field form-full">
-        <label>Notizen (optional)</label>
-        <textarea name="notizen" rows="3"></textarea>
+        <label for="firma_notizen">Notizen (optional)</label>
+        <textarea id="firma_notizen" name="notizen" rows="3"></textarea>
       </div>
     </div>
   </div>
@@ -170,7 +171,7 @@
       <div class="field form-full">
         <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
           <input type="checkbox" name="agb" required style="width: 20px; height: 20px; margin-top: 2px; cursor: pointer;">
-          <span>Ich akzeptiere die <a href="agb.html" target="_blank" style="color: var(--red); text-decoration: underline;">AGB</a> und <a href="datenschutz.html" target="_blank" style="color: var(--red); text-decoration: underline;">Datenschutzerklärung</a> <span class="req">*</span></span>
+          <span>Ich akzeptiere die <a href="agb.html" target="_blank" rel="noopener" style="color: var(--red); text-decoration: underline;">AGB</a> und <a href="datenschutz.html" target="_blank" rel="noopener" style="color: var(--red); text-decoration: underline;">Datenschutzerklärung</a> <span class="req">*</span></span>
         </label>
         <span class="error-msg">Bitte AGB akzeptieren</span>
       </div>
@@ -192,7 +193,7 @@
   <p>&copy; 2026 TALENTEXPERTE Fußballschule | <a href="impressum.html">Impressum</a> | <a href="datenschutz.html">Datenschutz</a> | <a href="agb.html">AGB</a></p>
 </div></footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1"></script>
 <script>
 (function() {
 'use strict';
@@ -200,6 +201,12 @@
 const SUPABASE_URL = 'https://yxygwwoocsdnneqykiym.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 const COMPANY_REGISTER_URL = SUPABASE_URL + '/functions/v1/company-register';
 
 let selectedCamp = null;
@@ -238,6 +245,12 @@ async function prepareCompanyToken() {
   }
 
   return companyTokenPromise;
+}
+
+async function refreshCompanyToken() {
+  companyTokenPromise = null;
+  if (formTokenField) formTokenField.value = '';
+  return prepareCompanyToken();
 }
 
 prepareCompanyToken();
@@ -310,23 +323,30 @@ function renderCamps() {
     const selected = selectedCamp === c.id ? 'selected' : '';
     
     return `
-      <div class="camp-option ${selected} ${disabled ? 'disabled' : ''}" onclick="selectCamp('${c.id}')">
+      <div class="camp-option ${selected} ${disabled ? 'disabled' : ''}" data-camp-id="${escapeHtml(c.id)}" role="button" tabindex="${disabled ? '-1' : '0'}" aria-disabled="${disabled}">
         <div class="camp-radio"></div>
         <div class="camp-info">
-          <h3>${c.name}</h3>
+          <h3>${escapeHtml(c.name)}</h3>
           <div class="camp-meta">
             <span>📅 ${formatDate(c.datum_von)} - ${formatDate(c.datum_bis)}</span>
             <span>🕐 ${c.uhrzeit_von.substring(0,5)} - ${c.uhrzeit_bis.substring(0,5)}</span>
-            <span>📍 ${c.ort}</span>
+            <span>📍 ${escapeHtml(c.ort)}</span>
           </div>
         </div>
         <div class="camp-right">
-          <div class="camp-price-tag" style="text-decoration: line-through; opacity: 0.5;">${c.aktueller_preis}€</div>
+          <div class="camp-price-tag" style="text-decoration: line-through; opacity: 0.5;">${escapeHtml(c.aktueller_preis)}€</div>
           <div class="camp-spots ${spotsClass}">${spotsLeft} von ${c.max_plaetze} frei</div>
         </div>
       </div>
     `;
   }).join('');
+  grid.querySelectorAll('[data-camp-id]').forEach(function(option) {
+    function activate() { if (option.getAttribute('aria-disabled') !== 'true') selectCamp(option.dataset.campId); }
+    option.addEventListener('click', activate);
+    option.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(); }
+    });
+  });
 }
 
 function selectCamp(id) {
@@ -392,7 +412,9 @@ document.getElementById('firmenForm').addEventListener('submit', async (e) => {
     return;
   }
 
-  if (!await prepareCompanyToken()) {
+  // Jeder echte Absendeversuch nutzt einen neuen, serverseitig nur einmal
+  // akzeptierten Token. Korrigierte Wiederholungsversuche bleiben damit möglich.
+  if (!await refreshCompanyToken()) {
     alert('Die Anmeldung konnte nicht vorbereitet werden. Bitte lade die Seite neu und versuche es erneut.');
     return;
   }
@@ -456,51 +478,11 @@ document.getElementById('firmenForm').addEventListener('submit', async (e) => {
       throw new Error((result.error || 'Fehler bei der Anmeldung.') + details);
     }
 
-    const confirmationPayload = result.confirmation || {
-      firma_name: data.firma_name,
-      email: data.mitarbeiter_email || data.firma_email,
-      mitarbeiter_vorname: data.mitarbeiter_vorname,
-      mitarbeiter_nachname: data.mitarbeiter_nachname,
-      mitarbeiter_telefon: data.mitarbeiter_telefon,
-      kind_vorname: data.kind_vorname,
-      kind_nachname: data.kind_nachname,
-      kind_geburtsdatum: raw.kind_geburtsdatum,
-      rechnungsadresse: data.rechnungsadresse,
-      betrag_euro: data.betrag_euro,
-      camp_name: selectedCampData?.name || 'Camp',
-      camp_ort: selectedCampData?.ort || '',
-      camp_datum_von: selectedCampData?.datum_von || null,
-      camp_datum_bis: selectedCampData?.datum_bis || null,
-      camp_uhrzeit_von: selectedCampData?.uhrzeit_von || '',
-      camp_uhrzeit_bis: selectedCampData?.uhrzeit_bis || ''
-    };
-
-    try {
-      localStorage.setItem('te_firma_last_submission', JSON.stringify(confirmationPayload));
-    } catch (storageError) {
-      console.warn('LocalStorage konnte nicht beschrieben werden:', storageError);
+    if (!result.id || !result.confirmation_token) {
+      throw new Error('Die sichere Bestätigung konnte nicht erstellt werden. Die Anmeldung wurde gespeichert; bitte kontaktiere uns mit dem Namen des Kindes.');
     }
-
-    const qs = new URLSearchParams({
-      fn: confirmationPayload.firma_name || '',
-      em: confirmationPayload.email || '',
-      mv: confirmationPayload.mitarbeiter_vorname || '',
-      mn: confirmationPayload.mitarbeiter_nachname || '',
-      mt: confirmationPayload.mitarbeiter_telefon || '',
-      kv: confirmationPayload.kind_vorname || '',
-      kn: confirmationPayload.kind_nachname || '',
-      kg: confirmationPayload.kind_geburtsdatum || '',
-      ra: confirmationPayload.rechnungsadresse || '',
-      be: String(confirmationPayload.betrag_euro || 0),
-      cn: confirmationPayload.camp_name || '',
-      co: confirmationPayload.camp_ort || '',
-      cdv: confirmationPayload.camp_datum_von || '',
-      cdb: confirmationPayload.camp_datum_bis || '',
-      cuv: confirmationPayload.camp_uhrzeit_von || '',
-      cub: confirmationPayload.camp_uhrzeit_bis || ''
-    });
-
-    window.location.href = `bestaetigung-firma.html?${qs.toString()}`;
+    window.location.href = 'bestaetigung-firma.html?id=' + encodeURIComponent(result.id) +
+      '#token=' + encodeURIComponent(result.confirmation_token);
     
   } catch (error) {
     console.error('Fehler:', error);
@@ -546,7 +528,7 @@ applyGermanDateMask('input[name="kind_geburtsdatum"]');
   background: var(--red);
   color: var(--white);
   box-shadow: 0 4px 25px rgba(229,0,0,.35);
-  transition: all .3s;
+  transition: color .3s, background-color .3s, border-color .3s, box-shadow .3s, transform .3s, opacity .3s;
   border: none;
   cursor: pointer;
   position: relative;

@@ -2,10 +2,7 @@
 // die wegen des falschen Resend-Absenders (onboarding@resend.dev) nie eine erhalten haben.
 // Aufruf nur mit Service-Role-Key als Bearer. Ohne { "apply": true } nur Dry-Run.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import {
-  confirmationExpiryForCamp,
-  createConfirmationToken,
-} from "../_shared/confirmation-token.ts";
+import { createStoredConfirmationToken } from "../_shared/stored-confirmation-token.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -137,9 +134,9 @@ Deno.serve(async (req) => {
   }
 
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  const myServiceKey = Deno.env.get("MY_SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const adminFunctionSecret = Deno.env.get("ADMIN_FUNCTION_SECRET") ?? "";
   const auth = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
-  if (!auth || (auth !== serviceKey && auth !== myServiceKey)) {
+  if (!adminFunctionSecret || auth !== adminFunctionSecret) {
     return new Response(JSON.stringify({ error: "Nicht autorisiert" }), { status: 401, headers: corsHeaders });
   }
 
@@ -183,9 +180,11 @@ Deno.serve(async (req) => {
   for (const a of recipients) {
     const camp = a.camps as unknown as Record<string, unknown>;
     const buchungsNr = String(a.id).slice(0, 8).toUpperCase();
-    const confirmationToken = await createConfirmationToken(
+    const confirmationToken = await createStoredConfirmationToken(
+      supabase,
+      "registration",
       String(a.id),
-      confirmationExpiryForCamp(camp.datum_bis),
+      camp.datum_bis,
     );
     const confirmationLink = "https://www.talentexperte.de/bestaetigung.html?id=" +
       encodeURIComponent(String(a.id)) + "#token=" + encodeURIComponent(confirmationToken);

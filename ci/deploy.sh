@@ -15,37 +15,62 @@ echo
 TS="$(date +%Y-%m-%d_%H-%M-%S)"
 BACKUP_FILE="${BACKUP_DIR}/backup_${TS}.tar.gz"
 
-echo "1) Creating remote backup..."
-ssh "${USER}@${HOST}" "mkdir -p '${BACKUP_DIR}' && tar -czf '${BACKUP_FILE}' -C '${REMOTE_PATH}' ."
-
-echo "Backup created: ${BACKUP_FILE}"
+if [[ "${SKIP_BACKUP:-0}" == "1" ]]; then
+  echo "1) Reusing the backup created earlier in this rollout."
+else
+  echo "1) Creating remote backup..."
+  ssh "${USER}@${HOST}" "mkdir -p '${BACKUP_DIR}' && tar -czf '${BACKUP_FILE}' -C '${REMOTE_PATH}' ."
+  echo "Backup created: ${BACKUP_FILE}"
+fi
 echo
 
-echo "2) Deploying via rsync..."
-rsync -avz --delete \
-  --exclude ".git" \
+echo "2) Deploying public web artifact via allowlist..."
+# Security boundary: only files required by the static website may enter the
+# public document root. Repository sources, runbooks, exports, logs, secrets,
+# Supabase functions and automation payloads are excluded by default.
+rsync -avz --delete --delete-excluded --prune-empty-dirs \
+  --filter "protect /.well-known/***" \
+  --include "/404.html" \
+  --include "/admin.html" \
+  --include "/agb.html" \
+  --include "/anmeldung-saint-gobain.html" \
+  --include "/anmeldung.html" \
+  --include "/bestaetigung-firma.html" \
+  --include "/bestaetigung.html" \
+  --include "/datenschutz.html" \
+  --include "/demo-default.html" \
+  --include "/firmen-anmeldung.html" \
+  --include "/gutschein.html" \
+  --include "/impressum.html" \
+  --include "/index.html" \
+  --include "/teams.html" \
+  --include "/zahlung-start.html" \
+  --include "/robots.txt" \
+  --include "/sitemap.xml" \
+  --include "/llms.txt" \
+  --include "/.htaccess" \
+  --include "/css/***" \
+  --exclude "/images/social-input/***" \
   --exclude ".DS_Store" \
-  --exclude "ci/" \
-  --exclude "steuerberater/" \
-  --exclude ".claude/" \
-  --exclude ".agents/" \
-  --exclude ".agent/" \
-  --exclude ".orchids/" \
-  --exclude "node_modules/" \
-  --exclude ".env.social" \
-  --exclude "social-posts.json" \
-  --exclude "social-published.json" \
-  --exclude "client_secret_*.json" \
-  --exclude "SPONSORING-RUNBOOK.md" \
-  --exclude "*.ods" \
-  --exclude "gutschein-nummern*" \
-  --exclude "*.bak" \
-  --exclude "*.bak2" \
+  --include "/images/***" \
+  --include "/fonts/***" \
+  --include "/pdf/***" \
+  --include "/favicon/***" \
+  --include "/camps-in/***" \
+  --include "/newsreader/***" \
+  --include "/ci/logo.png" \
+  --include "/ci/logo.webp" \
+  --include "/ci/talentexperte-logo-jubilaeum-2005-2025.png" \
+  --exclude "*" \
   ./ "${USER}@${HOST}:${REMOTE_PATH}/"
 
 echo
-echo "3) Pruning old backups (keep last 3)..."
+echo "3) Verifying that internal sources are absent..."
+ssh "${USER}@${HOST}" "test ! -e '${REMOTE_PATH}/supabase' && test ! -e '${REMOTE_PATH}/scripts' && test ! -e '${REMOTE_PATH}/package.json' && test ! -e '${REMOTE_PATH}/SECURITY-IMPLEMENTATION.md'"
+
+echo
+echo "4) Pruning old backups (keep last 3)..."
 ssh "${USER}@${HOST}" "cd '${BACKUP_DIR}' && ls -t backup_*.tar.gz 2>/dev/null | tail -n +4 | xargs -r rm -f"
 
 echo
-echo "4) Deploy finished successfully."
+echo "5) Deploy finished successfully."
