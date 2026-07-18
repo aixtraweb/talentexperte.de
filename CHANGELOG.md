@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-07-18 — Projektdokumentation konsolidiert
+
+### Dokumentation
+
+- Das gesamte Repository, alle vorhandenen Markdown-Dateien, produktiven Seiten, Styles, Skripte, Supabase-Funktionen und Migrationen sowie die Deployment-Allowlist wurden inventarisiert.
+- `AGENTS.md`, `README.md` und `PROJEKT-HANDBUCH.md` wurden als kurze verbindliche Einstiegsebene ergänzt, ohne bestehende fachliche Regeln oder lokale Fremdänderungen zu verwerfen.
+- Unter `docs/` wurden ausschließlich die für die komplexe Website-, Anmelde-, Zahlungs-, Admin-, SEO/GEO- und Integrationsarchitektur erforderlichen Fachdateien angelegt.
+- Historische Audit-, Status-, Kampagnen- und Wochenplan-Dateien bleiben unverändert erhalten; ihre Gültigkeit, Widersprüche und empfohlene Behandlung sind in `docs/DOCUMENTATION-INVENTORY.md` dokumentiert.
+
+### Bekannte offene Punkte
+
+- Live-Stände von Campdaten, Sponsor-Rollout, Hosting-Headern, Social-API-Zugängen und Zahlungsabgleich wurden bei dieser Repository-Dokumentation nicht als bestätigt ausgegeben.
+- Die Deployment-Allowlist veröffentlicht derzeit den gesamten Ordner `images/` mit Ausnahme von `images/social-input/`; darin liegen große Rohmedien und PSD-Dateien. Eine Einschränkung erfordert eine gesonderte, geprüfte Umsetzungsaufgabe.
+- Geschäfts-, Datenschutz- und Camp-Ortsadressen sind im Bestand nicht vollständig konsistent und dürfen ohne fachliche/rechtliche Klärung nicht vereinheitlicht werden.
+
 ## 2026-07-13 — Bewertungsbereich repariert und live deployt
 
 - Das nicht mehr initialisierende Elfsight-Bewertungswidget auf der Startseite wurde durch einen nativen, responsiven Bewertungsblock ersetzt. Dadurch bleiben die Bewertungen ohne externe Widget-Konfiguration sichtbar und für Suchmaschinen sowie Screenreader lesbar.

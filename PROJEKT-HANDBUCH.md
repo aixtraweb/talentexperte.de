@@ -1,6 +1,7 @@
 # TALENTEXPERTE – Projekt- und Betriebshandbuch
 
-Stand: 14. Juli 2026
+Stand: 18. Juli 2026
+Dokumentationsstatus: bestätigt für den Repository-Stand; Live-Betriebsdaten sind nicht enthalten
 Geltungsbereich: Fußballschule TALENTEXPERTE, Website, Anmeldung, Camp-Betrieb, Zahlungen, Kommunikation und Social Media
 
 ## 1. Zweck und Verbindlichkeit
@@ -14,6 +15,8 @@ Bei widersprüchlichen Angaben gilt diese Reihenfolge:
 3. Dieses Handbuch
 4. Spezialisierte Runbooks
 5. Historische Status-, Audit- und Kampagnendokumente
+
+Die fachlich gegliederte Entwicklungsdokumentation liegt unter `docs/`. Die Bewertung und Rangfolge vorhandener Dokumente steht in `docs/DOCUMENTATION-INVENTORY.md`. Bei Widersprüchen zwischen diesem Handbuch und einer Fachdokumentation darf keine Angabe stillschweigend überschrieben werden; aktueller Code und live geprüfte Systemdaten entscheiden.
 
 Camp-Termine, Preise, Kapazitäten, Zahlungsstände und Empfängerlisten sind veränderliche Betriebsdaten. Sie müssen vor jeder Aktion live geprüft werden. Historische Zahlen aus Markdown-Dateien sind keine aktuelle Auskunft.
 
@@ -522,6 +525,16 @@ Ein Git-Push ist kein Deployment. Ein Website-Deployment ist keine Freigabe für
 | `SOCIAL-CONTENT-PLAN.md` | Content-Leitlinien und Materialauswahl |
 | `FULL-AUDIT-REPORT.md` | historisches SEO-/GEO-Audit |
 | `SEO-UMSETZUNGSBASIS.md` | SEO-Umsetzungsgrundlage |
+| `docs/PROJECT.md` | Projektprofil, Ziele, Grenzen und Quellenrang |
+| `docs/ARCHITECTURE.md` | technische Architektur und Datenflüsse |
+| `docs/DATA-MODEL.md` | Datenobjekte, Finanzstatus und Invarianten |
+| `docs/DESIGN-SYSTEM.md` / `docs/COMPONENTS.md` | CI, responsive Regeln und Komponenten |
+| `docs/CONTENT-GUIDE.md` | Website-, Social- und E-Mail-Inhalte |
+| `docs/SEO-GEO.md` / `docs/STRUCTURED-DATA.md` | Suchsichtbarkeit und strukturierte Daten |
+| `docs/DEVELOPMENT.md` / `docs/DEPLOYMENT.md` / `docs/QA-CHECKLIST.md` | Entwicklung, Veröffentlichung und Abnahme |
+| `docs/INTEGRATIONS.md` | externe Systeme und Schnittstellen |
+| `docs/DECISIONS.md` / `docs/OPEN-QUESTIONS.md` | verbindliche Entscheidungen und offene Klärungen |
+| `docs/DOCUMENTATION-INVENTORY.md` | geprüfte Bewertung der gesamten Dokumentation |
 
 ## 19. Standard-Checklisten für künftige Aufgaben
 
