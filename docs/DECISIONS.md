@@ -4,6 +4,32 @@ Stand: 19. Juli 2026
 Dokumentationsstatus: bestätigt aus Code, Migrationen und bestehenden Handbüchern
 Geltungsbereich: dauerhafte Entscheidungen; keine tagesaktuellen Betriebsstände
 
+## 2026-07-19 – Offene Elternzahlung nach klarer Letztfrist automatisch freigeben
+
+### Status
+akzeptiert; produktiver Rollout ausstehend
+
+### Ausgangslage
+Offene Anmeldungen blockierten Campplätze auch dann weiter, wenn Eltern trotz Erinnerung nicht zahlten. Gleichzeitig war nicht von Anfang an eindeutig kommuniziert, wann die Reservierung endet.
+
+### Entscheidung
+Neue Elternanmeldungen erhalten eine 72-Stunden-Zahlungsfrist. Bleibt die Zahlung offen, folgt genau eine Letzterinnerung mit einer konkreten Nachfrist von mindestens 24 Stunden. Erst nach erfolgreich protokolliertem Versand, erneutem Stripe-Abgleich und Ablauf dieser Frist wird die Anmeldung automatisch storniert und der Platz freigegeben. Sponsor/Firma sowie laufende oder vergangene Camps sind ausgeschlossen.
+
+### Begründung
+Die Regel verbindet Verbindlichkeit für Eltern mit fairer Vorankündigung, schützt knappe Campkapazität und vermeidet eine rein sprachliche Drohung ohne technische Konsequenz.
+
+### Auswirkungen
+Anmeldung, Bestätigung, Zahlungsstart, Reminder, Outbox, Dashboard, Datenmodell und geplanter Supabase-Lauf verwenden dieselben Fristen. Bestehende offene Anmeldungen erhalten vor jeder automatischen Freigabe zuerst die neue eindeutige Letztfrist.
+
+### Betroffene Dateien oder Komponenten
+`anmeldung.html`, `bestaetigung.html`, `zahlung-start.html`, `admin.html`, `register`, `send-reminder`, `process-email-outbox`, `process-payment-deadlines`, `anmeldungen`, `email_outbox`
+
+### Alternativen
+Unbefristete Reservierung oder sofortige Stornierung nach 72 Stunden; verworfen, weil entweder Kapazität blockiert bleibt oder die ausdrücklich angekündigte faire Letztfrist fehlt.
+
+### Ersetzt durch
+—
+
 ## 2026-07-19 – TALENTEXPERTE vollständig von AIXTRA-WEB trennen
 
 ### Status

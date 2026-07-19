@@ -68,6 +68,7 @@ Nur relevante Blöcke abhaken; nicht ausgeführte Prüfungen im Abschluss ausdr�
 - [ ] Elternfall: offene Zahlung, eindeutiger Stripe-Link, passende Bestätigung.
 - [ ] Doppelklick/Replay/Netzwerkabbruch erzeugen keine Doppelbuchung.
 - [ ] Resend-Fehler landet in Outbox; UI behauptet keinen falschen Versand.
+- [ ] Elternfall zeigt exakt 72-Stunden-Zahlungsfrist; Sponsor/Firma haben keine Zahlungs- oder Freigabefrist.
 
 ## Firmenanmeldung
 
@@ -83,9 +84,14 @@ Nur relevante Blöcke abhaken; nicht ausgeführte Prüfungen im Abschluss ausdr�
 - [ ] offen, bezahlt, gesponsert, storniert und erstattet separat dargestellt.
 - [ ] Pre-Payment- und finale PDFs zeigen korrekten Status.
 - [ ] `zahlung-start.html` akzeptiert nur erlaubte HTTPS-Stripe-Hosts.
+- [ ] Zahlungsstart blockiert bezahlt, storniert, automatisch freigegeben und abgelaufene Letztfrist; offen innerhalb der Frist leitet weiter.
 - [ ] Stripe-Testevent: gültige Signatur, EUR, Betrag, UUID und Payment Intent.
 - [ ] Replay/idempotentes Event verändert keine zweite Anmeldung.
 - [ ] terminaler Status wird nicht durch späteres Payment-Event überschrieben.
+- [ ] Letzterinnerung erst nach 72 Stunden, genau einmal und mit mindestens 24 Stunden Nachfrist.
+- [ ] Stripe-Fehler, Betrags-/Währungsabweichung oder uneindeutige Zahlung verhindert Reminder und Freigabe.
+- [ ] Resend-Fehler startet keine Freigabefrist; Outbox-Erfolg setzt Frist, zwischenzeitliche Zahlung verwirft die Mail.
+- [ ] Nach Fristablauf wird nur eine weiterhin offene Elternanmeldung storniert und in der Kapazität freigegeben; Sponsor/Firma sowie begonnene Camps bleiben unverändert.
 - [ ] Refund: Stripe zuerst, DB danach, Audit vorhanden.
 
 ## Admin-Dashboard
@@ -96,6 +102,7 @@ Nur relevante Blöcke abhaken; nicht ausgeführte Prüfungen im Abschluss ausdr�
 - [ ] Filter, Suche, Sortierung, Spaltentoggles und Campfilter korrekt.
 - [ ] Bearbeiten/Status/Storno/Refund/Löschen mit Berechtigung, Bestätigung und Audit.
 - [ ] Bulk-Reminder serverseitig erneut auf echte offene Elternzahlungen gefiltert.
+- [ ] Dashboard zeigt Zahlungsfrist, Outbox-/Reminderstatus, Freigabezeitpunkt und automatische Stornierung nachvollziehbar.
 - [ ] CSV-Export enthält nur beabsichtigte Spalten und wird geschützt behandelt.
 - [ ] Anwesenheit/Metriken online, offline, nach Login und bei Sessionrefresh.
 - [ ] Queueindikator und gerätegebundene Einschränkung verständlich.

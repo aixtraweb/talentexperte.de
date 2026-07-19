@@ -414,7 +414,7 @@
       <span class="btn-text">Verbindlich anmelden</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </button>
-    <p class="submit-note" id="submitNote">Nach der Anmeldung wirst du zur sicheren Bezahlung über Stripe weitergeleitet.<br>Der Platz wird erst nach Zahlungseingang verbindlich reserviert.</p>
+    <p class="submit-note" id="submitNote">Nach der Anmeldung wirst du zur sicheren Bezahlung über Stripe weitergeleitet.<br>Wir halten den Platz 72 Stunden vorläufig frei. Bleibt die Zahlung offen, folgt eine letzte Erinnerung mit 24 Stunden Nachfrist. Danach wird die Anmeldung automatisch storniert und der Platz wieder freigegeben.</p>
   </div>
   </form>
   </div><!-- /form-column -->
@@ -424,7 +424,8 @@
       <div class="sidebar-total" id="sidebarTotal"></div>
       <div class="sidebar-trust" id="sidebarTrust">
         <p>🔒 Sichere Zahlung via Stripe</p>
-        <p>✓ Platz wird nach Zahlung reserviert</p>
+        <p>✓ 72 Stunden Zahlungsfrist</p>
+        <p>✓ Automatische Platzfreigabe nach Letztfrist</p>
         <p>↩ Stornierung möglich (lt. AGB)</p>
       </div>
     </div>
@@ -596,7 +597,7 @@ function renderSponsorState() {
     submitNote.textContent = 'Die Gutschein-Nummer wird vor dem Absenden automatisch geprüft. Mit gültigem Gutschein wird keine Zahlung gestartet.';
   } else {
     btnText.textContent = 'Verbindlich anmelden';
-    submitNote.innerHTML = 'Nach der Anmeldung wirst du zur sicheren Bezahlung über Stripe weitergeleitet.<br>Der Platz wird erst nach Zahlungseingang verbindlich reserviert.';
+    submitNote.innerHTML = 'Nach der Anmeldung wirst du zur sicheren Bezahlung über Stripe weitergeleitet.<br>Wir halten den Platz 72 Stunden vorläufig frei. Bleibt die Zahlung offen, folgt eine letzte Erinnerung mit 24 Stunden Nachfrist. Danach wird die Anmeldung automatisch storniert und der Platz wieder freigegeben.';
   }
 
   updateSummary();
@@ -1397,10 +1398,12 @@ async function downloadRegistrationPDF() {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  doc.text(u(isSponsored
+  var reservationCopy = u(isSponsored
     ? 'Der Camp-Platz ist verbindlich reserviert. Für Sie ist keine Zahlung erforderlich.'
-    : 'Ihre Anmeldung ist eingegangen \u2013 ein Platz wird nach Zahlungseingang verbindlich reserviert.'), margin, y);
-  y += 14;
+    : 'Ihre Anmeldung ist eingegangen. Der Platz wird 72 Stunden vorläufig freigehalten. Bleibt die Zahlung danach trotz Letzterinnerung offen, wird die Anmeldung automatisch storniert und der Platz freigegeben.');
+  var reservationLines = doc.splitTextToSize(reservationCopy, col);
+  doc.text(reservationLines, margin, y);
+  y += reservationLines.length * 5 + 5;
 
   // Teilnehmer-Box
   doc.setFillColor(245, 245, 245);
@@ -1590,7 +1593,7 @@ updateSummary=function(){
       sidebarTrust.innerHTML='<p>✓ Finanzierung bestätigt</p><p>✓ '+escapeHtml(sponsorState.partnerName)+' übernimmt '+total+' €</p><p>✓ Keine Zahlung erforderlich</p>';
     }else{
       sidebarTotal.textContent=total+'€';
-      sidebarTrust.innerHTML='<p>🔒 Sichere Zahlung via Stripe</p><p>✓ Platz wird nach Zahlung reserviert</p><p>↩ Stornierung möglich (lt. AGB)</p>';
+      sidebarTrust.innerHTML='<p>🔒 Sichere Zahlung via Stripe</p><p>✓ 72 Stunden Zahlungsfrist</p><p>✓ Platzfreigabe nach unbezahlter Letztfrist</p><p>↩ Stornierung möglich (lt. AGB)</p>';
     }
   }else{
     sidebarTotal.textContent='';

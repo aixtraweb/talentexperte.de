@@ -86,6 +86,8 @@ Geltungsbereich: Website, Formulare, E-Mails, PDFs, Social Media und GEO-Inhalte
 - Gesundheits-/Allergieangaben neutral erfassen; keine medizinische Beratung formulieren.
 - Minderjährige und Bilder besonders datensparsam behandeln.
 - Zahlungserinnerung nennt Kind, Camp, Zeitraum, offenen Betrag und sichere persönliche Links nur nach aktuellem Supabase-/Stripe-Abgleich.
+- Anmeldung und Bestätigung erklären konkret: 72 Stunden vorläufige Platzhaltung, danach eine Letzterinnerung mit mindestens 24 Stunden Nachfrist und automatische Freigabe bei weiterhin offener Zahlung.
+- Die Letzterinnerung nennt ein konkretes Datum mit Uhrzeit und sagt ruhig, aber eindeutig: Ohne bestätigten Zahlungseingang wird die Anmeldung automatisch storniert und der Platz ohne weitere Nachricht freigegeben. Keine erfundene Knappheit oder unbelegte Restplatzanzahl verwenden.
 
 ## Website und Social
 

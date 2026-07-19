@@ -17,6 +17,9 @@ flowchart TD
     PayStart --> Stripe["Stripe"]
     Stripe --> Webhook["stripe-webhook"]
     Webhook --> DB
+    Deadline["process-payment-deadlines"] --> Stripe
+    Deadline --> Resend
+    Deadline --> DB
     Admin["admin.html + Supabase Auth"] --> AdminFns["geschützte Admin-Functions/RPCs"]
     AdminFns --> DB
     AdminFns --> Stripe
@@ -31,7 +34,7 @@ flowchart TD
 - **Bestätigt:** `index.html` ist Startseite, Campübersicht, FAQ, Bewertungen, Galerie und lokale Landingpage.
 - **Bestätigt:** `anmeldung.html` ist die Eltern-/Sponsorstrecke; `firmen-anmeldung.html` die Firmen-/Mitarbeiterstrecke.
 - **Bestätigt:** `bestaetigung.html` und `bestaetigung-firma.html` laden persönliche Daten nur über passende Tokenstrecken.
-- **Bestätigt:** `zahlung-start.html` prüft die Stripe-Ziel-URL und übergibt geschützt.
+- **Bestätigt:** `zahlung-start.html` prüft die Stripe-Ziel-URL sowie den signierten aktuellen Buchungsstatus und blockiert bezahlte, stornierte oder abgelaufene Anmeldungen.
 - **Bestätigt:** `admin.html` ist eine große eigenständige Betriebsoberfläche für Camps, Anmeldungen, Finanzen, Aktionen, Anwesenheit und Leistungswerte.
 - **Bestätigt:** `teams.html`, `gutschein.html`, `demo-default.html`, `newsreader/654.html` und `camps-in/index.html` sind noindex-Redirect-Stubs, keine Inhaltsseiten.
 - **Bestätigt:** `camps-in/ostercamp-I-2026.html` ist eine noindex-Galerieseite.
@@ -66,6 +69,8 @@ flowchart TD
 - **Bestätigt:** `sync_anmeldungen_payment_status()` schützt terminale Zustände wie storniert/erstattet vor unbeabsichtigtem Überschreiben.
 - **Bestätigt:** Erstattungen laufen über `admin-payment-action`; die DB wird erst nach Stripe-Erfolg aktualisiert.
 - **Bestätigt:** Historische Stripe-/PayPal-Backfills sind Dry-Run-first und kein Ersatz für den Live-Abgleich.
+- **Bestätigt im Repository:** `process-payment-deadlines` gleicht fällige Kandidaten unmittelbar vor Mail/Freigabe nochmals anhand `client_reference_id`, EUR-Betrag, `payment_status` und Payment Intent mit Stripe ab. Bei API-Fehlern oder uneindeutigen Treffern bleibt der Datensatz unangetastet.
+- **Bestätigt im Repository:** 72 Stunden nach Anmeldung folgt eine Letzterinnerung; erst mindestens 24 Stunden nach erfolgreichem Versand kann die Anmeldung automatisch storniert werden. Die produktive Aktivierung von Migration, Function, Secret und Zeitplan ist getrennt zu bestätigen.
 
 ## Admin
 
@@ -80,6 +85,7 @@ flowchart TD
 - **Bestätigt:** `register`, `company-register`, `send-reminder`, `send-google-review-request` und `send-missing-confirmations` nutzen Resend.
 - **Bestätigt:** `email_outbox` hält fehlgeschlagene Transaktionsmails privat; `process-email-outbox` verarbeitet atomar und mit Idempotenz wieder.
 - **Bestätigt:** Kampagnenläufe werden in `email_campaign_runs` gegen Mehrfachversand geschützt.
+- **Bestätigt im Repository:** Zahlungsfrist-Mails besitzen eine anmeldungsbezogene Outbox-Eindeutigkeit. Eine fehlgeschlagene oder noch wartende Mail startet keine Freigabefrist; jeder Outbox-Retry gleicht Stripe erneut ab und wird bei späterem Zahlungseingang ungesendet beendet.
 - **Bestätigt:** `send-ostercamp2-campaign` antwortet dauerhaft mit HTTP 410 und ist nicht zu reaktivieren.
 
 ## Deploymentgrenzen

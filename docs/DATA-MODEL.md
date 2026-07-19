@@ -41,6 +41,18 @@ parent_amount_euro > 0 für zahlungspflichtige Buchungen
 
 Eine offene Elternforderung ist nur bestätigt, wenn `payer_type='parent'`, `parent_payment_status='open'`, `parent_amount_euro>0` und der Datensatz zum geprüften Camp gehört. Vor Versand zusätzlich Stripe abgleichen.
 
+### Zahlungs- und Reservierungsfristen
+
+Die Migration `20260719170000_add_payment_deadline_workflow.sql` ergänzt:
+
+- `payment_due_at`: 72-Stunden-Zahlungsfrist ab Anlage;
+- `payment_deadline_reminder_sent_at`: erfolgreicher Versand der neuen Letztfrist, bewusst getrennt von historischen allgemeinen Erinnerungen in `erinnerung_gesendet_am`;
+- `payment_reminder_processing_at`/`payment_reminder_queued_at`: Claim- und Outbox-Schutz gegen Doppelversand;
+- `reservation_expires_at`: in der erfolgreich versendeten Letzterinnerung genannte Nachfrist;
+- `released_due_to_nonpayment_at`: eindeutiger Nachweis der automatischen Platzfreigabe.
+
+`claim_payment_deadline_reminder()`, `complete_payment_deadline_reminder()` und `release_unpaid_registration()` führen die Übergänge atomar aus. Eine automatische Freigabe ist nur bei weiterhin offener Elternzahlung, erfolgreich protokollierter Letzterinnerung und abgelaufener Freigabefrist möglich.
+
 ### Sponsoring
 
 ```text
@@ -84,6 +96,7 @@ Sponsorstatus und Sponsorabrechnung sind von Elternzahlung getrennt. Sponsorfall
 - `sync_anmeldungen_payment_status()` – Schutz der Statussynchronisierung.
 - `guard_anmeldung_booking()` und `guard_company_booking()` – Camp-/Kapazitäts-/Duplikatregeln.
 - `dashboard_delete_registration()` – kontrolliertes Löschen.
+- `claim_payment_deadline_reminder()`, `complete_payment_deadline_reminder()` und `release_unpaid_registration()` – idempotenter Zahlungsfristprozess.
 
 ## Live zu verifizieren
 

@@ -61,6 +61,7 @@ Vor jeder TALENTEXPERTE-E-Mail sind unmittelbar vor dem Senden zu bestätigen:
 - **Outbox:** fehlgeschlagene Transaktionsmails in `email_outbox`; `process-email-outbox` beansprucht und verarbeitet atomar.
 - **Kampagnenjournal:** `email_campaign_runs` verhindert ungewollte Wiederholung.
 - **Test:** Testzustellung, Resultat `sent/failed`, Outbox und Resend-Domain prüfen.
+- **Zahlungsfrist:** `process-payment-deadlines` darf nur über einen geheimnisgeschützten geplanten POST-Aufruf gestartet werden. Die Freigabefrist beginnt erst nach erfolgreichem Resend-/Outbox-Versand.
 - **Veraltet:** anonyme Einmalkampagne aus `CAMP-EMAIL-WORKFLOW.md`; Endpoint `send-ostercamp2-campaign` ist dauerhaft 410.
 
 ## Google Sheets und Kontakte
@@ -111,6 +112,7 @@ Vor jeder TALENTEXPERTE-E-Mail sind unmittelbar vor dem Senden zu bestätigen:
 ## Offene Punkte
 
 - aktueller Live-Deploystand einzelner Edge Functions und Migrationen;
+- produktive Einrichtung von `PAYMENT_DEADLINE_PROCESSOR_SECRET` und Zeitplan für `process-payment-deadlines`;
 - Google Business Profile API-Freigabe;
 - Meta-App-/Publishing-Rechte;
 - Datenschutz-/Consent-Freigabe für Elfsight, Kartenkacheln und Social-Integrationen;

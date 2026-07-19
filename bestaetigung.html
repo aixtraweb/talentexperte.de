@@ -98,7 +98,7 @@
   <div class="payment-open-card" id="paymentOpenCard" hidden>
     <span class="status-kicker">Zahlungsstatus: offen</span>
     <h2>Die Zahlung steht noch aus</h2>
-    <p>Der Camp-Platz wird verbindlich reserviert, sobald die Zahlung eingegangen ist. Falls du gerade über Stripe bezahlt hast, aktualisiert sich der Status automatisch, sobald die Bestätigung vorliegt.</p>
+    <p>Wir halten den Camp-Platz 72 Stunden vorläufig frei. Bleibt die Zahlung offen, folgt eine letzte Erinnerung mit 24 Stunden Nachfrist. Danach wird die Anmeldung automatisch storniert und der Platz wieder freigegeben.</p>
   </div>
 
   <!-- FREUNDE EINLADEN -->
@@ -237,6 +237,10 @@ var regData = {
   parent_amount: '',
   sponsor_amount: '',
   legacy_payment_status: '',
+  payment_due_at: '',
+  reminder_sent_at: '',
+  reservation_expires_at: '',
+  released_due_to_nonpayment_at: '',
   confirmation_token: '',
   datum: new Date().toLocaleDateString('de-DE')
 };
@@ -308,6 +312,16 @@ function fmtDateShort(s) {
   return d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' });
 }
 
+function fmtDateTime(s) {
+  if (!s) return '';
+  var d = new Date(s);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleString('de-DE', {
+    timeZone: 'Europe/Berlin', day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
+  });
+}
+
 function money(value) {
   var number = Number(value);
   if (!Number.isFinite(number)) number = 0;
@@ -335,6 +349,7 @@ function fillPage() {
   var cancelled = state === 'cancelled';
   var refunded = state === 'refunded';
   var inactive = cancelled || refunded;
+  var releasedForNonpayment = cancelled && !!regData.released_due_to_nonpayment_at;
   var sponsorBooking = regData.payer_type === 'sponsor';
   var statusIcon = document.getElementById('statusIcon');
 
@@ -407,20 +422,26 @@ function fillPage() {
       ? 'ANMELDUNG <span class="red">STORNIERT</span>'
       : 'ANMELDUNG <span class="yellow">ERSTATTET</span>';
     headerText.textContent = cancelled
-      ? 'Diese Anmeldung wurde storniert. Der Camp-Platz ist nicht reserviert.'
+      ? (releasedForNonpayment
+        ? 'Die letzte Zahlungsfrist ist abgelaufen. Die Anmeldung wurde automatisch storniert und der Camp-Platz wieder freigegeben.'
+        : 'Diese Anmeldung wurde storniert. Der Camp-Platz ist nicht reserviert.')
       : 'Diese Anmeldung wurde beendet und die Erstattung wurde vermerkt. Der Camp-Platz ist nicht reserviert.';
     amountEl.textContent = sponsorBooking
       ? '0,00 € Elternanteil · ' + (cancelled ? 'storniert' : 'erstattet')
       : money(amount) + countSuffix + ' · ' + (cancelled ? 'storniert' : 'erstattet');
     amountEl.className = 'info-value info-value--betrag inactive';
     document.getElementById('dPartner').textContent = regData.partner_name || 'Förderpartner';
-    reservationText.textContent = 'Diese Anmeldung ist nicht aktiv. Der Camp-Platz ist nicht reserviert.';
+    reservationText.textContent = releasedForNonpayment
+      ? 'Der Platz wurde wegen ausgebliebener Zahlung freigegeben. Bitte nutze keinen älteren Zahlungslink mehr.'
+      : 'Diese Anmeldung ist nicht aktiv. Der Camp-Platz ist nicht reserviert.';
     document.getElementById('faqPdfLink').href = sponsorBooking ? '/pdf/faq-camps-sponsoring.pdf' : '/pdf/faq-camps.pdf';
     document.getElementById('faqPdfLink').textContent = sponsorBooking ? '📄 FAQ gesponserte Camps (PDF)' : '📄 FAQ Camps (PDF)';
     document.title = cancelled ? 'Anmeldung storniert – TALENTEXPERTE' : 'Anmeldung erstattet – TALENTEXPERTE';
     paymentKicker.textContent = cancelled ? 'Buchungsstatus: storniert' : 'Buchungsstatus: erstattet';
-    paymentHeading.textContent = cancelled ? 'Diese Anmeldung ist storniert' : 'Diese Anmeldung wurde erstattet';
-    paymentCopy.textContent = 'Der Camp-Platz ist nicht reserviert. Es ist keine weitere Zahlung erforderlich. Bei Rückfragen helfen wir gern weiter.';
+    paymentHeading.textContent = releasedForNonpayment ? 'Zahlungsfrist abgelaufen' : (cancelled ? 'Diese Anmeldung ist storniert' : 'Diese Anmeldung wurde erstattet');
+    paymentCopy.textContent = releasedForNonpayment
+      ? 'Da bis zur mitgeteilten Letztfrist kein Zahlungseingang bestätigt wurde, ist der Camp-Platz wieder verfügbar. Bitte zahle nicht mehr über einen älteren Link. Bei Rückfragen helfen wir gern weiter.'
+      : 'Der Camp-Platz ist nicht reserviert. Es ist keine weitere Zahlung erforderlich. Bei Rückfragen helfen wir gern weiter.';
   } else {
     headerTitle.innerHTML = open
       ? 'ANMELDUNG <span class="yellow">EINGEGANGEN</span>'
@@ -430,17 +451,23 @@ function fillPage() {
       : 'Die Anmeldung ist gespeichert. Der aktuelle Zahlungsstatus konnte noch nicht bestätigt werden.';
     amountEl.textContent = money(amount) + countSuffix + (open ? ' · offen' : ' · Status wird geprüft');
     amountEl.className = 'info-value info-value--betrag open';
+    var openDeadline = regData.reservation_expires_at || regData.payment_due_at;
+    var hasFinalDeadline = !!regData.reservation_expires_at;
     reservationText.textContent = open
-      ? 'Der Platz wird nach Zahlungseingang verbindlich reserviert.'
+      ? (hasFinalDeadline
+        ? 'Letzte Zahlungsfrist: ' + fmtDateTime(openDeadline) + '. Ohne Zahlung wird die Anmeldung danach automatisch storniert und der Platz freigegeben.'
+        : 'Wir halten den Platz vorläufig bis ' + (fmtDateTime(openDeadline) || 'zum Ende der 72-Stunden-Frist') + ' frei. Bleibt die Zahlung offen, folgt eine letzte Erinnerung mit 24 Stunden Nachfrist.')
       : 'Wir bestätigen die Reservierung, sobald der Zahlungsstatus eindeutig vorliegt.';
     document.getElementById('faqPdfLink').href = '/pdf/faq-camps.pdf';
     document.getElementById('faqPdfLink').textContent = '📄 FAQ Camps (PDF)';
     document.title = 'Anmeldung eingegangen – TALENTEXPERTE';
 
     paymentKicker.textContent = open ? 'Zahlungsstatus: offen' : 'Zahlungsstatus wird geprüft';
-    paymentHeading.textContent = open ? 'Die Zahlung steht noch aus' : 'Noch keine eindeutige Bestätigung';
+    paymentHeading.textContent = open ? (hasFinalDeadline ? 'Letzte Zahlungsfrist läuft' : 'Die Zahlung steht noch aus') : 'Noch keine eindeutige Bestätigung';
     paymentCopy.textContent = open
-      ? 'Der Camp-Platz wird verbindlich reserviert, sobald die Zahlung eingegangen ist. Falls du gerade über Stripe bezahlt hast, aktualisiert sich der Status automatisch, sobald die Bestätigung vorliegt.'
+      ? (hasFinalDeadline
+        ? 'Bitte zahle bis ' + fmtDateTime(openDeadline) + '. Danach wird die Anmeldung automatisch storniert und der Platz ohne weitere Nachricht wieder freigegeben.'
+        : 'Bitte zahle innerhalb von 72 Stunden nach der Anmeldung. Falls du gerade über Stripe bezahlt hast, aktualisiert sich der Status automatisch, sobald die Bestätigung vorliegt.')
       : 'Wir zeigen bewusst keine Zahlungsbestätigung an, solange der Status nicht eindeutig aus der Buchung geladen werden konnte.';
   }
 
@@ -587,6 +614,10 @@ function applyConfirmationData(r, confirmationToken) {
   regData.payer_type = r.payer_type || '';
   regData.parent_payment_status = r.parent_payment_status || '';
   regData.legacy_payment_status = r.zahlungsstatus || '';
+  regData.payment_due_at = r.payment_due_at || '';
+  regData.reminder_sent_at = r.payment_deadline_reminder_sent_at || '';
+  regData.reservation_expires_at = r.reservation_expires_at || '';
+  regData.released_due_to_nonpayment_at = r.released_due_to_nonpayment_at || '';
   regData.list_price = r.list_price_euro !== null && r.list_price_euro !== undefined ? r.list_price_euro : regData.betrag;
   regData.parent_amount = r.parent_amount_euro !== null && r.parent_amount_euro !== undefined ? r.parent_amount_euro : regData.betrag;
   regData.sponsor_amount = r.sponsor_amount_euro !== null && r.sponsor_amount_euro !== undefined ? r.sponsor_amount_euro : '';
@@ -723,7 +754,9 @@ async function downloadPDF() {
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
   var confirmationLine = isCancelled
-    ? 'Diese Anmeldung wurde storniert. Der Camp-Platz ist nicht reserviert. Keine Zahlung erforderlich.'
+    ? (regData.released_due_to_nonpayment_at
+      ? 'Die letzte Zahlungsfrist ist abgelaufen. Die Anmeldung wurde automatisch storniert und der Camp-Platz wieder freigegeben. Bitte keinen älteren Zahlungslink mehr verwenden.'
+      : 'Diese Anmeldung wurde storniert. Der Camp-Platz ist nicht reserviert. Keine Zahlung erforderlich.')
     : isRefunded
       ? 'Diese Anmeldung wurde erstattet. Der Camp-Platz ist nicht reserviert. Keine weitere Zahlung erforderlich.'
       : isSponsored
@@ -731,10 +764,13 @@ async function downloadPDF() {
     : isPaid
       ? 'Vielen Dank für die Anmeldung! Der Camp-Platz ist verbindlich reserviert.'
       : isOpen
-        ? 'Die Anmeldung ist eingegangen. Der Platz wird nach Zahlungseingang verbindlich reserviert.'
+        ? (regData.reservation_expires_at
+          ? 'Letzte Zahlungsfrist: ' + fmtDateTime(regData.reservation_expires_at) + '. Ohne Zahlung wird die Anmeldung danach automatisch storniert und der Platz freigegeben.'
+          : 'Die Anmeldung ist eingegangen. Der Platz wird 72 Stunden vorläufig freigehalten. Bei weiter offener Zahlung folgt eine letzte Erinnerung mit 24 Stunden Nachfrist.')
         : 'Die Anmeldung ist eingegangen. Der Zahlungsstatus konnte noch nicht eindeutig bestätigt werden.';
-  doc.text(u(confirmationLine), margin, y);
-  y += 10;
+  var confirmationLines = doc.splitTextToSize(u(confirmationLine), col);
+  doc.text(confirmationLines, margin, y);
+  y += confirmationLines.length * 5 + 5;
 
   // Teilnehmer-Box
   doc.setFillColor(245, 245, 245);

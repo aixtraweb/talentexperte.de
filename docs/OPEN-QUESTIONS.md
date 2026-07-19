@@ -4,6 +4,17 @@ Stand: 19. Juli 2026
 Dokumentationsstatus: offen und priorisiert
 Geltungsbereich: ungeklärte Punkte aus Repository- und Dokumentationsinventur
 
+## Produktiver Rollout des Zahlungsfrist-Workflows
+
+- Status: wartet auf Technik und kontrollierte Betriebsabnahme
+- Priorität: hoch
+- Betroffener Bereich: Supabase, Stripe, Resend, Anmeldung, Kapazität und Admin-Dashboard
+- Aktueller Kenntnisstand: Migration, Functions und sichtbare Texte für 72 Stunden Zahlungsfrist plus mindestens 24 Stunden Letztfrist sind im Repository vorbereitet. Der aktuelle produktive Deploy-, Secret- und Zeitplanstatus ist nicht bestätigt. Bestehende offene Elternanmeldungen würden nach Migration zunächst sofort für die neue eindeutige Letzterinnerung fällig; eine Freigabe erfolgt erst nach deren erfolgreichem Versand und Ablauf.
+- Benötigte Entscheidung: TALENTEXPERTE-Zuordnung von Supabase, Stripe und Resend bestätigen; Migration und Functions in festgelegter Reihenfolge deployen; `PAYMENT_DEADLINE_PROCESSOR_SECRET` sicher setzen; geplanten Lauf (empfohlen alle 15 Minuten) aktivieren; kontrollierte Testanmeldungen für bezahlt, offen, Outbox-Fehler, Stripe-Fehler und automatische Freigabe abnehmen.
+- Vorläufiges Verhalten: kein Supabase-Deploy, kein Zeitplan, kein Mailversand und keine automatische Platzfreigabe allein durch Git. Offene Bank-/Bar-/PayPal-Zahlungen müssen vor Ablauf im Admin-Dashboard korrekt als bezahlt bestätigt sein. Am ersten Camptag und danach storniert der Prozessor nicht automatisch.
+- Verantwortlich: Supabase-/Stripe-/Resend-Administration und Betrieb
+- Datum: 19.07.2026
+
 ## Bestandsaudit und Bereinigung aller AIXTRA-WEB-Verknüpfungen
 
 - Status: wartet auf Technik

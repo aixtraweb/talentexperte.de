@@ -62,7 +62,7 @@ Sponsor- und Firmenanmeldungen erhalten niemals eine Eltern-Zahlungserinnerung:
 5. Stornierte, erstattete, gesponserte, Firmen- und unklare Fälle ausschließen.
 6. Empfängerzahl, Namen, Camp, Betrag und letzte Erinnerung prüfen.
 7. Im Admin-Dashboard nur diese Zeilen auswählen und **Zahlungserinnerung** auslösen.
-8. Versandresultat prüfen: `sent`, `failed` und `erinnerung_gesendet_am`.
+8. Versandresultat prüfen: `sent`, `failed`, `payment_deadline_reminder_sent_at` und `reservation_expires_at`.
 9. Fehlgeschlagene Zustellungen in der privaten `email_outbox` prüfen und über **E-Mail-Warteschlange** erneut verarbeiten.
 10. Ergebnis mit Anzahl versendet, fehlgeschlagen und bewusst ausgeschlossen dokumentieren.
 
@@ -365,11 +365,26 @@ Sicherheits- und Versandregeln:
 - persönlicher sicherer Stripe- und Bestätigungslink
 - Absender: `TALENTEXPERTE Fußballschule <kontakt@talentexperte.de>`
 - Reply-To: `kontakt@talentexperte.de`
-- Betreff: `Zahlungserinnerung – [Camp] | TALENTEXPERTE`
-- erfolgreicher Versand setzt `erinnerung_gesendet_am`
+- Betreff: `Zahlung erforderlich: Platz bis [Datum] sichern – [Camp] | TALENTEXPERTE`
+- erfolgreicher Versand setzt `payment_deadline_reminder_sent_at` und `reservation_expires_at`; der kompatible Legacy-Zeitstempel `erinnerung_gesendet_am` wird nur gefüllt, wenn dort noch keine frühere Erinnerung dokumentiert ist
 - Resend-Fehler werden in `email_outbox` aufgenommen
 
-Der Mailto-Fallback im Dashboard ist nur ein Notbehelf. Bei mehreren Familien erzeugt er BCC ohne individuelle Beträge oder Links. Der bevorzugte Weg ist immer die Edge Function.
+### Verbindliche Zahlungs- und Freigabefrist
+
+Für neue zahlungspflichtige Elternanmeldungen gilt nach Aktivierung des Workflows:
+
+1. Die Anmeldung hält den Platz zunächst **72 Stunden vorläufig frei** (`payment_due_at`).
+2. Ist die Zahlung danach weiterhin offen, erfolgt genau eine Letzterinnerung mit Kind, Camp, Zeitraum, Betrag, persönlichem Zahlungs-/Bestätigungslink und einer konkreten Frist.
+3. Die Nachfrist beträgt mindestens **24 Stunden ab erfolgreichem Versand** (`reservation_expires_at`). Ein Outbox-Fehler startet die Freigabefrist ausdrücklich noch nicht.
+4. Direkt vor Erinnerung und Freigabe gleicht `process-payment-deadlines` offene Datensätze nochmals mit Stripe ab; ein späterer Outbox-Retry wiederholt den Abgleich unmittelbar vor dem Versand. Schlägt der Stripe-Abgleich fehl oder ist eine Zahlung nicht eindeutig, wird weder erinnert noch freigegeben.
+5. Bleibt die Zahlung bis zur genannten Frist offen, wird die Anmeldung auf `cancelled`/`storniert` gesetzt und mit `released_due_to_nonpayment_at` gekennzeichnet. Erst dadurch wird der Platz wieder in der Campkapazität verfügbar.
+6. Sponsor- und Firmenanmeldungen sind ausgeschlossen. Am ersten Camptag und danach erfolgt keine automatische Stornierung.
+
+Bestehende offene Elternanmeldungen werden beim Rollout zunächst nur für die neue Erinnerung fällig. Sie erhalten die eindeutige Letztfrist und werden nicht ohne diese Nachricht rückwirkend storniert.
+
+Der Automationslauf benötigt `PAYMENT_DEADLINE_PROCESSOR_SECRET`, `STRIPE_SECRET_KEY`, `RESEND_API_KEY`, Supabase-URL und Service Role. Migration, Functions, Secrets und der geplante Aufruf sind getrennt zu aktivieren und anschließend mit kontrollierten Testdaten zu prüfen. Ein Git-Push aktiviert diesen Prozess nicht.
+
+Ein Mailto-Fallback ist für die verbindliche Letztfrist nicht zulässig, weil individuelle Frist, Betrag und sichere Links sowie der erfolgreiche Versandnachweis fehlen. Bei Function- oder Versandfehlern wird nicht automatisch freigegeben.
 
 `CAMP-EMAIL-WORKFLOW.md` beschreibt eine historische Wiederholer-Kampagne. Die damalige Einmal-Function ist stillgelegt und darf nicht für Zahlungs- oder Marketingversand reaktiviert werden. Neue Marketingkampagnen benötigen aktuelle Empfängerauswahl, Datenschutzprüfung, Test und explizite Versandfreigabe.
 

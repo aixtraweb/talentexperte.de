@@ -24,6 +24,7 @@ import {
   verifyStoredConfirmationToken,
 } from "../_shared/stored-confirmation-token.ts";
 import { enqueueEmail } from "../_shared/email-outbox.ts";
+import { formatDeadline } from "../_shared/payment-deadline-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -219,6 +220,7 @@ function buildConfirmationHtml(opts: {
   buchungsNr: string;
   payLink: string | null;
   bestaetigungLink: string;
+  paymentDueAt: string | null;
 }): string {
   const sponsored = Boolean(opts.partnerName);
   const paymentBlock = sponsored
@@ -237,7 +239,10 @@ function buildConfirmationHtml(opts: {
         }" style="display:inline-block;background:#e50000;color:#fff;padding:14px 32px;border-radius:30px;text-decoration:none;font-weight:bold">JETZT BEZAHLEN</a></p>`
         : ""
     }
-      <p style="font-size:13px;color:#888">Der Platz wird erst nach Zahlungseingang verbindlich reserviert.</p>`;
+      <div style="margin:20px 0;padding:16px;border-left:4px solid #e50000;background:#251414;color:#fff;line-height:1.55">
+        <strong>Zahlungsfrist: ${escapeHtml(opts.paymentDueAt ? formatDeadline(opts.paymentDueAt) : "innerhalb von 72 Stunden")}</strong><br>
+        Bis dahin halten wir den Platz vorläufig frei. Bleibt die Zahlung offen, erhalten Sie eine letzte Erinnerung mit 24 Stunden Nachfrist. Ohne Zahlung wird die Anmeldung danach automatisch storniert und der Platz wieder freigegeben.
+      </div>`;
 
   const amountRows = sponsored
     ? `<tr><td style="padding:6px 0;color:#888">Teilnahmebeitrag</td><td style="padding:6px 0">${
@@ -355,7 +360,7 @@ Deno.serve(async (req) => {
       const { data: confirmation, error: confirmationError } = await supabase
         .from("anmeldungen")
         .select(
-          "id,vorname,nachname,geburtsdatum,eltern_vorname,eltern_nachname,email,telefon,camp_id,betrag_euro,zahlungsstatus,payer_type,parent_payment_status,list_price_euro,parent_amount_euro,sponsor_amount_euro,sponsoring_partners(name,slug),camps(name,datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,ort,adresse)",
+          "id,vorname,nachname,geburtsdatum,eltern_vorname,eltern_nachname,email,telefon,camp_id,betrag_euro,zahlungsstatus,payer_type,parent_payment_status,list_price_euro,parent_amount_euro,sponsor_amount_euro,payment_due_at,payment_deadline_reminder_sent_at,reservation_expires_at,released_due_to_nonpayment_at,sponsoring_partners(name,slug),camps(name,datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,ort,adresse)",
         )
         .eq("id", registrationId)
         .maybeSingle();
@@ -658,6 +663,7 @@ Deno.serve(async (req) => {
     let payerType: "parent" | "sponsor" = "parent";
     let parentPaymentStatus: "open" | "not_required" = "open";
     let confirmationToken = "";
+    let paymentDueAt: string | null = null;
 
     if (sponsorRequested) {
       const expandedCode = expandSponsorCode(sponsorCode, camp.datum_von);
@@ -766,7 +772,7 @@ Deno.serve(async (req) => {
           sponsoring_partner_id: null,
           sponsoring_entitlement_id: null,
         })
-        .select("id")
+        .select("id,payment_due_at")
         .single();
 
       if (insertError || !anmeldung) {
@@ -783,6 +789,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Fehler beim Speichern." }, 500);
       }
       anmeldungId = anmeldung.id;
+      paymentDueAt = anmeldung.payment_due_at || null;
     }
 
     const buchungsNr = String(anmeldungId).slice(0, 8).toUpperCase();
@@ -841,6 +848,7 @@ Deno.serve(async (req) => {
         buchungsNr,
         payLink: paymentStartLink,
         bestaetigungLink,
+        paymentDueAt,
       }),
     };
     if (RESEND_API_KEY) {
@@ -897,6 +905,7 @@ Deno.serve(async (req) => {
       sponsor_settlement_status: payerType === "sponsor" ? "open" : null,
       partner_name: partnerName,
       payment_required: payerType === "parent",
+      payment_due_at: paymentDueAt,
       stripe_link: payLink,
       email_versendet: emailVersendet,
       freie_plaetze: Math.max(Number(camp.freie_plaetze) - 1, 0),

@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-07-19 — Verbindliche Zahlungsfrist und automatische Platzfreigabe vorbereitet
+
+### Umsetzung
+
+- Für neue Elternanmeldungen eine 72-Stunden-Zahlungsfrist und eine Letzterinnerung mit mindestens 24 Stunden Nachfrist als gemeinsame Datenbankregel ergänzt.
+- `process-payment-deadlines` gleicht fällige Anmeldungen vor jeder Mail und Freigabe mit Stripe ab, stoppt bei API-/Zuordnungsfehlern und schließt Sponsor, Firma sowie begonnene Camps aus.
+- Remindertext nennt Kind, Camp, Betrag sowie konkretes Datum/Uhrzeit und kommuniziert eindeutig die automatische Stornierung ohne weitere Nachricht.
+- Outbox und atomare RPCs verhindern Doppelversand und stellen sicher, dass eine fehlgeschlagene Mail keine Freigabefrist startet.
+- Anmeldung, Bestätigung, PDF, Zahlungsstart und Admin-Dashboard zeigen den Friststatus konsistent; alte Zahlungslinks prüfen vor Stripe den aktuellen Buchungsstatus.
+- Bestehende offene Elternanmeldungen werden beim Rollout zuerst für die neue Letzterinnerung fällig und nicht ohne diese rückwirkend storniert.
+
+### Rolloutgrenze
+
+- Repository-Umsetzung ist vorbereitet. Produktiv sind Migration, Functions, ausschließlich TALENTEXPERTE zugeordnete Resend-/Stripe-/Supabase-Identitäten, `PAYMENT_DEADLINE_PROCESSOR_SECRET`, Zeitplan und kontrollierte Testfälle getrennt zu aktivieren. Es wurden keine Mails versendet und keine Plätze freigegeben.
+
 ## 2026-07-19 — Strikte Trennung von TALENTEXPERTE und AIXTRA-WEB festgelegt
 
 ### Dokumentation

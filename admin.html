@@ -83,7 +83,7 @@
         <span class="bulk-count" id="bulkCount">0 ausgewählt</span>
         <button class="bulk-btn bulk-paid" onclick="bulkSetStatus('bezahlt')">✓ Bezahlt</button>
         <button class="bulk-btn bulk-cancel" onclick="bulkSetStatus('storniert')">✕ Stornieren</button>
-        <button class="bulk-btn bulk-remind" onclick="bulkReminder()">📧 Zahlungserinnerung</button>
+        <button class="bulk-btn bulk-remind" onclick="bulkReminder()">📧 Letzte Zahlungsfrist</button>
         <button class="bulk-btn bulk-delete" onclick="bulkDelete()">🗑 Löschen</button>
         <button class="bulk-btn bulk-deselect" onclick="deselectAll()">✕ Auswahl aufheben</button>
       </div>
@@ -414,6 +414,11 @@ telefon:a.kontakt_telefon||a.mitarbeiter_telefon||a.telefon||a.firma_telefon||''
 adresse:a.adresse||a.rechnungsadresse||'',
 erfahrung:a.erfahrung||null,allergien:a.allergien||null,notizen:a.notizen||null,
 erinnerung_gesendet_am:a.erinnerung_gesendet_am||null,
+payment_deadline_reminder_sent_at:a.payment_deadline_reminder_sent_at||null,
+payment_due_at:a.payment_due_at||null,
+payment_reminder_queued_at:a.payment_reminder_queued_at||null,
+reservation_expires_at:a.reservation_expires_at||null,
+released_due_to_nonpayment_at:a.released_due_to_nonpayment_at||null,
 zahlungsstatus:statusNorm,
 payer_type:typ==='Sponsoring'?'sponsor':(typ==='Firma'?'company':(payerType||'parent')),
 parent_payment_status:a.parent_payment_status||(typ==='Sponsoring'?'not_required':null),
@@ -623,7 +628,7 @@ row+='<td class="td-check" onclick="event.stopPropagation()"><input type="checkb
 if(showCampCol)row+='<td>'+esc(a.camps?a.camps.name:'–')+'</td>';
 row+='<td><strong>'+esc(a.vorname)+' '+esc(a.nachname)+'</strong>'+(a.allergien?' <span title="Hat Allergien/Hinweise" class="badge-allergy">⚠️</span>':'')+'</td>';
 row+='<td>'+getAge(a.geburtsdatum)+'</td>';
-row+='<td><span class="status-badge status-'+safeClassToken(statusClass)+'">'+esc(statusText)+'</span>'+(isSponsored(a)?'<span class="partner-under-badge">'+esc(sponsorPartnerName(a))+'</span>':'')+(a.erinnerung_gesendet_am&&isParentPaymentOpen(a)?' <span class="badge-reminded" title="Erinnerung gesendet am '+esc(fDT(a.erinnerung_gesendet_am))+'">📨</span>':'')+'</td>';
+row+='<td><span class="status-badge status-'+safeClassToken(statusClass)+'">'+esc(statusText)+'</span>'+(isSponsored(a)?'<span class="partner-under-badge">'+esc(sponsorPartnerName(a))+'</span>':'')+(a.payment_deadline_reminder_sent_at&&isParentPaymentOpen(a)?' <span class="badge-reminded" title="Letztfrist gesendet am '+esc(fDT(a.payment_deadline_reminder_sent_at))+(a.reservation_expires_at?' · automatische Freigabe ab '+esc(fDT(a.reservation_expires_at)):'')+'">📨</span>':'')+'</td>';
 var anw=(teilnahmeCache[a.id]||{}).anwesenheit||{};
 days.forEach(function(day){row+='<td class="aw-td-day" onclick="event.stopPropagation()"><input type="checkbox" class="aw-checkbox"'+(anw[day]?' checked':'')+' onchange="toggleAnwesenheitMain(\''+a.id+'\',\''+a.__table+'\',\''+campId+'\',\''+day+'\',this.checked)"></td>';});
 if(days.length>0){var t=teilnahmeCache[a.id]||{};row+='<td class="aw-td-metric" onclick="event.stopPropagation()"><input type="number" step="0.1" min="0" placeholder="–" value="'+(t.sprint!=null?t.sprint:'')+'" class="metric-input" onblur="saveMetric(\''+a.id+'\',\''+a.__table+'\',\'sprint\',this.value)" onclick="event.stopPropagation();this.select()"></td>';row+='<td class="aw-td-metric" onclick="event.stopPropagation()"><input type="number" step="1" min="0" placeholder="–" value="'+(t.torschuss!=null?t.torschuss:'')+'" class="metric-input" onblur="saveMetric(\''+a.id+'\',\''+a.__table+'\',\'torschuss\',this.value)" onclick="event.stopPropagation();this.select()"></td>';row+='<td class="aw-td-metric" onclick="event.stopPropagation()"><input type="number" step="0.1" min="0" placeholder="–" value="'+(t.dribbling!=null?t.dribbling:'')+'" class="metric-input" onblur="saveMetric(\''+a.id+'\',\''+a.__table+'\',\'dribbling\',this.value)" onclick="event.stopPropagation();this.select()"></td>';}
@@ -653,7 +658,7 @@ h+='<div class="detail-section"><h3>Eltern & Kontakt</h3>'+rw('Elternteil',a.elt
 if(isSponsored(a)){
 h+='<div class="detail-section"><h3>Camp & Finanzierung</h3><div class="sponsor-finance-box"><strong>Voll gesponsert</strong><br>Für die Eltern entstehen keine Kosten. Eine Elternzahlung ist nicht erforderlich.</div>'+rw('Camp',cn)+rw('Anmeldestatus','<span class="status-badge status-'+safeClassToken(a.__effectiveStatus==='gesponsert'?'sponsored':a.__effectiveStatus)+'">'+esc(a.__effectiveStatus==='gesponsert'?'Voll gesponsert':a.__effectiveStatus)+'</span>',true)+rw('Partner',sponsorPartnerName(a))+rw('Listenpreis',money(getListPrice(a)))+rw('Elternzahlung','<strong>0 € · nicht erforderlich</strong>',true)+rw('Sponsor-Betrag',money(getSponsorAmount(a)))+rw('Sponsor-Abrechnung',settlementBadge(a),true)+rw('Angemeldet',fDT(a.created_at))+rw('Storniert am',a.storniert_am?fDT(a.storniert_am):'–')+rw('Zahlungserinnerung',a.erinnerung_gesendet_am?'⚠ Historisch gesendet: '+fDT(a.erinnerung_gesendet_am):'Keine – gesperrt')+'</div>'
 }else{
-h+='<div class="detail-section"><h3>Camp & Zahlung</h3>'+rw('Camp',cn)+rw('Zahlungsstatus','<span class="status-badge status-'+safeClassToken(a.__effectiveStatus)+'">'+esc(a.__effectiveStatus)+'</span>',true)+rw('Elternzahlung',money(getParentAmount(a)))+rw('Angemeldet',fDT(a.created_at))+rw('Bezahlt am',a.zahlung_am?fDT(a.zahlung_am):'–')+rw('Storniert am',a.storniert_am?fDT(a.storniert_am):'–')+rw('Erinnerung gesendet',a.erinnerung_gesendet_am?'📨 '+fDT(a.erinnerung_gesendet_am):'–')+'</div>'
+h+='<div class="detail-section"><h3>Camp & Zahlung</h3>'+rw('Camp',cn)+rw('Zahlungsstatus','<span class="status-badge status-'+safeClassToken(a.__effectiveStatus)+'">'+esc(a.__effectiveStatus)+'</span>',true)+rw('Elternzahlung',money(getParentAmount(a)))+rw('Angemeldet',fDT(a.created_at))+rw('Zahlung fällig',a.payment_due_at?fDT(a.payment_due_at):'–')+rw('Letzter Hinweis gesendet',a.payment_deadline_reminder_sent_at?'📨 '+fDT(a.payment_deadline_reminder_sent_at):(a.payment_reminder_queued_at?'In E-Mail-Warteschlange':'–'))+rw('Frühere Erinnerung',a.erinnerung_gesendet_am&&!a.payment_deadline_reminder_sent_at?fDT(a.erinnerung_gesendet_am):'–')+rw('Automatische Freigabe ab',a.reservation_expires_at?fDT(a.reservation_expires_at):'–')+rw('Automatisch freigegeben',a.released_due_to_nonpayment_at?fDT(a.released_due_to_nonpayment_at):'–')+rw('Bezahlt am',a.zahlung_am?fDT(a.zahlung_am):'–')+rw('Storniert am',a.storniert_am?fDT(a.storniert_am):'–')+'</div>'
 }
 if(a.erfahrung||a.allergien||a.notizen){h+='<div class="detail-section"><h3>Zusätzliche Infos</h3>';
 if(a.erfahrung)h+='<div class="detail-info-block"><div class="detail-info-label">ERFAHRUNG</div><div class="detail-notes">'+esc(a.erfahrung)+'</div></div>';
@@ -860,9 +865,10 @@ showToast(ok+' Anmeldung(en) gelöscht ✓');
 await loadAll()}
 
 async function bulkReminder(){
-var sel=getSelectedAnmeldungen().filter(function(a){return isParentPaymentOpen(a)&&a.email});
-if(sel.length===0){showToast('Keine offenen Elternzahlungen mit E-Mail ausgewählt',true);return}
-if(!confirm(sel.length+' Zahlungserinnerung(en) jetzt versenden?'))return;
+var now=Date.now();
+var sel=getSelectedAnmeldungen().filter(function(a){return isParentPaymentOpen(a)&&a.email&&a.payment_due_at&&new Date(a.payment_due_at).getTime()<=now&&!a.payment_deadline_reminder_sent_at&&!a.payment_reminder_queued_at});
+if(sel.length===0){showToast('Keine fälligen, noch nicht erinnerten Elternzahlungen ausgewählt',true);return}
+if(!confirm(sel.length+' Letzterinnerung(en) mit verbindlicher 24-Stunden-Frist versenden? Ohne Zahlung werden die Plätze danach automatisch freigegeben.'))return;
 /* Resend via Edge Function */
 try{
 var ids=sel.map(function(a){return a.id});
@@ -871,18 +877,16 @@ method:'POST',
 headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken},
 body:JSON.stringify({anmeldung_ids:ids})});
 var data=await resp.json();
-if(resp.ok&&data.sent>0){
-showToast(data.sent+' Erinnerung(en) versendet ✓'+(data.failed?' · '+data.failed+' fehlgeschlagen':''));
+if(resp.ok&&(data.sent>0||data.failed>0)){
+showToast(data.sent+' Letzterinnerung(en) versendet ✓'+(data.failed?' · '+data.failed+' in Warteschlange/fehlgeschlagen':''));
 await loadAll()}
 else if(data.error){
 showToast('Fehler: '+data.error,true);
-console.warn('send-reminder error, fallback to mailto');
-bulkReminderMailto(sel)}
-else{showToast('Keine E-Mails versendet',true);bulkReminderMailto(sel)}
+console.warn('send-reminder error')}
+else{showToast('Keine E-Mails versendet',true)}
 }catch(e){
 console.error('send-reminder exception:',e);
-showToast('Server nicht erreichbar – öffne E-Mail-Entwurf',true);
-bulkReminderMailto(sel)}}
+showToast('Server nicht erreichbar – keine Letztfrist wurde versendet',true)}}
 
 /* ========= MANUELLE ANMELDUNG / EDIT ========= */
 var manualEditId=null,manualEditTable=null;
@@ -1259,25 +1263,6 @@ var result=await upsertTeilnahme(referenzId,quelle,campId,{anwesenheit:anw});
 if(result)teilnahmeCache[referenzId]=result;
 else if(navigator.onLine)showToast('Speichern fehlgeschlagen',true)}
 
-function bulkReminderMailto(sel){
-var grouped={};
-sel.filter(isParentPaymentOpen).forEach(function(a){
-var e=a.email.toLowerCase().trim();
-if(!grouped[e])grouped[e]={email:e,eltern:a.eltern_vorname||'',kinder:[],betrag:0,camp:''};
-grouped[e].kinder.push(a.vorname+' '+a.nachname);
-grouped[e].betrag+=getParentAmount(a);
-grouped[e].camp=a.camps?a.camps.name:'Feriencamp'});
-var emails=Object.values(grouped);
-if(emails.length===1){
-var g=emails[0];
-var subj='Zahlungserinnerung – Feriencamp TALENTEXPERTE';
-var body='Hallo '+g.eltern+',\n\nvielen Dank für die Anmeldung von '+g.kinder.join(', ')+' zum '+g.camp+'.\n\nWir möchten Sie freundlich daran erinnern, dass die Teilnahmegebühr von '+g.betrag.toLocaleString('de-DE')+' € noch aussteht.\n\nBitte überweisen Sie den Betrag zeitnah, damit wir den Platz verbindlich reservieren können.\n\nBei Fragen stehen wir Ihnen gerne zur Verfügung.\n\nSportliche Grüße\nTALENTEXPERTE Fußballschule\nkontakt@talentexperte.de';
-window.open('mailto:'+g.email+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body))}
-else{
-var bcc=emails.map(function(g){return g.email}).join(',');
-var subj='Zahlungserinnerung – Feriencamp TALENTEXPERTE';
-var body='Hallo,\n\nvielen Dank für die Anmeldung zum Feriencamp TALENTEXPERTE.\n\nWir möchten Sie freundlich daran erinnern, dass die Teilnahmegebühr noch aussteht.\n\nBitte überweisen Sie den Betrag zeitnah, damit wir den Platz verbindlich reservieren können.\n\nBei Fragen stehen wir Ihnen gerne zur Verfügung.\n\nSportliche Grüße\nTALENTEXPERTE Fußballschule\nkontakt@talentexperte.de';
-window.open('mailto:?bcc='+bcc+'&subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body))}}
 </script>
 </body>
 </html>

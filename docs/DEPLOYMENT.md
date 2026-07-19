@@ -82,6 +82,21 @@ Nicht öffentlich: Markdown, `scripts/`, `supabase/`, Paketdateien, Logs, Drafts
 - Migrationen sind überwiegend additiv; Tabellen/Spalten/Logs nicht ohne Datenexport löschen.
 - Stripe-/E-Mail-Aktion kann nicht durch Git-Rollback rückgängig gemacht werden; externen Zustand separat behandeln.
 
+## Rollout Zahlungsfrist-Workflow
+
+Der Workflow wird ausschließlich in dieser Reihenfolge aktiviert:
+
+1. tatsächliche TALENTEXPERTE-Identität und Testmodus für Supabase, Stripe und Resend bestätigen;
+2. Migration `20260719170000_add_payment_deadline_workflow.sql` prüfen und anwenden;
+3. `register`, `send-reminder`, `process-email-outbox` und `send-missing-confirmations` deployen;
+4. Website-Dateien deployen, damit Fristtexte und Zahlungslinkprüfung zum Backend passen;
+5. `PAYMENT_DEADLINE_PROCESSOR_SECRET` setzen und `process-payment-deadlines` mit eigener Secret-Prüfung als `--no-verify-jwt` deployen;
+6. den zunächst deaktivierten, geheimnisgeschützten POST-Zeitplan für `process-payment-deadlines` einrichten (empfohlen alle 15 Minuten) und den bestehenden automatischen Lauf von `process-email-outbox` samt `OUTBOX_PROCESSOR_SECRET` bestätigen;
+7. Testfälle offen → erinnert → bezahlt sowie offen → erinnert → freigegeben mit kontrollierten Testdaten vollständig prüfen;
+8. erst danach den Zeitplan für echte Datensätze aktivieren und Runresultate/Outbox überwachen.
+
+Rollback: zuerst den Zeitplan deaktivieren. Bereits gesendete Letztfristen oder Stornierungen nicht durch Code-Rollback kaschieren; betroffene Datensätze und Elternkommunikation einzeln prüfen.
+
 ## Hosting-Header
 
 - `.htaccess` enthält Defense-in-depth für Apache-kompatible Profile.
