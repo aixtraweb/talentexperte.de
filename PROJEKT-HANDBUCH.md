@@ -1,6 +1,6 @@
 # TALENTEXPERTE – Projekt- und Betriebshandbuch
 
-Stand: 18. Juli 2026
+Stand: 19. Juli 2026
 Dokumentationsstatus: bestätigt für den Repository-Stand; Live-Betriebsdaten sind nicht enthalten
 Geltungsbereich: Fußballschule TALENTEXPERTE, Website, Anmeldung, Camp-Betrieb, Zahlungen, Kommunikation und Social Media
 
@@ -216,6 +216,26 @@ Nicht umbenennen oder verschieben, sofern die Aufgabe es nicht ausdrücklich ver
 - keine Emojis, außer der Kontext verlangt sie ausdrücklich
 - keine unnötigen Entschuldigungen oder Formulierungen wie „ich wollte mal fragen“
 - standardmäßig Betreff und vollständigen Mailtext liefern
+
+### Verbindliche Trennung von TALENTEXPERTE und AIXTRA-WEB
+
+**Bestätigte Betreiberentscheidung vom 19. Juli 2026:** TALENTEXPERTE ist in sämtlichen betrieblichen, technischen und öffentlichen Vorgängen strikt von AIXTRA-WEB zu trennen.
+
+- TALENTEXPERTE-Kommunikation darf ausschließlich über eindeutig TALENTEXPERTE zugeordnete Konten und Identitäten erfolgen.
+- AIXTRA-WEB darf weder als Absender, Anzeigename, Reply-To, Signatur, Hauptempfänger, technischer Fallback noch als zwischengeschaltetes Konto erscheinen.
+- Die Trennung gilt ebenso für Social Publishing, Cloud-Speicher, Google-Dienste, Zahlungsdienste, Hosting, Connectoren, API-Projekte, Exporte und Tests.
+- Vor jeder externen Aktion ist die im Zielsystem tatsächlich aktive Identität zu prüfen. Dateiinhalte, Empfängerfelder oder Signaturen können einen falschen Systemabsender nicht korrigieren.
+- Wenn ausschließlich ein AIXTRA-WEB-Zugang verfügbar ist, wird die TALENTEXPERTE-Aktion nicht ausgeführt. Zuerst muss der korrekte TALENTEXPERTE-Zugang verbunden oder der vorgesehene TALENTEXPERTE-Systemweg genutzt werden.
+- Eine Versand- oder Veröffentlichungsfreigabe autorisiert nur die Aktion, niemals die Nutzung eines fachfremden Kontos.
+
+Für TALENTEXPERTE-E-Mails gilt als Mindestprüfung unmittelbar vor dem Versand:
+
+1. Absenderadresse gehört zu TALENTEXPERTE; für die bestehende Camp-Kommunikation ist `kontakt@talentexperte.de` belegt.
+2. Anzeigename lautet passend zur Marke, beispielsweise `TALENTEXPERTE Fußballschule`.
+3. Reply-To und Signatur enthalten ausschließlich TALENTEXPERTE-Angaben.
+4. Empfänger stammen aus der live geprüften TALENTEXPERTE-Datenquelle und werden bei Sammelmails datenschutzgerecht adressiert.
+5. Testzustellung und finale Nachricht zeigen keine AIXTRA-WEB-Identität.
+6. Bei jeder Abweichung wird der Versand vor dem Senden gestoppt.
 
 Zahlungserinnerungen werden in der Sie-Ansprache versendet. Sie nennen Kind, Camp, Zeitraum, offenen Betrag, sicheren Zahlungslink und persönlichen Bestätigungslink.
 

@@ -1,6 +1,6 @@
 # QA-Checkliste
 
-Stand: 18. Juli 2026
+Stand: 19. Juli 2026
 Dokumentationsstatus: bestätigt als verbindlicher Prüfrahmen; konkrete Browsermatrix ist offen
 Geltungsbereich: Website, Formulare, Admin, Integrationen, SEO/GEO und Deployment
 
@@ -102,6 +102,9 @@ Nur relevante Blöcke abhaken; nicht ausgeführte Prüfungen im Abschluss ausdr�
 
 ## Sicherheit und Datenschutz
 
+- [ ] Externe TALENTEXPERTE-Aktion nutzt ein eindeutig TALENTEXPERTE zugeordnetes Konto/Projekt; keine AIXTRA-WEB-Identität, kein Fallback und kein Zwischenkonto.
+- [ ] Vor E-Mail-Versand tatsächliche From-Adresse, Anzeigename, Reply-To, Signatur, Hauptempfänger und BCC-Liste im Versanddienst geprüft.
+- [ ] Testzustellung und sichtbare Außenwirkung enthalten ausschließlich TALENTEXPERTE-Angaben; `kontakt@talentexperte.de` im To-Feld kaschiert keinen falschen Absender.
 - [ ] `npm run test:security` bestanden, falls relevant.
 - [ ] private Tabellen anonym 401/403; öffentliche Campview 200.
 - [ ] geschützte Functions anonym 401; Stripe ohne Signatur 400.

@@ -1,6 +1,6 @@
 # Codex Working Rules (Talentexperte)
 
-Stand: 18. Juli 2026
+Stand: 19. Juli 2026
 Dokumentationsstatus: bestätigt für den Repository-Stand; Betriebsdaten sind live zu prüfen
 Geltungsbereich: gesamtes Repository
 
@@ -18,6 +18,15 @@ Geltungsbereich: gesamtes Repository
 - Vor Änderungen zusätzlich `docs/PROJECT.md`, die betroffene Fachdokumentation und `docs/OPEN-QUESTIONS.md` lesen. Dokumentenstatus und Quellenrang stehen in `docs/DOCUMENTATION-INVENTORY.md`.
 - Zahlungsstände ausschließlich in Supabase/Admin-Dashboard und Stripe prüfen. Google Drive, Google Sheets, Google Kontakte, Gmail, CSV-Exporte und historische Berichte sind keine verbindlichen Zahlungsquellen.
 - Camptermine, Preise, Kapazitäten und Verfügbarkeiten vor Veröffentlichung gegen Supabase und sichtbare Website prüfen.
+
+## Strikte Projekttrennung TALENTEXPERTE / AIXTRA-WEB
+
+- **Bestätigte Betreiberregel vom 19. Juli 2026:** Alles, was TALENTEXPERTE betrifft, muss organisatorisch, technisch und nach außen vollständig von AIXTRA-WEB getrennt bleiben.
+- Für TALENTEXPERTE dürfen keine AIXTRA-WEB-Konten, E-Mail-Adressen, Absendernamen, Reply-To-Adressen, Signaturen, Logos, Domains, Cloud-Speicher, Connector-Identitäten, Zahlungs-, Social- oder sonstigen Fremdkonten verwendet werden – auch nicht testweise, als Fallback oder als technischer Umweg.
+- Vor jedem externen Versand, Publish, Upload, Deployment oder sonstigen Schreibzugriff Zielsystem, angemeldetes Konto und sichtbare Identität prüfen. Bei E-Mails sind mindestens Absenderadresse, Absendername, Reply-To, Signatur, sichtbarer Hauptempfänger und BCC-Liste zu kontrollieren.
+- Zeigt ein Tool oder Connector eine AIXTRA-WEB-Identität, ist die TALENTEXPERTE-Aktion zwingend zu stoppen. Eine allgemeine Freigabe wie „versenden“ oder „veröffentlichen“ hebt diese Kontentrennung nicht auf.
+- `kontakt@talentexperte.de` nur als sichtbaren Empfänger einzutragen, ändert keinen falschen Absender und ist kein zulässiger Workaround.
+- Bestehende AIXTRA-WEB-Verweise im Repository oder in verbundenen Diensten gelten nicht als Freigabe. Sie sind gemäß `docs/OPEN-QUESTIONS.md` zu inventarisieren und kontrolliert zu bereinigen.
 
 ## Arbeitsregeln
 

@@ -1,8 +1,29 @@
 # Integrationen
 
-Stand: 18. Juli 2026
+Stand: 19. Juli 2026
 Dokumentationsstatus: teilweise bestätigt; Zugang und Live-Konfiguration nicht geprüft
 Geltungsbereich: externe Systeme, Datenflüsse, Authentifizierungsmethoden und Fehlerverhalten
+
+## Verbindliche Konto- und Markentrennung
+
+- **Bestätigt:** TALENTEXPERTE darf in keinem externen Dienst mit AIXTRA-WEB vermischt werden.
+- Jede Integration muss eine eindeutig TALENTEXPERTE zugeordnete Identität verwenden. Das betrifft insbesondere E-Mail, Resend, Gmail, Google, Meta, Supabase, Stripe, Hosting, GitHub, Cloud-Speicher, Connectoren und API-Projekte.
+- AIXTRA-WEB-Konten und -Adressen sind für TALENTEXPERTE weder Produktionsweg noch Testempfänger, Fallback, Zwischenkonto oder zulässige technische Vertretung.
+- Vor jedem externen Schreibzugriff müssen Dienst, Konto/Projekt, Ziel und sichtbare Außenidentität geprüft werden. Wenn das aktive Konto AIXTRA-WEB zugeordnet ist, wird nicht geschrieben, gesendet, veröffentlicht, hochgeladen, deployed oder gepusht.
+- Bereits im Repository, in historischen Dokumenten oder in einem Connector vorhandene AIXTRA-WEB-Verweise begründen keine Nutzungserlaubnis.
+
+### E-Mail-Versand-Gate
+
+Vor jeder TALENTEXPERTE-E-Mail sind unmittelbar vor dem Senden zu bestätigen:
+
+1. tatsächliches Versandkonto und From-Adresse;
+2. sichtbarer Absendername;
+3. Reply-To-Adresse und Signatur;
+4. TALENTEXPERTE-konformer Empfänger- und BCC-Umfang;
+5. korrekte TALENTEXPERTE-Domain und vorhandene Versandautorisierung;
+6. Testdarstellung ohne AIXTRA-WEB-Elemente.
+
+`kontakt@talentexperte.de` im To-Feld ist kein Ersatz für einen korrekten From-Absender. Unterstützt ein Werkzeug keine Auswahl oder Prüfung des TALENTEXPERTE-Absenders, ist dieses Werkzeug für den Versand nicht zulässig.
 
 ## Supabase
 
@@ -36,6 +57,7 @@ Geltungsbereich: externe Systeme, Datenflüsse, Authentifizierungsmethoden und F
 - **Zweck:** Anmeldebestätigungen, Reminder, fehlende Bestätigungen und Review-Anfragen.
 - **Authentifizierung:** `RESEND_API_KEY` nur als Supabase-/lokales Secret.
 - **Absender/Reply-To:** im Projekt für Transaktionsmails `kontakt@talentexperte.de` belegt.
+- **Verbindlicher Versandweg:** TALENTEXPERTE-Mails nur über eine für TALENTEXPERTE bestätigte Resend-Domain oder ein nachweislich als TALENTEXPERTE authentifiziertes Postfach versenden; ein AIXTRA-WEB-Gmail-Konto ist unzulässig.
 - **Outbox:** fehlgeschlagene Transaktionsmails in `email_outbox`; `process-email-outbox` beansprucht und verarbeitet atomar.
 - **Kampagnenjournal:** `email_campaign_runs` verhindert ungewollte Wiederholung.
 - **Test:** Testzustellung, Resultat `sent/failed`, Outbox und Resend-Domain prüfen.

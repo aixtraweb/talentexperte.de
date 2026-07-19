@@ -1,8 +1,34 @@
 # Architektur- und Projektentscheidungen
 
-Stand: 18. Juli 2026
+Stand: 19. Juli 2026
 Dokumentationsstatus: bestätigt aus Code, Migrationen und bestehenden Handbüchern
 Geltungsbereich: dauerhafte Entscheidungen; keine tagesaktuellen Betriebsstände
+
+## 2026-07-19 – TALENTEXPERTE vollständig von AIXTRA-WEB trennen
+
+### Status
+akzeptiert
+
+### Ausgangslage
+Eine TALENTEXPERTE-Elternmail wurde über ein als AIXTRA-WEB erkennbares Gmail-Konto versendet. Obwohl Inhalt und Empfänger TALENTEXPERTE betrafen, zeigte die zugestellte Nachricht die falsche Marken- und Kontoidentität.
+
+### Entscheidung
+TALENTEXPERTE und AIXTRA-WEB werden ausnahmslos auf Marken-, Konto-, E-Mail-, Connector-, Speicher-, Publishing-, Zahlungs-, Hosting- und sonstiger Integrationsebene getrennt. Bei einer AIXTRA-WEB-Identität wird jede externe TALENTEXPERTE-Aktion gestoppt, bis ein bestätigter TALENTEXPERTE-Zugang verfügbar ist.
+
+### Begründung
+Ein fachfremder Absender oder Account beschädigt die Markenwirkung, kann Eltern verunsichern und verwischt Verantwortlichkeit, Datenschutzkontext und operative Zuständigkeit.
+
+### Auswirkungen
+Vor jedem Versand oder externen Schreibzugriff ist ein Konten- und Identitätscheck Pflicht. Allgemeine Aktionsfreigaben ersetzen diesen Check nicht. Bestehende AIXTRA-WEB-Verweise werden inventarisiert und kontrolliert bereinigt.
+
+### Betroffene Dateien oder Komponenten
+`AGENTS.md`, `PROJEKT-HANDBUCH.md`, `docs/PROJECT.md`, `docs/INTEGRATIONS.md`, E-Mail-/Social-/Google-/Payment-/Hosting-/GitHub-Verbindungen und operative Connectoren
+
+### Alternativen
+AIXTRA-WEB als technischen Fallback mit TALENTEXPERTE-Inhalt oder To-Adresse verwenden; verworfen, weil die tatsächliche Außenidentität dadurch nicht korrigiert wird.
+
+### Ersetzt durch
+—
 
 ## 2026-07-18 – Fachliche Dokumentation unter `docs/`, Betriebshandbuch bleibt zentral
 

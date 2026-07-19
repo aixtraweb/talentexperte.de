@@ -1,6 +1,6 @@
 # Projektprofil
 
-Stand: 18. Juli 2026
+Stand: 19. Juli 2026
 Dokumentationsstatus: teilweise bestätigt
 Geltungsbereich: Ziele, Systemgrenzen, Quellenrang und Projektstruktur
 
@@ -73,6 +73,9 @@ Google Drive, Sheets, Kontakte, Gmail, CSV-Exporte und historische Markdown-Zahl
 
 ## Einschränkungen und unerwünschte Änderungen
 
+- **Bestätigt:** TALENTEXPERTE und AIXTRA-WEB müssen auf Marken-, Konto-, Absender-, Connector-, Speicher-, Publishing-, Zahlungs-, Hosting- und Kommunikationsebene vollständig getrennt bleiben.
+- Keine AIXTRA-WEB-Identität für TALENTEXPERTE-Aktionen verwenden, auch nicht testweise, als Fallback oder bei bereits erteilter allgemeiner Aktionsfreigabe.
+- Bei einem ausschließlich als AIXTRA-WEB authentifizierten Dienst jede externe TALENTEXPERTE-Aktion stoppen und den korrekten TALENTEXPERTE-Zugang verlangen.
 - Keine erfundenen Camps, Preise, Plätze, Qualifikationen, Bewertungen oder rechtlichen Aussagen.
 - Keine Zusammenlegung von Eltern-, Sponsor- und Firmenzahlung.
 - Keine direkte Browser-Schreibstrecke in private Tabellen.

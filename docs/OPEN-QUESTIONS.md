@@ -1,8 +1,19 @@
 # Offene Fragen
 
-Stand: 18. Juli 2026
+Stand: 19. Juli 2026
 Dokumentationsstatus: offen und priorisiert
 Geltungsbereich: ungeklärte Punkte aus Repository- und Dokumentationsinventur
+
+## Bestandsaudit und Bereinigung aller AIXTRA-WEB-Verknüpfungen
+
+- Status: wartet auf Technik
+- Priorität: hoch
+- Betroffener Bereich: E-Mail, GitHub, Tests, Google, Meta, Supabase, Stripe, Hosting, Cloud-Speicher und Connectoren
+- Aktueller Kenntnisstand: Die Trennung von TALENTEXPERTE und AIXTRA-WEB ist verbindlich entschieden. Aktuell belegt sind jedoch ein AIXTRA-WEB-Gmail-Connector, der Git-Remote `github.com/aixtraweb/talentexperte.de` sowie AIXTRA-WEB-Testempfänger in `scripts/send-google-review-test.mjs` und historischen E-Mail-/Review-Runbooks. Weitere Live-Zuordnungen wurden noch nicht vollständig geprüft.
+- Benötigte Entscheidung: Für jeden Dienst eine eigenständige TALENTEXPERTE-Identität, Zuständigkeit und gegebenenfalls Migrationsreihenfolge festlegen; nicht mehr zulässige AIXTRA-WEB-Verbindungen entfernen oder ersetzen.
+- Vorläufiges Verhalten: Keine externe TALENTEXPERTE-Aktion über AIXTRA-WEB-Konten ausführen. Insbesondere keine Mails senden, Social-Posts veröffentlichen, Daten hochladen, Deployments auslösen oder auf den genannten Git-Remote pushen, bis die jeweilige TALENTEXPERTE-Zuordnung bestätigt ist.
+- Verantwortlich: Betreiber/Technik
+- Datum: 19.07.2026
 
 ## Öffentliche Rohmedien im Deployment
 

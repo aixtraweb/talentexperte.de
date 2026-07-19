@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-07-19 — Strikte Trennung von TALENTEXPERTE und AIXTRA-WEB festgelegt
+
+### Dokumentation
+
+- Die Betreiberentscheidung dokumentiert, TALENTEXPERTE auf Marken-, Konto-, Absender-, Connector-, Speicher-, Publishing-, Zahlungs-, Hosting- und Integrationsebene vollständig von AIXTRA-WEB zu trennen.
+- Ein verbindliches Versand-Gate ergänzt: tatsächlichen Absender, Anzeigenamen, Reply-To, Signatur, Empfänger und sichtbare Testdarstellung unmittelbar vor jeder TALENTEXPERTE-Mail prüfen.
+- AIXTRA-WEB-Konten dürfen nicht als Testweg, Fallback oder technisches Zwischenkonto für TALENTEXPERTE verwendet werden; allgemeine Versand-/Publish-Freigaben heben diese Regel nicht auf.
+- Einen priorisierten Bestandsaudit für vorhandene AIXTRA-WEB-Verknüpfungen in E-Mail, GitHub, Testskripten und weiteren externen Diensten aufgenommen.
+
+### Bekannte offene Punkte
+
+- Der bestehende AIXTRA-WEB-Gmail-Connector, der Git-Remote unter `github.com/aixtraweb/` und hart codierte AIXTRA-WEB-Testempfänger sind bis zu ihrer kontrollierten Ablösung für externe TALENTEXPERTE-Aktionen gesperrt.
+
 ## 2026-07-18 — Projektdokumentation konsolidiert
 
 ### Dokumentation
