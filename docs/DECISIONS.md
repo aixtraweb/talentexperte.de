@@ -13,16 +13,16 @@ akzeptiert und seit 20.07.2026 produktiv aktiv
 Offene Anmeldungen blockierten Campplätze auch dann weiter, wenn Eltern trotz Erinnerung nicht zahlten. Gleichzeitig war nicht von Anfang an eindeutig kommuniziert, wann die Reservierung endet.
 
 ### Entscheidung
-Neue Elternanmeldungen erhalten eine 72-Stunden-Zahlungsfrist. Bleibt die Zahlung offen, folgt genau eine Letzterinnerung mit einer konkreten Nachfrist von mindestens 24 Stunden. Erst nach erfolgreich protokolliertem Versand, erneutem Stripe-Abgleich und Ablauf dieser Frist wird die Anmeldung automatisch storniert und der Platz freigegeben. Sponsor/Firma sowie laufende oder vergangene Camps sind ausgeschlossen.
+Elternanmeldungen, die ab dem expliziten produktiven Aktivierungszeitpunkt neu eingehen, erhalten eine 72-Stunden-Zahlungsfrist. Bleibt die Zahlung offen, folgt genau eine Letzterinnerung mit einer konkreten Nachfrist von mindestens 24 Stunden. Erst nach erfolgreich protokolliertem Versand, erneutem Stripe-Abgleich und Ablauf dieser Frist wird die Anmeldung automatisch storniert und der Platz freigegeben. Alle vor dem Aktivierungszeitpunkt vorhandenen Anmeldungen sowie Sponsor/Firma und laufende oder vergangene Camps sind ausgeschlossen.
 
 ### Begründung
 Die Regel verbindet Verbindlichkeit für Eltern mit fairer Vorankündigung, schützt knappe Campkapazität und vermeidet eine rein sprachliche Drohung ohne technische Konsequenz.
 
 ### Auswirkungen
-Anmeldung, Bestätigung, Zahlungsstart, Reminder, Outbox, Dashboard, Datenmodell und zwei geheimnisgeschützte Supabase-Zeitpläne verwenden dieselben Fristen. Bestehende offene Anmeldungen erhalten vor jeder automatischen Freigabe zuerst die neue eindeutige Letztfrist. Die Job-IDs und ihr Sollstatus liegen privat; anonyme und normale authentifizierte Rollen können die Zeitpläne weder lesen noch schalten.
+Anmeldung, Bestätigung, Zahlungsstart, Reminder, Outbox, Dashboard, Datenmodell und zwei geheimnisgeschützte Supabase-Zeitpläne verwenden dieselben Fristen. Eine separate Policy-Tabelle hält den prospektiven Aktivierungszeitpunkt; der Prozessor filtert sowohl in der Datenbankabfrage als auch nochmals im Code auf diesen Zeitpunkt und stoppt bei fehlender Policy. Bestehende Anmeldungs-, Zahlungs-, Camp- und Kapazitätswerte werden nicht nachträglich verändert. Die Job-IDs und ihr Sollstatus liegen privat; anonyme und normale authentifizierte Rollen können die Zeitpläne weder lesen noch schalten.
 
 ### Betroffene Dateien oder Komponenten
-`anmeldung.html`, `bestaetigung.html`, `zahlung-start.html`, `admin.html`, `register`, `send-reminder`, `process-email-outbox`, `process-payment-deadlines`, `anmeldungen`, `email_outbox`, `pg_cron`, `pg_net`, Supabase Vault
+`anmeldung.html`, `bestaetigung.html`, `zahlung-start.html`, `admin.html`, `register`, `send-reminder`, `process-email-outbox`, `process-payment-deadlines`, `anmeldungen`, `email_outbox`, `payment_deadline_policy`, `pg_cron`, `pg_net`, Supabase Vault
 
 ### Alternativen
 Unbefristete Reservierung oder sofortige Stornierung nach 72 Stunden; verworfen, weil entweder Kapazität blockiert bleibt oder die ausdrücklich angekündigte faire Letztfrist fehlt.

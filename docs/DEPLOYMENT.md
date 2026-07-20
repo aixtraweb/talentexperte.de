@@ -88,17 +88,18 @@ Der Workflow wird ausschließlich in dieser Reihenfolge aktiviert:
 
 1. tatsächliche TALENTEXPERTE-Identität und Testmodus für Supabase, Stripe und Resend bestätigen;
 2. Migration `20260719170000_add_payment_deadline_workflow.sql` prüfen und anwenden;
-3. `register`, `send-reminder`, `process-email-outbox` und `send-missing-confirmations` deployen;
-4. Website-Dateien deployen, damit Fristtexte und Zahlungslinkprüfung zum Backend passen;
-5. `PAYMENT_DEADLINE_PROCESSOR_SECRET` setzen und `process-payment-deadlines` mit eigener Secret-Prüfung als `--no-verify-jwt` deployen;
-6. die zunächst deaktivierten, geheimnisgeschützten 15-Minuten-Zeitpläne aus den Migrationen `20260720143000` und `20260720150000` für `process-payment-deadlines` und `process-email-outbox` prüfen; beide Bearer-Secrets müssen mit den gleichnamigen Edge-Secrets übereinstimmen und ausschließlich in Supabase Vault liegen;
-7. den Prozessor zunächst mit `{ "dry_run": true }` aufrufen und die anonymisierten Kandidatenzahlen je Camp prüfen; dieser Lauf sendet keine E-Mail, ändert keinen Zahlungsstatus und gibt keinen Platz frei;
-8. Testfälle offen → erinnert → bezahlt sowie offen → erinnert → freigegeben mit kontrollierten Testdaten vollständig prüfen;
-9. erst danach beide Zeitpläne über `set_payment_workflow_jobs_enabled(true)` aktivieren und Runresultate/Outbox überwachen. `get_payment_workflow_job_status()` liefert den gespeicherten Sollstatus; zum Stoppen wird derselbe Schalter mit `false` aufgerufen.
+3. Migration `20260720160000_make_payment_deadline_policy_prospective.sql` anwenden; ihr `active_from` ist die verbindliche Grenze, vor der keine bestehende Anmeldung automatisch verarbeitet werden darf;
+4. `register`, `send-reminder`, `process-email-outbox` und `send-missing-confirmations` deployen;
+5. Website-Dateien deployen, damit Fristtexte und Zahlungslinkprüfung zum Backend passen;
+6. `PAYMENT_DEADLINE_PROCESSOR_SECRET` setzen und `process-payment-deadlines` mit eigener Secret-Prüfung als `--no-verify-jwt` deployen;
+7. die zunächst deaktivierten, geheimnisgeschützten 15-Minuten-Zeitpläne aus den Migrationen `20260720143000` und `20260720150000` für `process-payment-deadlines` und `process-email-outbox` prüfen; beide Bearer-Secrets müssen mit den gleichnamigen Edge-Secrets übereinstimmen und ausschließlich in Supabase Vault liegen;
+8. den Prozessor zunächst mit `{ "dry_run": true }` aufrufen und prüfen, dass `policy_active_from` gesetzt ist und keine Anmeldung mit älterem `created_at` als Kandidat erscheint; dieser Lauf sendet keine E-Mail, ändert keinen Zahlungsstatus und gibt keinen Platz frei;
+9. Testfälle offen → erinnert → bezahlt sowie offen → erinnert → freigegeben ausschließlich mit nach `policy_active_from` angelegten kontrollierten Testdaten vollständig prüfen;
+10. erst danach beide Zeitpläne über `set_payment_workflow_jobs_enabled(true)` aktivieren und Runresultate/Outbox überwachen. `get_payment_workflow_job_status()` liefert den gespeicherten Sollstatus; zum Stoppen wird derselbe Schalter mit `false` aufgerufen.
 
 Rollback: zuerst den Zeitplan deaktivieren. Bereits gesendete Letztfristen oder Stornierungen nicht durch Code-Rollback kaschieren; betroffene Datensätze und Elternkommunikation einzeln prüfen.
 
-Produktiver Stand vom 20.07.2026: beide Jobs sind aktiv und laufen alle 15 Minuten. Die Secret-Werte dürfen weder in Shell-Historie noch Dokumentation, Logs oder Git erscheinen.
+Produktiver Sollstand vom 20.07.2026: beide Jobs laufen alle 15 Minuten, berücksichtigen aber ausschließlich Anmeldungen ab `payment_deadline_policy.active_from`. Bestehende Anmeldungen werden unabhängig von bereits vorhandenen Workflow-Feldern nicht automatisch verarbeitet. Die Secret-Werte dürfen weder in Shell-Historie noch Dokumentation, Logs oder Git erscheinen.
 
 ## Hosting-Header
 

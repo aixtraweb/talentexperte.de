@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-07-20 — Zahlungsfrist auf neue Anmeldungen begrenzt
+
+- Automatik unmittelbar gestoppt, nachdem klargestellt wurde, dass aktuell vorhandene Anmeldungen während des laufenden Campbetriebs nicht verändert werden dürfen; bis dahin war kein Platz automatisch freigegeben worden.
+- Eine additive Policy-Grenze ergänzt: Nur Anmeldungen ab dem produktiven Aktivierungszeitpunkt werden vom Zahlungsfrist-Prozessor berücksichtigt.
+- Bestehende Anmeldungen werden weder nachträglich erinnert noch automatisch storniert oder freigegeben; der Prozessor arbeitet bei fehlender Policy-Konfiguration fail-closed.
+- Die sieben bereits versendeten Letzterinnerungen können nicht zurückgerufen werden. Die betroffenen bestehenden Anmeldungen sind von der automatischen Freigabe ausgeschlossen; ihre fachlichen Anmeldungs-, Zahlungs-, Camp- und Kapazitätswerte werden nicht weiter verändert.
+
 ## 2026-07-20 — Git-Ausnahme und absolutes E-Mail-Verbot präzisiert
 
 - Den bestehenden Remote `github.com/aixtraweb/talentexperte.de` als korrekten und einzigen erlaubten Berührungspunkt mit AIXTRA-WEB bestätigt; Fetch, Pull und Push sind zulässig.

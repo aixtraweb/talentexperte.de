@@ -6,6 +6,7 @@ import {
   buildPaymentDeadlineEmail,
   buildSecurePaymentLink,
   calculateFinalDeadline,
+  isPaymentDeadlinePolicyEligible,
   paymentDeadlineSender,
 } from "../_shared/payment-deadline-email.ts";
 
@@ -145,6 +146,25 @@ Deno.serve(async (req: Request) => {
   );
   const now = new Date();
   const nowIso = now.toISOString();
+  const { data: policy, error: policyError } = await supabase
+    .from("payment_deadline_policy")
+    .select("active_from")
+    .eq("id", true)
+    .maybeSingle();
+  const policyActiveFrom = String(policy?.active_from || "");
+  if (
+    policyError ||
+    !isPaymentDeadlinePolicyEligible(policyActiveFrom, policyActiveFrom)
+  ) {
+    console.error(
+      "Payment deadline policy is unavailable",
+      policyError?.message,
+    );
+    return json({
+      error:
+        "Zahlungsfrist-Policy fehlt; bestehende Anmeldungen bleiben unverändert",
+    }, 503);
+  }
   const select =
     "id,created_at,vorname,nachname,eltern_vorname,email,payer_type,parent_payment_status,parent_amount_euro,payment_due_at,payment_deadline_reminder_sent_at,reservation_expires_at,camps!inner(name,datum_von,datum_bis,stripe_link)";
 
@@ -156,6 +176,7 @@ Deno.serve(async (req: Request) => {
       .eq("payer_type", "parent")
       .eq("parent_payment_status", "open")
       .gt("parent_amount_euro", 0)
+      .gte("created_at", policyActiveFrom)
       .lte("payment_due_at", nowIso)
       .is("payment_deadline_reminder_sent_at", null)
       .is("payment_reminder_queued_at", null)
@@ -165,6 +186,7 @@ Deno.serve(async (req: Request) => {
       .eq("payer_type", "parent")
       .eq("parent_payment_status", "open")
       .gt("parent_amount_euro", 0)
+      .gte("created_at", policyActiveFrom)
       .not("payment_deadline_reminder_sent_at", "is", null)
       .lte("reservation_expires_at", nowIso)
       .order("reservation_expires_at", { ascending: true })
@@ -181,10 +203,14 @@ Deno.serve(async (req: Request) => {
   }
 
   const reminderRows = ((reminders || []) as unknown as DeadlineRow[]).filter(
-    isFutureCamp,
+    (row) =>
+      isFutureCamp(row) &&
+      isPaymentDeadlinePolicyEligible(row.created_at, policyActiveFrom),
   );
   const releaseRows = ((releases || []) as unknown as DeadlineRow[]).filter(
-    isFutureCamp,
+    (row) =>
+      isFutureCamp(row) &&
+      isPaymentDeadlinePolicyEligible(row.created_at, policyActiveFrom),
   );
   const uniqueRows = new Map<string, DeadlineRow>();
   [...reminderRows, ...releaseRows].forEach((row) =>
@@ -247,6 +273,7 @@ Deno.serve(async (req: Request) => {
     return json({
       success: true,
       dry_run: true,
+      policy_active_from: policyActiveFrom,
       candidates: uniqueRows.size,
       reminders_due: reminderDue.length,
       releases_due: releaseDue,
@@ -438,6 +465,7 @@ Deno.serve(async (req: Request) => {
 
   return json({
     success: true,
+    policy_active_from: policyActiveFrom,
     candidates: uniqueRows.size,
     reconciled_paid: reconciledPaid,
     reminded,

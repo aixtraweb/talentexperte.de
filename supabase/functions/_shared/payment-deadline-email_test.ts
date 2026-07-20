@@ -2,7 +2,33 @@ import {
   buildPaymentDeadlineEmail,
   buildSecurePaymentLink,
   calculateFinalDeadline,
+  isPaymentDeadlinePolicyEligible,
 } from "./payment-deadline-email.ts";
+
+Deno.test("payment deadline policy applies only prospectively", () => {
+  const activeFrom = "2026-07-20T14:30:00.000Z";
+  if (
+    isPaymentDeadlinePolicyEligible(
+      "2026-07-20T14:29:59.999Z",
+      activeFrom,
+    )
+  ) {
+    throw new Error(
+      "Bestehende Anmeldung wurde in die neue Policy aufgenommen",
+    );
+  }
+  if (
+    !isPaymentDeadlinePolicyEligible(
+      "2026-07-20T14:30:00.000Z",
+      activeFrom,
+    )
+  ) {
+    throw new Error("Neue Anmeldung wurde nicht in die Policy aufgenommen");
+  }
+  if (isPaymentDeadlinePolicyEligible("ungueltig", activeFrom)) {
+    throw new Error("Ungueltiger Zeitstempel muss fail-closed sein");
+  }
+});
 
 Deno.test("calculateFinalDeadline grants at least 24 hours", () => {
   const now = new Date("2026-07-19T10:00:00.000Z");

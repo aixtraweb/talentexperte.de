@@ -28,6 +28,17 @@ export function paymentDeadlineSender(): string {
   return FROM_EMAIL;
 }
 
+export function isPaymentDeadlinePolicyEligible(
+  registrationCreatedAt: string | null | undefined,
+  policyActiveFrom: string | null | undefined,
+): boolean {
+  if (!registrationCreatedAt || !policyActiveFrom) return false;
+  const registrationTime = new Date(registrationCreatedAt).getTime();
+  const policyTime = new Date(policyActiveFrom).getTime();
+  return Number.isFinite(registrationTime) && Number.isFinite(policyTime) &&
+    registrationTime >= policyTime;
+}
+
 function escapeHtml(value: unknown): string {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
