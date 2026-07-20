@@ -124,6 +124,14 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Nicht autorisiert" }, 401);
   }
 
+  let dryRun = false;
+  try {
+    const body = await req.json();
+    dryRun = body?.dry_run === true;
+  } catch {
+    // Zeitplanaufrufe dürfen weiterhin ohne JSON-Body erfolgen.
+  }
+
   const resendKey = Deno.env.get("RESEND_API_KEY") || "";
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
   if (!resendKey || !stripeKey) {
@@ -196,6 +204,57 @@ Deno.serve(async (req: Request) => {
       error:
         "Stripe-Abgleich fehlgeschlagen; es wurden keine Erinnerungen oder Freigaben ausgeführt",
     }, 503);
+  }
+
+  if (dryRun) {
+    const reminderDue = reminderRows.filter((row) =>
+      !stripeState.paid.has(row.id) &&
+      !stripeState.manualReview.has(row.id)
+    );
+    const releaseEligible = releaseRows.filter((row) =>
+      !stripeState.paid.has(row.id) &&
+      !stripeState.manualReview.has(row.id)
+    );
+    const activeCheckout = releaseEligible.filter((row) =>
+      (stripeState.openUntil.get(row.id) || 0) > now.getTime()
+    ).length;
+    const releaseDue = releaseEligible.length - activeCheckout;
+    const camps = new Map<
+      string,
+      { reminders_due: number; releases_due: number }
+    >();
+    const addCampCount = (
+      row: DeadlineRow,
+      field: "reminders_due" | "releases_due",
+    ) => {
+      const name = row.camps?.name || "Unbekanntes Camp";
+      const counts = camps.get(name) || {
+        reminders_due: 0,
+        releases_due: 0,
+      };
+      counts[field]++;
+      camps.set(name, counts);
+    };
+    reminderDue.forEach((row) =>
+      addCampCount(row, "reminders_due")
+    );
+    releaseEligible
+      .filter((row) =>
+        (stripeState.openUntil.get(row.id) || 0) <= now.getTime()
+      )
+      .forEach((row) => addCampCount(row, "releases_due"));
+
+    return json({
+      success: true,
+      dry_run: true,
+      candidates: uniqueRows.size,
+      reminders_due: reminderDue.length,
+      releases_due: releaseDue,
+      already_paid_at_stripe: stripeState.paid.size,
+      active_checkout_deferred: activeCheckout,
+      manual_review: stripeState.manualReview.size,
+      camps: Object.fromEntries(camps),
+    });
   }
 
   let reconciledPaid = 0;

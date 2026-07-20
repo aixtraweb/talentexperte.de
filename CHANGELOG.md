@@ -10,6 +10,7 @@
 - Outbox und atomare RPCs verhindern Doppelversand und stellen sicher, dass eine fehlgeschlagene Mail keine Freigabefrist startet.
 - Anmeldung, Bestätigung, PDF, Zahlungsstart und Admin-Dashboard zeigen den Friststatus konsistent; alte Zahlungslinks prüfen vor Stripe den aktuellen Buchungsstatus.
 - Bestehende offene Elternanmeldungen werden beim Rollout zuerst für die neue Letzterinnerung fällig und nicht ohne diese rückwirkend storniert.
+- Ein geschützter Dry-Run liefert vor Aktivierung nur anonymisierte Kandidatenzahlen je Camp und führt weder Versand noch Datenbankänderungen oder Platzfreigaben aus.
 
 ### Rolloutgrenze
 

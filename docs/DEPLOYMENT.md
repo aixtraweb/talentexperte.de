@@ -92,8 +92,9 @@ Der Workflow wird ausschließlich in dieser Reihenfolge aktiviert:
 4. Website-Dateien deployen, damit Fristtexte und Zahlungslinkprüfung zum Backend passen;
 5. `PAYMENT_DEADLINE_PROCESSOR_SECRET` setzen und `process-payment-deadlines` mit eigener Secret-Prüfung als `--no-verify-jwt` deployen;
 6. den zunächst deaktivierten, geheimnisgeschützten POST-Zeitplan für `process-payment-deadlines` einrichten (empfohlen alle 15 Minuten) und den bestehenden automatischen Lauf von `process-email-outbox` samt `OUTBOX_PROCESSOR_SECRET` bestätigen;
-7. Testfälle offen → erinnert → bezahlt sowie offen → erinnert → freigegeben mit kontrollierten Testdaten vollständig prüfen;
-8. erst danach den Zeitplan für echte Datensätze aktivieren und Runresultate/Outbox überwachen.
+7. den Prozessor zunächst mit `{ "dry_run": true }` aufrufen und die anonymisierten Kandidatenzahlen je Camp prüfen; dieser Lauf sendet keine E-Mail, ändert keinen Zahlungsstatus und gibt keinen Platz frei;
+8. Testfälle offen → erinnert → bezahlt sowie offen → erinnert → freigegeben mit kontrollierten Testdaten vollständig prüfen;
+9. erst danach den Zeitplan für echte Datensätze aktivieren und Runresultate/Outbox überwachen.
 
 Rollback: zuerst den Zeitplan deaktivieren. Bereits gesendete Letztfristen oder Stornierungen nicht durch Code-Rollback kaschieren; betroffene Datensätze und Elternkommunikation einzeln prüfen.
 
