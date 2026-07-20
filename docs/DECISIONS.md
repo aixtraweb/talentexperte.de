@@ -4,6 +4,32 @@ Stand: 20. Juli 2026
 Dokumentationsstatus: bestätigt aus Code, Migrationen und bestehenden Handbüchern
 Geltungsbereich: dauerhafte Entscheidungen; keine tagesaktuellen Betriebsstände
 
+## 2026-07-20 – Zahlungsrückfragen unmittelbar über die bestätigten Live-Zugänge prüfen
+
+### Status
+akzeptiert
+
+### Ausgangslage
+Bei einzelnen Elternrückfragen wurden vorhandene Zugänge zu Supabase, Admin-Dashboard und Stripe nicht immer vollständig genutzt. Abweichende E-Mail-Adressen zwischen Anmeldung, Stripe Billing und PayPal-Zahler verhinderten dadurch eindeutige automatische Zuordnungen.
+
+### Entscheidung
+Jede konkrete Zahlungsrückfrage startet ohne erneute Zugangsklärung mit einem Live-Abgleich in Supabase und Stripe; das Dashboard dient als operative Ansicht. Gesucht wird stufenweise über Anmeldungs-ID, alle bekannten E-Mail-Adressen, Namen, Betrag und ein enges Zeitfenster. Bei PayPal in Stripe werden zusätzlich die PayPal-Zahlerdaten geprüft. Eine Zahlung wird nur bei eindeutiger Zuordnung verbucht.
+
+### Begründung
+Der kombinierte Abgleich verhindert unbegründete Erinnerungen, übersieht Zahlungen mit abweichenden Zahlerdaten nicht und schützt vor falschen oder doppelten Zuordnungen.
+
+### Auswirkungen
+Einzelzahlungen erhalten den eindeutigen Payment Intent. Gemeinsame Zahlungen über mehrere Kinder werden exakt aufgeteilt und dokumentiert, aber nicht mehrfach als einzeln erstattbare Payment-ID gespeichert. Namen aus der ursprünglichen Anmeldung bleiben maßgeblich; telefonisch verstandene Schreibweisen überschreiben sie nicht ohne Bestätigung. Nach jeder Korrektur werden Reminder-, Outbox- und Stornierungskandidaten erneut geprüft.
+
+### Betroffene Dateien oder Komponenten
+`docs/PAYMENT-INQUIRY-WORKFLOW.md`, `PROJEKT-HANDBUCH.md`, `docs/INTEGRATIONS.md`, `anmeldungen`, `email_outbox`, `stripe-payment-search`, Stripe Charges/Payment Intents, `admin.html`
+
+### Alternativen
+Nur nach exakter Anmelde-E-Mail suchen oder den Nutzer bei jeder Rückfrage erneut nach Zugängen fragen; verworfen, weil dies bestätigte Zahlungen mit abweichenden Zahlerdaten übersieht und unnötige Rückfragen erzeugt.
+
+### Ersetzt durch
+—
+
 ## 2026-07-19 – Offene Elternzahlung nach klarer Letztfrist automatisch freigeben
 
 ### Status

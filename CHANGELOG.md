@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-07-20 — Workflow für einzelne Zahlungsrückfragen dokumentiert
+
+### Dokumentation
+
+- `docs/PAYMENT-INQUIRY-WORKFLOW.md` als verbindliches operatives Runbook ergänzt: vorhandene Live-Zugänge zu Supabase, Admin-Dashboard und Stripe werden bei neuen Rückfragen ohne erneute Zugangsklärung direkt verwendet.
+- Suchreihenfolge über Anmeldungs-ID, unterschiedliche E-Mail-Adressen, Namen, Betrag und Zeitfenster festgelegt; PayPal-Zahlerdaten innerhalb von Stripe ausdrücklich aufgenommen.
+- Sichere Verbuchung für Einzel- und gemeinsame Geschwisterzahlungen, Schutz vor doppelter Erstattung, Erhalt der ursprünglichen Namensschreibweise und abschließende Reminder-/Outbox-Prüfung dokumentiert.
+- Handbuch, Root-Runbook, Integrationsübersicht, Dokumentationsinventar, Entscheidungslog und README mit dem neuen Workflow verknüpft.
+
 ## 2026-07-20 — Zahlungsfrist auf neue Anmeldungen begrenzt
 
 - Automatik unmittelbar gestoppt, nachdem klargestellt wurde, dass aktuell vorhandene Anmeldungen während des laufenden Campbetriebs nicht verändert werden dürfen; bis dahin war kein Platz automatisch freigegeben worden.

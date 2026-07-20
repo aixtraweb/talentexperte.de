@@ -1,7 +1,7 @@
 # Integrationen
 
 Stand: 20. Juli 2026
-Dokumentationsstatus: teilweise bestätigt; Zugang und Live-Konfiguration nicht geprüft
+Dokumentationsstatus: teilweise bestätigt; Supabase- und Stripe-Operationszugang am 20. Juli 2026 live geprüft
 Geltungsbereich: externe Systeme, Datenflüsse, Authentifizierungsmethoden und Fehlerverhalten
 
 ## Verbindliche Konto- und Markentrennung
@@ -40,6 +40,7 @@ Vor jeder TALENTEXPERTE-E-Mail sind unmittelbar vor dem Senden zu bestätigen:
 - **Fehlerverhalten:** öffentliche Formulare geben reduzierte Fehlermeldungen aus; private Tabellen bleiben anonym gesperrt; Outbox/Audit sind privat.
 - **Test:** `npm run test:security`, Supabase-Logs und gezielte SQL-/Policyprüfung.
 - **Einschränkung:** Live-Schema und Deployzustand müssen vor operativen Aussagen geprüft werden.
+- **Bestätigter Operationszugang:** Das Repository ist mit dem produktiven TALENTEXPERTE-Projekt verknüpft; gezielte Live-Abfragen sind über die Supabase CLI möglich. Bei Zahlungsrückfragen diesen Zugang direkt nutzen und den Nutzer nicht erneut nach seiner Verfügbarkeit fragen.
 
 ## Stripe
 
@@ -51,6 +52,9 @@ Vor jeder TALENTEXPERTE-E-Mail sind unmittelbar vor dem Senden zu bestätigen:
 - **Invarianten:** EUR, exakter Betrag, eindeutige Anmeldung/Payment Intent; keine E-Mail-Heuristik im aktuellen Webhook.
 - **Fehlerverhalten:** DB-Status erst nach bestätigter Stripe-Aktion; bei Stripe-Erfolg/DB-Fehler sofort manuell prüfen.
 - **Einschränkung:** Stripe und Supabase gemeinsam prüfen; Markdown/CSV beweist keinen Live-Zahlungsstand.
+- **Bestätigter Operationszugang:** Das Stripe-Konto wurde am 20.07.2026 als `FUSSBALLSCHULE TALENTEXPERTE` / `talentexperte.de` live verifiziert. Die geschützte Such-Function und die private lokale Operationsumgebung erlauben fokussierte Charge-/Payment-Intent-Prüfungen, ohne Secrets auszugeben.
+- **Abweichende Zahlerdaten:** Bei PayPal in Stripe zusätzlich `payment_method_details.paypal` prüfen. PayPal-E-Mail und Zahlername können von Billing- und Anmelde-E-Mail abweichen.
+- **Operatives Runbook:** [`PAYMENT-INQUIRY-WORKFLOW.md`](PAYMENT-INQUIRY-WORKFLOW.md) ist für einzelne Elternrückfragen verbindlich.
 
 ## PayPal, Bank und Bar
 

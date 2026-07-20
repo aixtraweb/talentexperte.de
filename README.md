@@ -1,6 +1,6 @@
 # TALENTEXPERTE – Website und Camp-Plattform
 
-Stand: 18. Juli 2026
+Stand: 20. Juli 2026
 Dokumentationsstatus: bestätigt für den Repository-Stand
 Geltungsbereich: technischer Einstieg und Dokumentennavigation
 
@@ -44,6 +44,7 @@ Website-Deployment:
 - `docs/SEO-GEO.md` und `docs/STRUCTURED-DATA.md` – Suchsichtbarkeit und Schema.org
 - `docs/DEVELOPMENT.md`, `docs/DEPLOYMENT.md` und `docs/QA-CHECKLIST.md` – Umsetzung, Veröffentlichung und Abnahme
 - `docs/INTEGRATIONS.md` – Supabase, Stripe, Resend und Google-Dienste
+- `docs/PAYMENT-INQUIRY-WORKFLOW.md` – Live-Prüfung und Verbuchung einzelner Zahlungsrückfragen
 - `docs/DECISIONS.md` und `docs/OPEN-QUESTIONS.md` – dauerhafte Entscheidungen und ungeklärte Punkte
 - `docs/DOCUMENTATION-INVENTORY.md` – Bewertung aller vorhandenen Markdown-Dateien
 - `RUNBOOK.md` – schnelle Fehlerdiagnose

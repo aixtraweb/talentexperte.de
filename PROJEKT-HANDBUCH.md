@@ -1,6 +1,6 @@
 # TALENTEXPERTE – Projekt- und Betriebshandbuch
 
-Stand: 19. Juli 2026
+Stand: 20. Juli 2026
 Dokumentationsstatus: bestätigt für den Repository-Stand; Live-Betriebsdaten sind nicht enthalten
 Geltungsbereich: Fußballschule TALENTEXPERTE, Website, Anmeldung, Camp-Betrieb, Zahlungen, Kommunikation und Social Media
 
@@ -52,6 +52,8 @@ Sponsor- und Firmenanmeldungen erhalten niemals eine Eltern-Zahlungserinnerung:
 - Firma: `payer_type='company'`, Elternzahlung nicht erforderlich
 
 ### Standardablauf für Zahlungsprüfung und Erinnerung
+
+Bei einzelnen Rückfragen von Eltern ist der vollständige, reproduzierbare Ablauf in [`docs/PAYMENT-INQUIRY-WORKFLOW.md`](docs/PAYMENT-INQUIRY-WORKFLOW.md) verbindlich. Der produktive Supabase- und Stripe-Operationszugang ist für dieses Repository bestätigt; bei einer neuen Zahlungsrückfrage wird der Live-Abgleich direkt begonnen, ohne den Nutzer erneut nach vorhandenen Zugängen zu fragen. Eine fehlende Anmeldung im Browser-Dashboard ist kein Abbruchgrund, solange der verknüpfte Supabase-Zugang und der geschützte Stripe-Zugang funktionieren.
 
 1. In Supabase bzw. im Admin-Dashboard exakt das Camp auswählen.
 2. Nur Elternanmeldungen mit offenem Elternzahlungsstatus und positivem Elternbetrag betrachten.
@@ -572,6 +574,7 @@ Ein Git-Push ist kein Deployment. Ein Website-Deployment ist keine Freigabe für
 | `docs/INTEGRATIONS.md` | externe Systeme und Schnittstellen |
 | `docs/DECISIONS.md` / `docs/OPEN-QUESTIONS.md` | verbindliche Entscheidungen und offene Klärungen |
 | `docs/DOCUMENTATION-INVENTORY.md` | geprüfte Bewertung der gesamten Dokumentation |
+| `docs/PAYMENT-INQUIRY-WORKFLOW.md` | verbindlicher Live-Abgleich einzelner Zahlungsrückfragen in Supabase, Stripe und Dashboard |
 
 ## 19. Standard-Checklisten für künftige Aufgaben
 

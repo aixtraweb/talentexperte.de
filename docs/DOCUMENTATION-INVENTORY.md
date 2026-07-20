@@ -1,6 +1,6 @@
 # Dokumentationsinventar
 
-Stand: 18. Juli 2026
+Stand: 20. Juli 2026
 Dokumentationsstatus: bestätigt durch vollständige Prüfung aller vorhandenen Markdown-Dateien
 Geltungsbereich: Dokumentenstatus, Quellenrang, Widersprüche und Pflegeempfehlungen
 
@@ -20,7 +20,8 @@ Geltungsbereich: Dokumentenstatus, Quellenrang, Widersprüche und Pflegeempfehlu
 | `PROJEKT-HANDBUCH.md` | weiterhin gültig, zentrale Quelle | **Aktualisiert und behalten.** Stand, Dokumentationsstatus und Fachindex ergänzt; Betriebszahlen weiterhin live prüfen. |
 | `README.md` | weiterhin gültig | **Aktualisiert und behalten.** Als kurzer Einstieg und Dokumentennavigation. |
 | `CHANGELOG.md` | weiterhin gültig, chronologische Hauptquelle | **Aktualisiert und behalten.** Neue Dokumentationsinventur eingetragen. Bleibt kanonischer Changelog im Root; kein redundantes `docs/CHANGELOG.md`. |
-| `RUNBOOK.md` | teilweise gültig | **Behalten, später gezielt aktualisieren.** Nützliche Diagnose, aber Payment-Heuristik, direktes Service-Key-curl, `--no-verify-jwt` beim Reminder und `git add .` widersprechen aktuellen Regeln/Sicherheitsstand. Vor Anwendung mit Handbuch/Fachdocs abgleichen. |
+| `docs/PAYMENT-INQUIRY-WORKFLOW.md` | weiterhin gültig, operativ verbindlich | **Neu angelegt und behalten.** Definiert den Live-Abgleich einzelner Elternrückfragen über Supabase, Dashboard und Stripe einschließlich abweichender Zahlerdaten und gemeinsamer Zahlungen. |
+| `RUNBOOK.md` | teilweise gültig | **Behalten, später gezielt aktualisieren.** Nützliche Diagnose und Vorrangverweis auf das aktuelle Zahlungsrückfragen-Runbook; ältere Payment-Heuristik, direktes Service-Key-curl, `--no-verify-jwt` beim Reminder und `git add .` widersprechen weiterhin aktuellen Regeln/Sicherheitsstand. Vor Anwendung mit Handbuch/Fachdocs abgleichen. |
 | `SECURITY-IMPLEMENTATION.md` | weiterhin gültig | **Behalten.** Aktuellste Sicherheits-/Rolloutquelle; Hosting-Header bleiben offen. |
 | `SPAM-SCHUTZ-DOKUMENTATION.md` | teilweise gültig | **Behalten und bei nächster Formularänderung aktualisieren.** Grundlogik stimmt; Abschnitt zum nur prozesslokalen Rate Limit ist durch persistente DB-Limits teilweise veraltet. |
 | `SPONSORING-RUNBOOK.md` | teilweise gültig, operativ sensibel | **Behalten.** Sichere Reihenfolge und Invarianten sind wertvoll; Deploy-/Import-/Konfliktstände vom Juli müssen live verifiziert werden. Enthält keine Codes in neue Doku übernehmen. |
@@ -69,6 +70,7 @@ Geltungsbereich: Dokumentenstatus, Quellenrang, Widersprüche und Pflegeempfehlu
 | `docs/STRUCTURED-DATA.md` | aktuelles JSON-LD und Pflegeprozess |
 | `docs/DEVELOPMENT.md` | lokale Arbeit, Konventionen und Tests |
 | `docs/INTEGRATIONS.md` | Supabase, Stripe, Resend, Google, Meta und Drittanbieter |
+| `docs/PAYMENT-INQUIRY-WORKFLOW.md` | verbindlicher Ablauf für einzelne Zahlungsrückfragen und sichere Statuskorrekturen |
 | `docs/DEPLOYMENT.md` | getrennte Releases, Allowlist und Rollback |
 | `docs/QA-CHECKLIST.md` | abhakbare Gesamtprüfung inkl. Accessibility/Performance/Testing |
 | `docs/DECISIONS.md` | dauerhafte Entscheidungen |
