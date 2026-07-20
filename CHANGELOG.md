@@ -6,6 +6,7 @@
 - Eine additive Policy-Grenze ergänzt: Nur Anmeldungen ab dem produktiven Aktivierungszeitpunkt werden vom Zahlungsfrist-Prozessor berücksichtigt.
 - Bestehende Anmeldungen werden weder nachträglich erinnert noch automatisch storniert oder freigegeben; der Prozessor arbeitet bei fehlender Policy-Konfiguration fail-closed.
 - Die sieben bereits versendeten Letzterinnerungen können nicht zurückgerufen werden. Die betroffenen bestehenden Anmeldungen sind von der automatischen Freigabe ausgeschlossen; ihre fachlichen Anmeldungs-, Zahlungs-, Camp- und Kapazitätswerte werden nicht weiter verändert.
+- Policy ab 20.07.2026, 15:15:34 Uhr MESZ produktiv aktiviert. Dry-Run und kontrollierter Echtlauf lieferten jeweils 0 Kandidaten, 0 Mails und 0 Freigaben; die anonymen Fingerabdrücke aller 166 bestehenden Anmeldungen und 6 Camps blieben über den Rollout identisch.
 
 ## 2026-07-20 — Git-Ausnahme und absolutes E-Mail-Verbot präzisiert
 

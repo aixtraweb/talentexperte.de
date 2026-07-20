@@ -6,11 +6,11 @@ Geltungsbereich: ungeklärte Punkte aus Repository- und Dokumentationsinventur
 
 ## Produktiver Rollout des Zahlungsfrist-Workflows
 
-- Status: Automatik gestoppt; prospektiver Neu-Rollout in Umsetzung
+- Status: prospektiv produktiv aktiviert; Beobachtung neuer Anmeldungen läuft
 - Priorität: hoch
 - Betroffener Bereich: Supabase, Stripe, Resend, Anmeldung, Kapazität und Admin-Dashboard
-- Aktueller Kenntnisstand: Supabase, Stripe und Resend sind als TALENTEXPERTE bestätigt. Am 20.07.2026 wurden sieben Letzterinnerungen für bereits bestehende Anmeldungen versendet; kein Platz wurde freigegeben. Nach der Klarstellung, dass vorhandene Anmeldungen während des laufenden Campbetriebs unverändert bleiben müssen, wurden Zahlungsfrist- und Outbox-Job sofort deaktiviert. Die versendeten E-Mails können nicht zurückgerufen werden, die zugehörigen bestehenden Anmeldungen dürfen aber nicht automatisch freigegeben werden.
-- Offene Betriebsabnahme: prospektive Policy-Migration und Function deployen, anonymisierten Dry-Run mit null bestehenden Kandidaten bestätigen, danach die Jobs erneut aktivieren. Outbox-Fehler, Stripe-Ausfall und uneindeutige Stripe-Zuordnung nur mit Anmeldungen testen, die nach dem Aktivierungszeitpunkt angelegt wurden.
+- Aktueller Kenntnisstand: Supabase, Stripe und Resend sind als TALENTEXPERTE bestätigt. Am 20.07.2026 wurden sieben Letzterinnerungen für bereits bestehende Anmeldungen versendet; kein Platz wurde freigegeben. Nach der Klarstellung wurden die Jobs gestoppt und der Workflow prospektiv neu ausgerollt. Die verbindliche Policy-Grenze ist 20.07.2026, 15:15:34 Uhr MESZ. Alle 166 davor vorhandenen Anmeldungen sind ausgeschlossen. Dry-Run und kontrollierter Echtlauf meldeten 0 Kandidaten, 0 Mails und 0 Freigaben; die anonymen Fingerabdrücke der vorhandenen Anmeldungen und Camps blieben unverändert. Beide Jobs sind wieder aktiv.
+- Offene Betriebsabnahme: den ersten regulär fälligen Fall einer nach dem Aktivierungszeitpunkt eingegangenen Anmeldung beobachten. Outbox-Fehler, Stripe-Ausfall und uneindeutige Stripe-Zuordnung nur mit Anmeldungen testen, die nach dem Aktivierungszeitpunkt angelegt wurden.
 - Gültiges Verhalten: Die Automatik gilt ausschließlich für neue Anmeldungen ab `payment_deadline_policy.active_from`. Bestehende Anmeldungen bleiben unabhängig von bereits gesetzten Workflow-Feldern ausgeschlossen. Offene Bank-/Bar-/PayPal-Zahlungen neuer Anmeldungen müssen vor Ablauf im Admin-Dashboard korrekt als bezahlt bestätigt sein. Am ersten Camptag und danach storniert der Prozessor nicht automatisch.
 - Verantwortlich: Supabase-/Stripe-/Resend-Administration und Betrieb
 - Datum: 20.07.2026

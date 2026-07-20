@@ -99,7 +99,7 @@ Der Workflow wird ausschließlich in dieser Reihenfolge aktiviert:
 
 Rollback: zuerst den Zeitplan deaktivieren. Bereits gesendete Letztfristen oder Stornierungen nicht durch Code-Rollback kaschieren; betroffene Datensätze und Elternkommunikation einzeln prüfen.
 
-Produktiver Sollstand vom 20.07.2026: beide Jobs laufen alle 15 Minuten, berücksichtigen aber ausschließlich Anmeldungen ab `payment_deadline_policy.active_from`. Bestehende Anmeldungen werden unabhängig von bereits vorhandenen Workflow-Feldern nicht automatisch verarbeitet. Die Secret-Werte dürfen weder in Shell-Historie noch Dokumentation, Logs oder Git erscheinen.
+Produktiver Stand vom 20.07.2026: `payment_deadline_policy.active_from` ist auf 15:15:34 Uhr MESZ gesetzt. Beide Jobs laufen alle 15 Minuten, berücksichtigen aber ausschließlich ab diesem Zeitpunkt neu angelegte Anmeldungen. Bestehende Anmeldungen werden unabhängig von bereits vorhandenen Workflow-Feldern nicht automatisch verarbeitet. Dry-Run und kontrollierter Echtlauf ergaben 0 Kandidaten; die anonymen Bestands-Fingerabdrücke blieben unverändert. Die Secret-Werte dürfen weder in Shell-Historie noch Dokumentation, Logs oder Git erscheinen.
 
 ## Hosting-Header
 
