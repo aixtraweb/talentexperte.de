@@ -19,12 +19,12 @@ Geltungsbereich: ungeklärte Punkte aus Repository- und Dokumentationsinventur
 
 - Status: wartet auf Technik
 - Priorität: hoch
-- Betroffener Bereich: E-Mail, GitHub, Tests, Google, Meta, Supabase, Stripe, Hosting, Cloud-Speicher und Connectoren
-- Aktueller Kenntnisstand: Die Trennung von TALENTEXPERTE und AIXTRA-WEB ist verbindlich entschieden. Aktuell belegt sind jedoch ein AIXTRA-WEB-Gmail-Connector, der Git-Remote `github.com/aixtraweb/talentexperte.de` sowie AIXTRA-WEB-Testempfänger in `scripts/send-google-review-test.mjs` und historischen E-Mail-/Review-Runbooks. Weitere Live-Zuordnungen wurden noch nicht vollständig geprüft.
+- Betroffener Bereich: E-Mail, Tests, Google, Meta, Supabase, Stripe, Hosting, Cloud-Speicher und Connectoren
+- Aktueller Kenntnisstand: Die Trennung von TALENTEXPERTE und AIXTRA-WEB ist verbindlich entschieden. Der Git-Remote `github.com/aixtraweb/talentexperte.de` ist als einzige Ausnahme ausdrücklich bestätigt und korrekt. Weiter zu prüfen beziehungsweise zu bereinigen sind der AIXTRA-WEB-Gmail-Connector, AIXTRA-WEB-Testempfänger in `scripts/send-google-review-test.mjs` und historische E-Mail-/Review-Runbooks. `kontakt@aixtra-web.de` darf niemals für TALENTEXPERTE versenden oder als Alias, Reply-To oder Weiterleitung eingesetzt werden.
 - Benötigte Entscheidung: Für jeden Dienst eine eigenständige TALENTEXPERTE-Identität, Zuständigkeit und gegebenenfalls Migrationsreihenfolge festlegen; nicht mehr zulässige AIXTRA-WEB-Verbindungen entfernen oder ersetzen.
-- Vorläufiges Verhalten: Keine externe TALENTEXPERTE-Aktion über AIXTRA-WEB-Konten ausführen. Insbesondere keine Mails senden, Social-Posts veröffentlichen, Daten hochladen, Deployments auslösen oder auf den genannten Git-Remote pushen, bis die jeweilige TALENTEXPERTE-Zuordnung bestätigt ist.
+- Vorläufiges Verhalten: Keine externe TALENTEXPERTE-Aktion über AIXTRA-WEB-Konten ausführen. Insbesondere keine Mails senden, Social-Posts veröffentlichen, Daten hochladen oder Deployments auslösen. Fetch/Pull/Push auf dem bestätigten Git-Remote bleiben als einzige Ausnahme zulässig.
 - Verantwortlich: Betreiber/Technik
-- Datum: 19.07.2026
+- Datum: 20.07.2026
 
 ## Öffentliche Rohmedien im Deployment
 

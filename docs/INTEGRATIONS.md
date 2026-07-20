@@ -1,16 +1,16 @@
 # Integrationen
 
-Stand: 19. Juli 2026
+Stand: 20. Juli 2026
 Dokumentationsstatus: teilweise bestätigt; Zugang und Live-Konfiguration nicht geprüft
 Geltungsbereich: externe Systeme, Datenflüsse, Authentifizierungsmethoden und Fehlerverhalten
 
 ## Verbindliche Konto- und Markentrennung
 
-- **Bestätigt:** TALENTEXPERTE darf in keinem externen Dienst mit AIXTRA-WEB vermischt werden.
-- Jede Integration muss eine eindeutig TALENTEXPERTE zugeordnete Identität verwenden. Das betrifft insbesondere E-Mail, Resend, Gmail, Google, Meta, Supabase, Stripe, Hosting, GitHub, Cloud-Speicher, Connectoren und API-Projekte.
+- **Bestätigt:** TALENTEXPERTE darf in keinem externen Dienst mit AIXTRA-WEB vermischt werden. Einzige Ausnahme ist der korrekte Git-Remote `github.com/aixtraweb/talentexperte.de`.
+- Jede andere Integration muss eine eindeutig TALENTEXPERTE zugeordnete Identität verwenden. Das betrifft insbesondere E-Mail, Resend, Gmail, Google, Meta, Supabase, Stripe, Hosting, Cloud-Speicher, Connectoren und API-Projekte.
 - AIXTRA-WEB-Konten und -Adressen sind für TALENTEXPERTE weder Produktionsweg noch Testempfänger, Fallback, Zwischenkonto oder zulässige technische Vertretung.
-- Vor jedem externen Schreibzugriff müssen Dienst, Konto/Projekt, Ziel und sichtbare Außenidentität geprüft werden. Wenn das aktive Konto AIXTRA-WEB zugeordnet ist, wird nicht geschrieben, gesendet, veröffentlicht, hochgeladen, deployed oder gepusht.
-- Bereits im Repository, in historischen Dokumenten oder in einem Connector vorhandene AIXTRA-WEB-Verweise begründen keine Nutzungserlaubnis.
+- Vor jedem externen Schreibzugriff müssen Dienst, Konto/Projekt, Ziel und sichtbare Außenidentität geprüft werden. Wenn das aktive Konto AIXTRA-WEB zugeordnet ist, wird nicht geschrieben, gesendet, veröffentlicht, hochgeladen oder deployed. Ausschließlich Fetch/Pull/Push auf dem bestätigten Git-Remote sind zulässig.
+- Andere im Repository, in historischen Dokumenten oder in einem Connector vorhandene AIXTRA-WEB-Verweise begründen keine Nutzungserlaubnis.
 
 ### E-Mail-Versand-Gate
 
@@ -23,7 +23,13 @@ Vor jeder TALENTEXPERTE-E-Mail sind unmittelbar vor dem Senden zu bestätigen:
 5. korrekte TALENTEXPERTE-Domain und vorhandene Versandautorisierung;
 6. Testdarstellung ohne AIXTRA-WEB-Elemente.
 
-`kontakt@talentexperte.de` im To-Feld ist kein Ersatz für einen korrekten From-Absender. Unterstützt ein Werkzeug keine Auswahl oder Prüfung des TALENTEXPERTE-Absenders, ist dieses Werkzeug für den Versand nicht zulässig.
+`kontakt@talentexperte.de` im To-Feld ist kein Ersatz für einen korrekten From-Absender. `kontakt@aixtra-web.de` ist als From-Adresse, Alias, Reply-To, Weiterleitung, Signaturbestandteil und technischer Versandweg ausnahmslos unzulässig. Unterstützt ein Werkzeug keine Auswahl oder Prüfung des TALENTEXPERTE-Absenders, ist dieses Werkzeug für den Versand nicht zulässig.
+
+### Bestätigte Git-Ausnahme
+
+- **Remote:** `https://github.com/aixtraweb/talentexperte.de.git`
+- **Erlaubt:** Fetch, Pull und Push für dieses TALENTEXPERTE-Repository.
+- **Nicht erlaubt:** Ableitung einer AIXTRA-WEB-Freigabe für E-Mail, Connectoren, Hosting, Supabase, Stripe, Resend oder andere Dienste.
 
 ## Supabase
 

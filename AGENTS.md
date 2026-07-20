@@ -19,14 +19,15 @@ Geltungsbereich: gesamtes Repository
 - Zahlungsstände ausschließlich in Supabase/Admin-Dashboard und Stripe prüfen. Google Drive, Google Sheets, Google Kontakte, Gmail, CSV-Exporte und historische Berichte sind keine verbindlichen Zahlungsquellen.
 - Camptermine, Preise, Kapazitäten und Verfügbarkeiten vor Veröffentlichung gegen Supabase und sichtbare Website prüfen.
 
-## Strikte Projekttrennung TALENTEXPERTE / AIXTRA-WEB
+## Strikte Projekttrennung TALENTEXPERTE / AIXTRA-WEB mit Git-Ausnahme
 
-- **Bestätigte Betreiberregel vom 19. Juli 2026:** Alles, was TALENTEXPERTE betrifft, muss organisatorisch, technisch und nach außen vollständig von AIXTRA-WEB getrennt bleiben.
+- **Bestätigte Betreiberregel vom 20. Juli 2026:** TALENTEXPERTE bleibt organisatorisch, betrieblich und nach außen vollständig von AIXTRA-WEB getrennt. Einzige ausdrücklich erlaubte Verbindung ist der bestehende Git-Remote `github.com/aixtraweb/talentexperte.de`; er ist der korrekte Repository-Speicher für dieses Projekt.
 - Für TALENTEXPERTE dürfen keine AIXTRA-WEB-Konten, E-Mail-Adressen, Absendernamen, Reply-To-Adressen, Signaturen, Logos, Domains, Cloud-Speicher, Connector-Identitäten, Zahlungs-, Social- oder sonstigen Fremdkonten verwendet werden – auch nicht testweise, als Fallback oder als technischer Umweg.
+- `kontakt@aixtra-web.de` darf für TALENTEXPERTE niemals als From-Adresse, Alias, Reply-To, Weiterleitung, Signaturbestandteil oder technischer Versandweg verwendet werden. Zulässiger Absender ist ausschließlich eine bestätigte TALENTEXPERTE-Adresse, aktuell `kontakt@talentexperte.de`.
 - Vor jedem externen Versand, Publish, Upload, Deployment oder sonstigen Schreibzugriff Zielsystem, angemeldetes Konto und sichtbare Identität prüfen. Bei E-Mails sind mindestens Absenderadresse, Absendername, Reply-To, Signatur, sichtbarer Hauptempfänger und BCC-Liste zu kontrollieren.
-- Zeigt ein Tool oder Connector eine AIXTRA-WEB-Identität, ist die TALENTEXPERTE-Aktion zwingend zu stoppen. Eine allgemeine Freigabe wie „versenden“ oder „veröffentlichen“ hebt diese Kontentrennung nicht auf.
+- Zeigt ein Tool oder Connector eine AIXTRA-WEB-Identität, ist die TALENTEXPERTE-Aktion zwingend zu stoppen. Ausgenommen sind ausschließlich Git-Aktionen auf dem bestätigten Remote `github.com/aixtraweb/talentexperte.de`. Diese Git-Ausnahme erlaubt keine andere AIXTRA-WEB-Identität oder -Nutzung.
 - `kontakt@talentexperte.de` nur als sichtbaren Empfänger einzutragen, ändert keinen falschen Absender und ist kein zulässiger Workaround.
-- Bestehende AIXTRA-WEB-Verweise im Repository oder in verbundenen Diensten gelten nicht als Freigabe. Sie sind gemäß `docs/OPEN-QUESTIONS.md` zu inventarisieren und kontrolliert zu bereinigen.
+- Andere bestehende AIXTRA-WEB-Verweise im Repository oder in verbundenen Diensten gelten nicht als Freigabe. Sie sind gemäß `docs/OPEN-QUESTIONS.md` zu inventarisieren und kontrolliert zu bereinigen.
 
 ## Arbeitsregeln
 

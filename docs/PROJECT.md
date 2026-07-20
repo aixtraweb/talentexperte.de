@@ -73,9 +73,11 @@ Google Drive, Sheets, Kontakte, Gmail, CSV-Exporte und historische Markdown-Zahl
 
 ## Einschränkungen und unerwünschte Änderungen
 
-- **Bestätigt:** TALENTEXPERTE und AIXTRA-WEB müssen auf Marken-, Konto-, Absender-, Connector-, Speicher-, Publishing-, Zahlungs-, Hosting- und Kommunikationsebene vollständig getrennt bleiben.
+- **Bestätigt:** TALENTEXPERTE und AIXTRA-WEB müssen auf Marken-, Konto-, Absender-, Connector-, Publishing-, Zahlungs-, Hosting- und Kommunikationsebene vollständig getrennt bleiben. Einzige Ausnahme ist der bestätigte Repository-Speicher `github.com/aixtraweb/talentexperte.de`.
 - Keine AIXTRA-WEB-Identität für TALENTEXPERTE-Aktionen verwenden, auch nicht testweise, als Fallback oder bei bereits erteilter allgemeiner Aktionsfreigabe.
+- `kontakt@aixtra-web.de` niemals als E-Mail-Absender, Alias, Reply-To, Weiterleitung, Signaturbestandteil oder Versandweg für TALENTEXPERTE verwenden.
 - Bei einem ausschließlich als AIXTRA-WEB authentifizierten Dienst jede externe TALENTEXPERTE-Aktion stoppen und den korrekten TALENTEXPERTE-Zugang verlangen.
+- Git-Fetch und Git-Push auf den bestätigten Remote sind zulässig und erweitern die Ausnahme nicht auf andere Dienste.
 - Keine erfundenen Camps, Preise, Plätze, Qualifikationen, Bewertungen oder rechtlichen Aussagen.
 - Keine Zusammenlegung von Eltern-, Sponsor- und Firmenzahlung.
 - Keine direkte Browser-Schreibstrecke in private Tabellen.

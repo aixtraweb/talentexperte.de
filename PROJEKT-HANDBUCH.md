@@ -219,11 +219,13 @@ Nicht umbenennen oder verschieben, sofern die Aufgabe es nicht ausdrücklich ver
 
 ### Verbindliche Trennung von TALENTEXPERTE und AIXTRA-WEB
 
-**Bestätigte Betreiberentscheidung vom 19. Juli 2026:** TALENTEXPERTE ist in sämtlichen betrieblichen, technischen und öffentlichen Vorgängen strikt von AIXTRA-WEB zu trennen.
+**Bestätigte Betreiberentscheidung, präzisiert am 20. Juli 2026:** TALENTEXPERTE ist in sämtlichen betrieblichen und öffentlichen Vorgängen strikt von AIXTRA-WEB zu trennen. Einzige Ausnahme ist der bestätigte Git-Remote `github.com/aixtraweb/talentexperte.de`, der als korrekter Repository-Speicher verwendet wird.
 
 - TALENTEXPERTE-Kommunikation darf ausschließlich über eindeutig TALENTEXPERTE zugeordnete Konten und Identitäten erfolgen.
 - AIXTRA-WEB darf weder als Absender, Anzeigename, Reply-To, Signatur, Hauptempfänger, technischer Fallback noch als zwischengeschaltetes Konto erscheinen.
+- Insbesondere darf `kontakt@aixtra-web.de` niemals als Absender, Alias, Reply-To, Weiterleitung oder technischer Versandweg für TALENTEXPERTE verwendet werden.
 - Die Trennung gilt ebenso für Social Publishing, Cloud-Speicher, Google-Dienste, Zahlungsdienste, Hosting, Connectoren, API-Projekte, Exporte und Tests.
+- Die Git-Ausnahme gilt nur für Fetch, Pull und Push dieses Repositorys. Sie begründet keine Freigabe für irgendeinen anderen AIXTRA-WEB-Dienst oder eine sichtbare AIXTRA-WEB-Identität.
 - Vor jeder externen Aktion ist die im Zielsystem tatsächlich aktive Identität zu prüfen. Dateiinhalte, Empfängerfelder oder Signaturen können einen falschen Systemabsender nicht korrigieren.
 - Wenn ausschließlich ein AIXTRA-WEB-Zugang verfügbar ist, wird die TALENTEXPERTE-Aktion nicht ausgeführt. Zuerst muss der korrekte TALENTEXPERTE-Zugang verbunden oder der vorgesehene TALENTEXPERTE-Systemweg genutzt werden.
 - Eine Versand- oder Veröffentlichungsfreigabe autorisiert nur die Aktion, niemals die Nutzung eines fachfremden Kontos.

@@ -30,7 +30,7 @@ Unbefristete Reservierung oder sofortige Stornierung nach 72 Stunden; verworfen,
 ### Ersetzt durch
 —
 
-## 2026-07-19 – TALENTEXPERTE vollständig von AIXTRA-WEB trennen
+## 2026-07-20 – TALENTEXPERTE trennen; bestehenden Git-Remote ausnehmen
 
 ### Status
 akzeptiert
@@ -39,16 +39,16 @@ akzeptiert
 Eine TALENTEXPERTE-Elternmail wurde über ein als AIXTRA-WEB erkennbares Gmail-Konto versendet. Obwohl Inhalt und Empfänger TALENTEXPERTE betrafen, zeigte die zugestellte Nachricht die falsche Marken- und Kontoidentität.
 
 ### Entscheidung
-TALENTEXPERTE und AIXTRA-WEB werden ausnahmslos auf Marken-, Konto-, E-Mail-, Connector-, Speicher-, Publishing-, Zahlungs-, Hosting- und sonstiger Integrationsebene getrennt. Bei einer AIXTRA-WEB-Identität wird jede externe TALENTEXPERTE-Aktion gestoppt, bis ein bestätigter TALENTEXPERTE-Zugang verfügbar ist.
+TALENTEXPERTE und AIXTRA-WEB werden auf Marken-, Konto-, E-Mail-, Connector-, Publishing-, Zahlungs-, Hosting- und sonstiger Integrationsebene getrennt. Einzige bestätigte Ausnahme ist der bestehende Git-Remote `github.com/aixtraweb/talentexperte.de`; Fetch, Pull und Push dorthin sind korrekt. Diese Ausnahme darf niemals auf Kommunikation oder andere Dienste übertragen werden. `kontakt@aixtra-web.de` ist für TALENTEXPERTE als Absender, Alias, Reply-To, Weiterleitung oder Versandweg verboten.
 
 ### Begründung
 Ein fachfremder Absender oder Account beschädigt die Markenwirkung, kann Eltern verunsichern und verwischt Verantwortlichkeit, Datenschutzkontext und operative Zuständigkeit.
 
 ### Auswirkungen
-Vor jedem Versand oder externen Schreibzugriff ist ein Konten- und Identitätscheck Pflicht. Allgemeine Aktionsfreigaben ersetzen diesen Check nicht. Bestehende AIXTRA-WEB-Verweise werden inventarisiert und kontrolliert bereinigt.
+Vor jedem Versand oder externen Schreibzugriff ist ein Konten- und Identitätscheck Pflicht. Allgemeine Aktionsfreigaben ersetzen diesen Check nicht. Andere AIXTRA-WEB-Verweise werden inventarisiert und kontrolliert bereinigt; der bestätigte Git-Remote bleibt bestehen.
 
 ### Betroffene Dateien oder Komponenten
-`AGENTS.md`, `PROJEKT-HANDBUCH.md`, `docs/PROJECT.md`, `docs/INTEGRATIONS.md`, E-Mail-/Social-/Google-/Payment-/Hosting-/GitHub-Verbindungen und operative Connectoren
+`AGENTS.md`, `PROJEKT-HANDBUCH.md`, `docs/PROJECT.md`, `docs/INTEGRATIONS.md`, E-Mail-/Social-/Google-/Payment-/Hosting-Verbindungen, Git-Remote und operative Connectoren
 
 ### Alternativen
 AIXTRA-WEB als technischen Fallback mit TALENTEXPERTE-Inhalt oder To-Adresse verwenden; verworfen, weil die tatsächliche Außenidentität dadurch nicht korrigiert wird.

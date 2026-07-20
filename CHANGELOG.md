@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-20 — Git-Ausnahme und absolutes E-Mail-Verbot präzisiert
+
+- Den bestehenden Remote `github.com/aixtraweb/talentexperte.de` als korrekten und einzigen erlaubten Berührungspunkt mit AIXTRA-WEB bestätigt; Fetch, Pull und Push sind zulässig.
+- Festgelegt, dass diese Git-Ausnahme keinerlei AIXTRA-WEB-Freigabe für andere Dienste begründet.
+- `kontakt@aixtra-web.de` als Absender, Alias, Reply-To, Weiterleitung, Signaturbestandteil und technischen Versandweg für TALENTEXPERTE ausdrücklich ausgeschlossen.
+
 ## 2026-07-20 — Zahlungsfrist produktiv aktiviert
 
 ### Produktionsstand
@@ -38,7 +44,7 @@
 
 ### Bekannte offene Punkte
 
-- Der bestehende AIXTRA-WEB-Gmail-Connector, der Git-Remote unter `github.com/aixtraweb/` und hart codierte AIXTRA-WEB-Testempfänger sind bis zu ihrer kontrollierten Ablösung für externe TALENTEXPERTE-Aktionen gesperrt.
+- Der bestehende AIXTRA-WEB-Gmail-Connector und hart codierte AIXTRA-WEB-Testempfänger sind bis zu ihrer kontrollierten Ablösung für externe TALENTEXPERTE-Aktionen gesperrt. Der später ausdrücklich bestätigte Git-Remote ist davon ausgenommen.
 
 ## 2026-07-18 — Projektdokumentation konsolidiert
 
