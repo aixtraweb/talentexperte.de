@@ -79,6 +79,7 @@
         </div>
       </div>
       <div class="result-count" id="resultCount"></div>
+      <div class="aw-summary aw-summary-main" id="mainAttendanceSummary" role="status" aria-live="polite" aria-atomic="true" hidden></div>
       <div class="bulk-bar" id="bulkBar">
         <span class="bulk-count" id="bulkCount">0 ausgewählt</span>
         <button class="bulk-btn bulk-paid" onclick="bulkSetStatus('bezahlt')">✓ Bezahlt</button>
@@ -583,6 +584,7 @@ var campId=document.getElementById('filterCamp').value;
 var camp=campId?allCamps.find(function(c){return c.id===campId}):null;
 var days=camp?getCampDays(camp.datum_von,camp.datum_bis):[];
 var showCampCol=!campId;
+renderMainAttendanceSummary(campId);
 // Build thead dynamically
 var th='<tr>';
 th+='<th class="th-check"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>';
@@ -1118,19 +1120,43 @@ var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getD
 days.push(y+'-'+m+'-'+day);d.setDate(d.getDate()+1)}
 return days}
 
+function getAttendanceSummaryData(campId){
+var camp=allCamps.find(function(c){return c.id===campId});
+if(!camp)return null;
+var days=getCampDays(camp.datum_von,camp.datum_bis);
+var kids=allAnmeldungen.filter(function(a){return a.camp_id===campId&&a.__effectiveStatus!=='storniert'&&a.__effectiveStatus!=='erstattet'});
+var counts={};days.forEach(function(day){counts[day]=0});
+kids.forEach(function(a){
+var anw=(teilnahmeCache[a.id]||{}).anwesenheit||{};
+days.forEach(function(day){if(anw[day])counts[day]++})});
+return{camp:camp,days:days,kids:kids,counts:counts}}
+
+function attendanceSummaryHtml(data){
+var html='<div class="aw-summary-heading"><span class="aw-summary-kicker">Anwesende Kinder</span><span class="aw-summary-label">Tagesgesamtzahl · '+data.kids.length+' aktive Camp-Anmeldungen</span></div>';
+data.days.forEach(function(day){
+var dt=new Date(day+'T00:00:00');
+html+='<div class="aw-summary-day" data-attendance-day="'+day+'">';
+html+='<span class="aw-day-name">'+AWD[dt.getDay()]+' <span>'+dt.getDate()+'.'+(dt.getMonth()+1)+'.</span></span>';
+html+='<span class="aw-day-count"><span data-attendance-count>'+data.counts[day]+'</span><small> / '+data.kids.length+'</small></span>';
+html+='</div>'});
+return html}
+
+function renderMainAttendanceSummary(campId){
+var el=document.getElementById('mainAttendanceSummary');if(!el)return;
+var data=campId?getAttendanceSummaryData(campId):null;
+if(!data||data.days.length===0){el.hidden=true;el.innerHTML='';el.removeAttribute('data-attendance-camp');return}
+el.hidden=false;el.setAttribute('data-attendance-camp',campId);el.innerHTML=attendanceSummaryHtml(data)}
+
 function renderAnwesenheit(){
 var camp=allCamps.find(function(c){return c.id===anwesenheitCampId});
 if(!camp)return;
-var days=getCampDays(camp.datum_von,camp.datum_bis);
-var kids=allAnmeldungen.filter(function(a){return a.camp_id===anwesenheitCampId&&a.__effectiveStatus!=='storniert'&&a.__effectiveStatus!=='erstattet'})
+var summary=getAttendanceSummaryData(anwesenheitCampId);
+var days=summary.days;
+var kids=summary.kids
 .sort(function(a,b){return a.vorname.localeCompare(b.vorname,'de')});
 if(kids.length===0){document.getElementById('anwesenheitContent').innerHTML='<div class="empty-state"><div class="icon">📭</div>Keine Anmeldungen für dieses Camp</div>';return}
 // Summary
-var sum={};days.forEach(function(d){sum[d]=0});
-kids.forEach(function(a){var anw=(teilnahmeCache[a.id]||{}).anwesenheit||{};days.forEach(function(d){if(anw[d])sum[d]++})});
-var html='<div class="aw-summary"><span class="aw-summary-label">Anwesenheit pro Tag:</span>';
-days.forEach(function(d){var dt=new Date(d+'T00:00:00');html+='<span class="aw-summary-day"><span class="aw-day-name">'+AWD[dt.getDay()]+' '+dt.getDate()+'.'+(dt.getMonth()+1)+'.</span><span class="aw-day-count">'+sum[d]+'/'+kids.length+'</span></span>'});
-html+='</div>';
+var html='<div class="aw-summary" data-attendance-camp="'+esc(anwesenheitCampId)+'">'+attendanceSummaryHtml(summary)+'</div>';
 // Table
 html+='<div class="table-wrap aw-table-wrap"><table class="anwesenheit-table"><thead><tr>';
 html+='<th class="aw-th-nr">Nr.</th><th class="aw-th-name">Vorname</th><th class="aw-th-name">Nachname</th><th class="aw-th-typ">Typ</th>';
@@ -1196,7 +1222,7 @@ for(var k of keys){
 var item=q[k];
 var result=await upsertTeilnahmeRaw(item.referenz_id,item.quelle,item.camp_id,item.data);
 if(result){dequeue(item.referenz_id,item.camp_id);teilnahmeCache[item.referenz_id]=result;ok++}}
-if(ok>0){if(anwesenheitCampId)updateAnwesenheitSummary();if(ok===keys.length)showToast(ok+' Eintr\u00e4ge synchronisiert \u2713')}
+if(ok>0){if(anwesenheitCampId)updateAnwesenheitSummary(anwesenheitCampId);if(ok===keys.length)showToast(ok+' Eintr\u00e4ge synchronisiert \u2713')}
 }
 window.addEventListener('online',function(){showToast('Verbindung da \u2013 synchronisiere\u2026');flushQueue()});
 
@@ -1227,7 +1253,7 @@ var anw=Object.assign({},existing.anwesenheit||{});
 if(checked)anw[datum]=true;else delete anw[datum];
 if(!teilnahmeCache[referenzId])teilnahmeCache[referenzId]={referenz_id:referenzId};
 Object.assign(teilnahmeCache[referenzId],{anwesenheit:anw});
-updateAnwesenheitSummary();
+updateAnwesenheitSummary(anwesenheitCampId);
 var result=await upsertTeilnahme(referenzId,quelle,anwesenheitCampId,{anwesenheit:anw});
 if(result)teilnahmeCache[referenzId]=result;
 else if(navigator.onLine)showToast('Speichern fehlgeschlagen',true)}
@@ -1244,14 +1270,12 @@ var result=await upsertTeilnahme(referenzId,quelle,anwesenheitCampId,data);
 if(result){teilnahmeCache[referenzId]=result;if(navigator.onLine)showToast(field.charAt(0).toUpperCase()+field.slice(1)+' gespeichert \u2713')}
 else if(navigator.onLine)showToast('Speichern fehlgeschlagen',true)}
 
-function updateAnwesenheitSummary(){
-var camp=allCamps.find(function(c){return c.id===anwesenheitCampId});if(!camp)return;
-var days=getCampDays(camp.datum_von,camp.datum_bis);
-var kids=allAnmeldungen.filter(function(a){return a.camp_id===anwesenheitCampId&&a.__effectiveStatus!=='storniert'&&a.__effectiveStatus!=='erstattet'});
-var sum={};days.forEach(function(d){sum[d]=0});
-kids.forEach(function(a){var anw=(teilnahmeCache[a.id]||{}).anwesenheit||{};days.forEach(function(d){if(anw[d])sum[d]++})});
-var spans=document.querySelectorAll('.aw-summary .aw-day-count');
-spans.forEach(function(span,i){if(days[i])span.textContent=sum[days[i]]+'/'+kids.length})}
+function updateAnwesenheitSummary(campId){
+var data=getAttendanceSummaryData(campId);if(!data)return;
+document.querySelectorAll('.aw-summary[data-attendance-camp="'+campId+'"] .aw-summary-day').forEach(function(dayEl){
+var day=dayEl.getAttribute('data-attendance-day');
+var countEl=dayEl.querySelector('[data-attendance-count]');
+if(countEl&&Object.prototype.hasOwnProperty.call(data.counts,day))countEl.textContent=data.counts[day]})}
 
 async function toggleAnwesenheitMain(referenzId,quelle,campId,datum,checked){
 var existing=teilnahmeCache[referenzId]||{};
@@ -1259,6 +1283,7 @@ var anw=Object.assign({},existing.anwesenheit||{});
 if(checked)anw[datum]=true;else delete anw[datum];
 if(!teilnahmeCache[referenzId])teilnahmeCache[referenzId]={referenz_id:referenzId};
 Object.assign(teilnahmeCache[referenzId],{anwesenheit:anw});
+updateAnwesenheitSummary(campId);
 var result=await upsertTeilnahme(referenzId,quelle,campId,{anwesenheit:anw});
 if(result)teilnahmeCache[referenzId]=result;
 else if(navigator.onLine)showToast('Speichern fehlgeschlagen',true)}

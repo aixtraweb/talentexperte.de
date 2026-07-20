@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-07-20 — Tagesgesamtzahl der anwesenden Kinder im Dashboard
+
+### Admin-Dashboard
+
+- Bei ausgewähltem Camp zeigt die Anmeldeliste oberhalb der Tabelle für jeden Camptag die Anzahl der bereits als anwesend markierten Kinder im Verhältnis zu allen aktiven Camp-Anmeldungen.
+- Die Tagesgesamtzahl steigt oder sinkt unmittelbar mit jedem Anwesenheitshaken und bleibt durch den vorhandenen lokalen Cache auch bei ausstehender Offline-Synchronisierung aktuell.
+- Stornierte und erstattete Anmeldungen werden wie in der bestehenden Anwesenheitsansicht nicht in die Gesamtzahl einbezogen; Such- und Statusfilter verfälschen den Camp-Gesamtwert nicht.
+- Die gemeinsame Tagesanzeige wurde für Desktop und Mobilgeräte kontrastreich und responsiv gestaltet.
+
 ## 2026-07-20 — Workflow für einzelne Zahlungsrückfragen dokumentiert
 
 ### Dokumentation
