@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-20 — Zahlungsfrist produktiv aktiviert
+
+### Produktionsstand
+
+- Supabase-Projekt `feriencamps` in der Organisation `TALENTEXPERTE`, Stripe-Konto `FUSSBALLSCHULE TALENTEXPERTE` und die verifizierte Resend-Domain `talentexperte.de` vor dem Rollout bestätigt.
+- Migrationen für Zahlungsfristen, sichere Platzfreigabe, `pg_cron`, Vault-Secrets und zwei kontrollierbare 15-Minuten-Jobs produktiv angewendet.
+- Abhängige Edge Functions und statische Website mit vorherigem Hosting-Backup aktualisiert; produktive Sicherheits- und Webroot-Tests bestanden.
+- Der erste Dry-Run meldete sieben fällige offene Elternzahlungen für das Sommercamp II ohne Stripe- oder Zuordnungskonflikt.
+- Sieben eindeutige Letzterinnerungen erfolgreich über TALENTEXPERTE versendet; die Plätze bleiben bis 21.07.2026, 14:15 Uhr MESZ reserviert. Beim Rollout wurde kein Platz freigegeben.
+- Zahlungsfrist-Prozessor und E-Mail-Outbox laufen geheimnisgeschützt alle 15 Minuten. Ein erneuter Dry-Run war idempotent und meldete keine weiteren Kandidaten; der erste automatische Doppellauf um 14:15 Uhr lieferte zweimal HTTP 200.
+
 ## 2026-07-19 — Verbindliche Zahlungsfrist und automatische Platzfreigabe vorbereitet
 
 ### Umsetzung

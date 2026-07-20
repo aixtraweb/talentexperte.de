@@ -1,13 +1,13 @@
 # Architektur- und Projektentscheidungen
 
-Stand: 19. Juli 2026
+Stand: 20. Juli 2026
 Dokumentationsstatus: bestätigt aus Code, Migrationen und bestehenden Handbüchern
 Geltungsbereich: dauerhafte Entscheidungen; keine tagesaktuellen Betriebsstände
 
 ## 2026-07-19 – Offene Elternzahlung nach klarer Letztfrist automatisch freigeben
 
 ### Status
-akzeptiert; produktiver Rollout ausstehend
+akzeptiert und seit 20.07.2026 produktiv aktiv
 
 ### Ausgangslage
 Offene Anmeldungen blockierten Campplätze auch dann weiter, wenn Eltern trotz Erinnerung nicht zahlten. Gleichzeitig war nicht von Anfang an eindeutig kommuniziert, wann die Reservierung endet.
@@ -19,10 +19,10 @@ Neue Elternanmeldungen erhalten eine 72-Stunden-Zahlungsfrist. Bleibt die Zahlun
 Die Regel verbindet Verbindlichkeit für Eltern mit fairer Vorankündigung, schützt knappe Campkapazität und vermeidet eine rein sprachliche Drohung ohne technische Konsequenz.
 
 ### Auswirkungen
-Anmeldung, Bestätigung, Zahlungsstart, Reminder, Outbox, Dashboard, Datenmodell und geplanter Supabase-Lauf verwenden dieselben Fristen. Bestehende offene Anmeldungen erhalten vor jeder automatischen Freigabe zuerst die neue eindeutige Letztfrist.
+Anmeldung, Bestätigung, Zahlungsstart, Reminder, Outbox, Dashboard, Datenmodell und zwei geheimnisgeschützte Supabase-Zeitpläne verwenden dieselben Fristen. Bestehende offene Anmeldungen erhalten vor jeder automatischen Freigabe zuerst die neue eindeutige Letztfrist. Die Job-IDs und ihr Sollstatus liegen privat; anonyme und normale authentifizierte Rollen können die Zeitpläne weder lesen noch schalten.
 
 ### Betroffene Dateien oder Komponenten
-`anmeldung.html`, `bestaetigung.html`, `zahlung-start.html`, `admin.html`, `register`, `send-reminder`, `process-email-outbox`, `process-payment-deadlines`, `anmeldungen`, `email_outbox`
+`anmeldung.html`, `bestaetigung.html`, `zahlung-start.html`, `admin.html`, `register`, `send-reminder`, `process-email-outbox`, `process-payment-deadlines`, `anmeldungen`, `email_outbox`, `pg_cron`, `pg_net`, Supabase Vault
 
 ### Alternativen
 Unbefristete Reservierung oder sofortige Stornierung nach 72 Stunden; verworfen, weil entweder Kapazität blockiert bleibt oder die ausdrücklich angekündigte faire Letztfrist fehlt.

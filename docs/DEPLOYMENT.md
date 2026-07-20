@@ -91,12 +91,14 @@ Der Workflow wird ausschließlich in dieser Reihenfolge aktiviert:
 3. `register`, `send-reminder`, `process-email-outbox` und `send-missing-confirmations` deployen;
 4. Website-Dateien deployen, damit Fristtexte und Zahlungslinkprüfung zum Backend passen;
 5. `PAYMENT_DEADLINE_PROCESSOR_SECRET` setzen und `process-payment-deadlines` mit eigener Secret-Prüfung als `--no-verify-jwt` deployen;
-6. den zunächst deaktivierten, geheimnisgeschützten POST-Zeitplan für `process-payment-deadlines` einrichten (empfohlen alle 15 Minuten) und den bestehenden automatischen Lauf von `process-email-outbox` samt `OUTBOX_PROCESSOR_SECRET` bestätigen;
+6. die zunächst deaktivierten, geheimnisgeschützten 15-Minuten-Zeitpläne aus den Migrationen `20260720143000` und `20260720150000` für `process-payment-deadlines` und `process-email-outbox` prüfen; beide Bearer-Secrets müssen mit den gleichnamigen Edge-Secrets übereinstimmen und ausschließlich in Supabase Vault liegen;
 7. den Prozessor zunächst mit `{ "dry_run": true }` aufrufen und die anonymisierten Kandidatenzahlen je Camp prüfen; dieser Lauf sendet keine E-Mail, ändert keinen Zahlungsstatus und gibt keinen Platz frei;
 8. Testfälle offen → erinnert → bezahlt sowie offen → erinnert → freigegeben mit kontrollierten Testdaten vollständig prüfen;
-9. erst danach den Zeitplan für echte Datensätze aktivieren und Runresultate/Outbox überwachen.
+9. erst danach beide Zeitpläne über `set_payment_workflow_jobs_enabled(true)` aktivieren und Runresultate/Outbox überwachen. `get_payment_workflow_job_status()` liefert den gespeicherten Sollstatus; zum Stoppen wird derselbe Schalter mit `false` aufgerufen.
 
 Rollback: zuerst den Zeitplan deaktivieren. Bereits gesendete Letztfristen oder Stornierungen nicht durch Code-Rollback kaschieren; betroffene Datensätze und Elternkommunikation einzeln prüfen.
+
+Produktiver Stand vom 20.07.2026: beide Jobs sind aktiv und laufen alle 15 Minuten. Die Secret-Werte dürfen weder in Shell-Historie noch Dokumentation, Logs oder Git erscheinen.
 
 ## Hosting-Header
 
