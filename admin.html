@@ -1137,7 +1137,7 @@ data.days.forEach(function(day){
 var dt=new Date(day+'T00:00:00');
 html+='<div class="aw-summary-day" data-attendance-day="'+day+'">';
 html+='<span class="aw-day-name">'+AWD[dt.getDay()]+' <span>'+dt.getDate()+'.'+(dt.getMonth()+1)+'.</span></span>';
-html+='<span class="aw-day-count"><span data-attendance-count>'+data.counts[day]+'</span><small> / '+data.kids.length+'</small></span>';
+html+='<span class="aw-day-count" data-attendance-count>'+data.counts[day]+'</span>';
 html+='</div>'});
 return html}
 
@@ -1274,7 +1274,7 @@ function updateAnwesenheitSummary(campId){
 var data=getAttendanceSummaryData(campId);if(!data)return;
 document.querySelectorAll('.aw-summary[data-attendance-camp="'+campId+'"] .aw-summary-day').forEach(function(dayEl){
 var day=dayEl.getAttribute('data-attendance-day');
-var countEl=dayEl.querySelector('[data-attendance-count]');
+var countEl=dayEl.querySelector('.aw-day-count');
 if(countEl&&Object.prototype.hasOwnProperty.call(data.counts,day))countEl.textContent=data.counts[day]})}
 
 async function toggleAnwesenheitMain(referenzId,quelle,campId,datum,checked){

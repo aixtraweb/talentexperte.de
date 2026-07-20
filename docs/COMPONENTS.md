@@ -123,7 +123,7 @@ Es gibt keine Template-Engine oder Komponentenbibliothek. Komponenten sind wiede
 ### Anwesenheit
 
 - `.anwesenheit-table`, `.aw-checkbox`, `.metric-input`, `.aw-summary`.
-- Bei ausgewähltem Camp zeigt auch die Anmeldeliste oberhalb der Tabelle die Tagesgesamtzahl anwesender Kinder; der Zähler verwendet alle aktiven Camp-Anmeldungen unabhängig von Such- und Statusfiltern.
+- Bei ausgewähltem Camp zeigt auch die Anmeldeliste oberhalb der Tabelle je Tag ausschließlich die Zahl anwesender Kinder ohne Nenner; der Zähler verwendet intern alle aktiven Camp-Anmeldungen unabhängig von Such- und Statusfiltern.
 - Jeder Anwesenheitshaken aktualisiert die Tagesgesamtzahl sofort aus dem lokalen Cache, bevor die Offline-Queue mit Supabase synchronisiert wird.
 - Jede Änderung zuerst in `teilnahme_q`, dann Upsert; Queueindikator sichtbar halten.
 - Tagesberechnung lokalzeitfest; Off-by-one bei UTC vermeiden.
