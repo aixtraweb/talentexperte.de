@@ -10,7 +10,7 @@
 - Die gemeinsame Tagesanzeige wurde für Desktop und Mobilgeräte kontrastreich und responsiv gestaltet.
 - Das sichtbare Format auf die reine Anwesenheitszahl reduziert: beispielsweise `48` statt `48 / 59`.
 - Produktiv auf das bestätigte TALENTEXPERTE-Hostingwerk-Ziel ausgerollt; der Dry-Run enthielt ausschließlich `admin.html` und `css/admin.css`, ohne Löschungen.
-- Rollbackpunkt: `/srv/www/medina-82/backups/talentexperte/backup_2026-07-20_20-51-53.tar.gz`. Lokale, serverseitige und öffentlich ausgelieferte SHA-256-Hashes der beiden Dateien stimmen überein; Deployment-Sicherheitstest und Schutz interner Pfade bestanden.
+- Aktueller Rollbackpunkt nach der Formatkorrektur: `/srv/www/medina-82/backups/talentexperte/backup_2026-07-20_20-56-25.tar.gz`. Lokale, serverseitige und öffentlich ausgelieferte SHA-256-Hashes der beiden Dateien stimmen überein; Deployment-Sicherheitstest und Schutz interner Pfade bestanden.
 
 ## 2026-07-20 — Workflow für einzelne Zahlungsrückfragen dokumentiert
 
