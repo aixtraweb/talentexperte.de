@@ -38,7 +38,7 @@
 <div class="dashboard" id="dashboard">
   <nav class="dash-nav">
     <div class="dash-nav-left"><h1>TALENT<span>EXPERTE</span></h1><span class="dash-nav-badge">Admin</span></div>
-    <div class="dash-nav-right"><span class="dash-time" id="dashTime"></span><button class="dash-logout" onclick="processEmailOutbox()">E-Mail-Warteschlange</button><button class="dash-logout" onclick="doLogout()">Abmelden ↗</button></div>
+    <div class="dash-nav-right"><span class="dash-time" id="dashTime"></span><button class="dash-logout" onclick="openEmailHistory()">E-Mail-Verlauf</button><button class="dash-logout" onclick="processEmailOutbox()">E-Mail-Warteschlange</button><button class="dash-logout" onclick="doLogout()">Abmelden ↗</button></div>
   </nav>
   <div class="dash-content">
     <div class="stats-grid">
@@ -194,6 +194,12 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+<div class="modal-overlay" id="emailHistoryModal" role="dialog" aria-modal="true" aria-labelledby="emailHistoryTitle" aria-hidden="true">
+  <div class="modal" tabindex="-1" style="max-width:900px;">
+    <div class="modal-header"><h2 id="emailHistoryTitle">E-Mail-Verlauf</h2><button class="modal-close" aria-label="E-Mail-Verlauf schließen" onclick="closeEmailHistory()">✕</button></div>
+    <div class="modal-body"><div id="emailHistoryContent" class="empty-state"><div class="icon">⏳</div>Laden…</div></div>
+  </div>
+</div>
 
 <script>
 var SUPABASE_URL='https://yxygwwoocsdnneqykiym.supabase.co';
@@ -258,6 +264,19 @@ var p=await r.json().catch(function(){return{}});
 if(!r.ok){showToast(p.error||'E-Mail-Warteschlange konnte nicht verarbeitet werden',true);return}
 showToast('E-Mail-Warteschlange: '+Number(p.sent||0)+' versendet, '+Number(p.failed||0)+' weiter offen')
 }
+function escHtml(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function formatMailTime(v){if(!v)return '–';var d=new Date(v);return isNaN(d)?'–':d.toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'})}
+function emailStatusLabel(s){return {sent:'Versendet',pending:'Wartet',sending:'Wird versendet',failed:'Fehlgeschlagen',cancelled:'Abgebrochen'}[String(s||'').toLowerCase()]||'Unbekannt'}
+function emailStatusStyle(s){return {sent:'sync-ok',pending:'sync-pending',sending:'sync-pending',failed:'sync-error',cancelled:'sync-error'}[String(s||'').toLowerCase()]||'sync-error'}
+async function openEmailHistory(){
+var content=document.getElementById('emailHistoryContent');content.innerHTML='<div class="empty-state"><div class="icon">⏳</div>Laden…</div>';setDialogState('emailHistoryModal',true);
+await ensureFreshToken();var r=await fetch(SUPABASE_URL+'/functions/v1/list-email-outbox',{headers:{'Authorization':'Bearer '+accessToken}});var p=await r.json().catch(function(){return{}});
+if(!r.ok){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>'+escHtml(p.error||'E-Mail-Verlauf konnte nicht geladen werden')+'</div>';return}
+var rows=Array.isArray(p.messages)?p.messages:[];
+if(!rows.length){content.innerHTML='<div class="empty-state"><div class="icon">✉️</div>Noch keine E-Mails im Versandverlauf</div>';return}
+content.innerHTML='<div style="overflow:auto"><table class="data-table"><thead><tr><th>Empfänger</th><th>Typ</th><th>Status</th><th>Versendet</th><th>Hinweis</th></tr></thead><tbody>'+rows.map(function(m){return '<tr><td>'+escHtml(m.recipient)+'</td><td>'+escHtml(m.message_type)+'</td><td><span class="sync-indicator '+emailStatusStyle(m.status)+'">'+emailStatusLabel(m.status)+'</span></td><td>'+formatMailTime(m.sent_at||m.created_at)+'</td><td>'+escHtml(m.last_error||'–')+'</td></tr>'}).join('')+'</tbody></table></div>'
+}
+function closeEmailHistory(){setDialogState('emailHistoryModal',false)}
 async function apiPost(t,d){
 var h=Object.assign({},apiH(),{'Prefer':'return=minimal'});
 var r=await fetch(SUPABASE_URL+'/rest/v1/'+t,{method:'POST',headers:h,body:JSON.stringify(d)});
