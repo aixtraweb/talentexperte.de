@@ -15,6 +15,7 @@ Eine Anweisung wie „Bitte beantworte die offenen Camp-Anfragen“ bedeutet:
 ## Verbindliche Schreibregeln
 
 - Nach der Anrede stehen zwei Zeilenumbrüche. Der erste Buchstabe des folgenden Satzes wird kleingeschrieben, zum Beispiel: `Sehr geehrter Herr Hübsch,` gefolgt von `vielen Dank …`.
+- Zwischen dem letzten inhaltlichen Satz und der Signatur steht nur ein Zeilenwechsel; keine zusätzlichen Leerabsätze.
 - Klar, freundlich, kurz und in der Sie-Ansprache schreiben.
 - Ausschließlich die in Apple Mail hinterlegte, formatierte Signatur `TALENTEXPERTE` nutzen. Keine selbst gebaute Signatur, keine AIXTRA-WEB-Identität.
 - Entwürfe bleiben geöffnet oder werden als Entwurf gespeichert. Der Nutzer versendet selbst.
@@ -68,7 +69,7 @@ Keine Zahlungszusage formulieren. Erst nach dem vollständigen Supabase- und Str
 1. Auf die relevante Nachricht antworten.
 2. Absender `kontakt@talentexperte.de` und Signatur `TALENTEXPERTE` prüfen.
 3. Antwort oberhalb der bestehenden Signatur einfügen.
-4. Im Menü „Anhang“ die passende FAQ-PDF aus dem Projektordner auswählen.
+4. Den Cursor ans Ende der formatierten Signatur setzen und erst dort im Menü „Anhang“ die passende FAQ-PDF aus dem Projektordner auswählen. Die PDF wird damit unterhalb der Signatur dargestellt.
 5. Empfänger, Betreff, Text, PDF-Anhang und Signatur kurz prüfen.
 6. Nicht senden.
 
