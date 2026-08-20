@@ -20,6 +20,7 @@ Eine Anweisung wie „Bitte beantworte die offenen Camp-Anfragen“ bedeutet:
 - Ausschließlich die in Apple Mail hinterlegte, formatierte Signatur `TALENTEXPERTE` nutzen. Keine selbst gebaute Signatur, keine AIXTRA-WEB-Identität.
 - Entwürfe bleiben geöffnet oder werden als Entwurf gespeichert. Der Nutzer versendet selbst.
 - Daten, Zahlungen, Plätze, Termine und Teilnahme nur nach Live-Abgleich behaupten.
+- Zahlungslinks erst nach einem erfolgreichen Abruf des persönlichen Zahlungslinks prüfen. Ein Link, der eine abgelaufene oder inaktive Anmeldung meldet, wird niemals in einen Entwurf übernommen.
 
 ## Live-Prüfung vor jeder Antwort
 
@@ -63,6 +64,13 @@ Der Entwurf enthält einen kurzen Verweis, etwa: „Weitere Informationen finden
 ### Offene oder unklare Zahlung
 
 Keine Zahlungszusage formulieren. Erst nach dem vollständigen Supabase- und Stripe-Abgleich den tatsächlichen Status nennen; bei Unklarheit freundlich um eine prüfbare Angabe bitten.
+
+### Persönlicher Stripe-Zahlungslink
+
+- Für reaktivierte oder offene Elternzahlungen den sicheren Link aus `zahlung-start.html` verwenden, nicht den bloßen Stripe-Link.
+- Den Link vor dem Entwurf mit `register` / `get_confirmation` auf `zahlungsstatus = offen`, `parent_payment_status = open` und fehlende Freigabemarkierung prüfen.
+- Der Zahlungsaufruf wird ausschließlich als HTML-Button nach [`templates/parent-payment-response.html`](templates/parent-payment-response.html) dargestellt: TALENTEXPERTE-Rot `#e50000`, weiße fette Schrift, 14 × 32 px Innenabstand und 8 px Rundung.
+- Der normale Apple-Mail-Rich-Text-Editor ist keine geeignete Quelle für diesen Button. Für Zahlungsantworten die HTML-Vorlage einsetzen; keine improvisierte Link-Zeile oder farbige Textformatierung verwenden.
 
 ## Ablauf im Apple-Mail-Entwurf
 
