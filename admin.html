@@ -200,6 +200,12 @@
     <div class="modal-body"><div id="emailHistoryContent" class="empty-state"><div class="icon">⏳</div>Laden…</div></div>
   </div>
 </div>
+<div class="modal-overlay" id="emailDetailModal" role="dialog" aria-modal="true" aria-labelledby="emailDetailTitle" aria-hidden="true">
+  <div class="modal" tabindex="-1" style="max-width:760px;">
+    <div class="modal-header"><h2 id="emailDetailTitle">E-Mail-Details</h2><button class="modal-close" aria-label="E-Mail-Details schließen" onclick="closeEmailDetail()">✕</button></div>
+    <div class="modal-body" id="emailDetailContent"><div class="empty-state"><div class="icon">⏳</div>Laden…</div></div>
+  </div>
+</div>
 
 <script>
 var SUPABASE_URL='https://yxygwwoocsdnneqykiym.supabase.co';
@@ -268,6 +274,8 @@ function escHtml(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){r
 function formatMailTime(v){if(!v)return '–';var d=new Date(v);return isNaN(d)?'–':d.toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'})}
 function emailStatusLabel(s){return {sent:'Versendet',pending:'Wartet',sending:'Wird versendet',failed:'Fehlgeschlagen',cancelled:'Abgebrochen'}[String(s||'').toLowerCase()]||'Unbekannt'}
 function emailStatusStyle(s){return {sent:'sync-ok',pending:'sync-pending',sending:'sync-pending',failed:'sync-error',cancelled:'sync-error'}[String(s||'').toLowerCase()]||'sync-error'}
+function mailText(v){var html=String(v||'');if(!html)return '';return new DOMParser().parseFromString(html,'text/html').body.textContent.replace(/\n\s*\n\s*\n+/g,'\n\n').trim()}
+function mailMetaLabel(label,value){return '<div style="font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#8d8d8d;margin-bottom:4px">'+escHtml(label)+'</div><div style="color:#fff;font-size:.95rem;overflow-wrap:anywhere">'+escHtml(value||'–')+'</div>'}
 async function openEmailHistory(){
 var content=document.getElementById('emailHistoryContent');content.innerHTML='<div class="empty-state"><div class="icon">⏳</div>Laden…</div>';setDialogState('emailHistoryModal',true);
 if(!await ensureFreshToken()){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.</div>';return}
@@ -275,9 +283,18 @@ var r,p;try{r=await fetch(SUPABASE_URL+'/functions/v1/list-email-outbox',{header
 if(!r.ok){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>'+escHtml(p.error||'E-Mail-Verlauf konnte nicht geladen werden')+'</div>';return}
 var rows=Array.isArray(p.messages)?p.messages:[];
 if(!rows.length){content.innerHTML='<div class="empty-state"><div class="icon">✉️</div>Noch keine E-Mails im Versandverlauf</div>';return}
-content.innerHTML='<div style="overflow:auto"><table class="data-table"><thead><tr><th>Empfänger</th><th>Typ</th><th>Status</th><th>Versendet</th><th>Hinweis</th></tr></thead><tbody>'+rows.map(function(m){return '<tr><td>'+escHtml(m.recipient)+'</td><td>'+escHtml(m.message_type)+'</td><td><span class="sync-indicator '+emailStatusStyle(m.status)+'">'+emailStatusLabel(m.status)+'</span></td><td>'+formatMailTime(m.sent_at||m.created_at)+'</td><td>'+escHtml(m.last_error||'–')+'</td></tr>'}).join('')+'</tbody></table></div>'
+content.innerHTML='<div style="overflow:auto"><table class="data-table"><thead><tr><th>Empfänger</th><th>Typ</th><th>Status</th><th>Versendet</th><th></th></tr></thead><tbody>'+rows.map(function(m){return '<tr><td>'+escHtml(m.recipient)+'</td><td>'+escHtml(m.message_type)+'</td><td><span class="sync-indicator '+emailStatusStyle(m.status)+'">'+emailStatusLabel(m.status)+'</span></td><td>'+formatMailTime(m.sent_at||m.created_at)+'</td><td><button type="button" class="btn-sm" onclick="openEmailDetail(\''+escHtml(m.id)+'\')">Details</button></td></tr>'}).join('')+'</tbody></table></div>'
 }
 function closeEmailHistory(){setDialogState('emailHistoryModal',false)}
+async function openEmailDetail(id){
+var content=document.getElementById('emailDetailContent');content.innerHTML='<div class="empty-state"><div class="icon">⏳</div>Laden…</div>';setDialogState('emailDetailModal',true);
+if(!await ensureFreshToken()){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.</div>';return}
+var r,p;try{r=await fetch(SUPABASE_URL+'/functions/v1/get-email-outbox-detail?id='+encodeURIComponent(id),{headers:{'Authorization':'Bearer '+accessToken}});p=await r.json().catch(function(){return{}})}catch(e){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>Die E-Mail-Details konnten nicht geladen werden.</div>';return}
+if(!r.ok||!p.message){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>'+escHtml(p.error||'Die E-Mail-Details konnten nicht geladen werden.')+'</div>';return}
+var m=p.message,body=mailText(m.html)||String(m.text||'').trim()||'Kein Textinhalt gespeichert.';
+content.innerHTML='<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;padding:4px 0 24px">'+mailMetaLabel('An',m.recipient)+mailMetaLabel('Status',emailStatusLabel(m.status))+mailMetaLabel('Betreff',m.subject)+mailMetaLabel('Versendet',formatMailTime(m.sent_at||m.created_at))+'</div><div style="border-top:1px solid rgba(255,255,255,.1);padding-top:20px">'+mailMetaLabel('Nachricht','')+'<pre style="margin:10px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.65;color:#dedede">'+escHtml(body)+'</pre></div>';
+}
+function closeEmailDetail(){setDialogState('emailDetailModal',false)}
 async function apiPost(t,d){
 var h=Object.assign({},apiH(),{'Prefer':'return=minimal'});
 var r=await fetch(SUPABASE_URL+'/rest/v1/'+t,{method:'POST',headers:h,body:JSON.stringify(d)});
