@@ -324,6 +324,7 @@ Deno.serve(async (req) => {
     const companyEmailPayload = {
       from: FROM_EMAIL,
       to: [registration.mitarbeiter_email],
+      bcc: ["kontakt@talentexperte.de"],
       reply_to: "kontakt@talentexperte.de",
       subject: "Firmen-Anmeldung bestätigt – " + camp.name,
       html: buildCompanyConfirmationHtml({

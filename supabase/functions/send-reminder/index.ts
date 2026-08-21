@@ -156,6 +156,7 @@ serve(async (req: Request) => {
           body: JSON.stringify({
             from: FROM_EMAIL,
             to: [row.email],
+            bcc: ["kontakt@talentexperte.de"],
             reply_to: "kontakt@talentexperte.de",
             subject: message.subject,
             html: message.html,

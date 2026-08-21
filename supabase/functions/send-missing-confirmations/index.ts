@@ -216,6 +216,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             from: FROM_EMAIL,
             to: [a.email],
+            bcc: ["kontakt@talentexperte.de"],
             reply_to: "kontakt@talentexperte.de",
             subject: isSponsored(a)
               ? (scope === "all_future" ? "Aktualisierter sicherer Bestätigungslink – vollständig gesponsert – " : "Anmeldebestätigung – vollständig gesponsert – ") + camp.name + " (Buchungs-Nr. " + buchungsNr + ")"

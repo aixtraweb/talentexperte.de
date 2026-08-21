@@ -105,6 +105,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           from: "TALENTEXPERTE Fußballschule <kontakt@talentexperte.de>",
           to: [recipient.email],
+          bcc: ["kontakt@talentexperte.de"],
           reply_to: "kontakt@talentexperte.de",
           subject: `Wie hat ${children.replace(/[\r\n]+/g, " ")} das Camp gefallen?`,
           html: mailHtml(recipient.family, children, camp?.name || "Feriencamp"),

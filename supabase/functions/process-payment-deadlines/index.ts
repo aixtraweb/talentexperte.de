@@ -352,6 +352,7 @@ Deno.serve(async (req: Request) => {
       const payload = {
         from: FROM_EMAIL,
         to: [row.email],
+        bcc: ["kontakt@talentexperte.de"],
         reply_to: "kontakt@talentexperte.de",
         subject: message.subject,
         html: message.html,

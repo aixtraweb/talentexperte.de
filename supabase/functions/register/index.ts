@@ -824,6 +824,7 @@ Deno.serve(async (req) => {
     const confirmationEmailPayload = {
       from: FROM_EMAIL,
       to: [registration.email],
+      bcc: ["kontakt@talentexperte.de"],
       reply_to: "kontakt@talentexperte.de",
       subject: payerType === "sponsor"
         ? `Anmeldebestätigung – vollständig gesponsert – ${camp.name} (Buchungs-Nr. ${buchungsNr})`

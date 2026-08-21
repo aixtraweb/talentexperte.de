@@ -206,6 +206,19 @@ Deno.serve(async (req) => {
         }
       }
 
+      const bcc = Array.isArray(sendPayload.bcc)
+        ? sendPayload.bcc.map((entry) => String(entry).trim()).filter(Boolean)
+        : [];
+      const directRecipients = [sendPayload.to, sendPayload.cc]
+        .flatMap((entry) => Array.isArray(entry) ? entry : [entry])
+        .map((entry) => String(entry || "").trim().toLowerCase());
+      if (
+        !directRecipients.includes("kontakt@talentexperte.de") &&
+        !bcc.some((entry) => entry.toLowerCase() === "kontakt@talentexperte.de")
+      ) {
+        bcc.push("kontakt@talentexperte.de");
+      }
+      sendPayload = { ...sendPayload, bcc };
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {

@@ -67,6 +67,7 @@ Vor jeder TALENTEXPERTE-E-Mail sind unmittelbar vor dem Senden zu bestätigen:
 - **Zweck:** Anmeldebestätigungen, Reminder, fehlende Bestätigungen und Review-Anfragen.
 - **Authentifizierung:** `RESEND_API_KEY` nur als Supabase-/lokales Secret.
 - **Absender/Reply-To:** im Projekt für Transaktionsmails `kontakt@talentexperte.de` belegt.
+- **BCC-Archiv:** Jede künftig über Resend versendete TALENTEXPERTE-Mail erhält zusätzlich `kontakt@talentexperte.de` als BCC. Ist diese Adresse bereits ein sichtbarer Empfänger, wird sie nicht doppelt hinzugefügt.
 - **Verbindlicher Versandweg:** TALENTEXPERTE-Mails nur über eine für TALENTEXPERTE bestätigte Resend-Domain oder ein nachweislich als TALENTEXPERTE authentifiziertes Postfach versenden; ein AIXTRA-WEB-Gmail-Konto ist unzulässig.
 - **Outbox:** fehlgeschlagene Transaktionsmails in `email_outbox`; `process-email-outbox` beansprucht und verarbeitet atomar.
 - **Kampagnenjournal:** `email_campaign_runs` verhindert ungewollte Wiederholung.
