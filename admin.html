@@ -213,7 +213,7 @@ var campReadMode='private';
 var allDashboardRows=[],privateKpi=null;
 var KNOWN_STATUS={offen:true,bezahlt:true,gesponsert:true,storniert:true,erstattet:true};
 var dialogReturnFocus={};
-function setDialogState(id,open){var el=document.getElementById(id);if(!el)return;if(open){dialogReturnFocus[id]=document.activeElement;el.setAttribute('aria-hidden','false');requestAnimationFrame(function(){var target=el.querySelector('.modal,[tabindex="-1"]')||el;target.focus()})}else{el.setAttribute('aria-hidden','true');var previous=dialogReturnFocus[id];if(previous&&previous.focus)previous.focus();delete dialogReturnFocus[id]}}
+function setDialogState(id,open){var el=document.getElementById(id);if(!el)return;el.classList.toggle('visible',open);if(open){dialogReturnFocus[id]=document.activeElement;el.setAttribute('aria-hidden','false');requestAnimationFrame(function(){var target=el.querySelector('.modal,[tabindex="-1"]')||el;target.focus()})}else{el.setAttribute('aria-hidden','true');var previous=dialogReturnFocus[id];if(previous&&previous.focus)previous.focus();delete dialogReturnFocus[id]}}
 function statusToken(v){var s=String(v||'').toLowerCase().trim();if(s==='paid'||s==='zahlung_erfolgt'||s==='bezahlt')return 'bezahlt';if(s==='cancelled'||s==='storniert')return 'storniert';if(s==='refunded'||s==='erstattet')return 'erstattet';if(s==='open'||s==='offen'||s==='pending')return 'offen';return ''}
 
 function hasLegacySponsorMarker(a){return /\[TYP:(?:ÖF|OEF)\]/i.test(String((a&&a.notizen)||''))}
@@ -270,7 +270,8 @@ function emailStatusLabel(s){return {sent:'Versendet',pending:'Wartet',sending:'
 function emailStatusStyle(s){return {sent:'sync-ok',pending:'sync-pending',sending:'sync-pending',failed:'sync-error',cancelled:'sync-error'}[String(s||'').toLowerCase()]||'sync-error'}
 async function openEmailHistory(){
 var content=document.getElementById('emailHistoryContent');content.innerHTML='<div class="empty-state"><div class="icon">⏳</div>Laden…</div>';setDialogState('emailHistoryModal',true);
-await ensureFreshToken();var r=await fetch(SUPABASE_URL+'/functions/v1/list-email-outbox',{headers:{'Authorization':'Bearer '+accessToken}});var p=await r.json().catch(function(){return{}});
+if(!await ensureFreshToken()){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.</div>';return}
+var r,p;try{r=await fetch(SUPABASE_URL+'/functions/v1/list-email-outbox',{headers:{'Authorization':'Bearer '+accessToken}});p=await r.json().catch(function(){return{}})}catch(e){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>Der E-Mail-Verlauf konnte nicht geladen werden. Bitte versuchen Sie es erneut.</div>';return}
 if(!r.ok){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>'+escHtml(p.error||'E-Mail-Verlauf konnte nicht geladen werden')+'</div>';return}
 var rows=Array.isArray(p.messages)?p.messages:[];
 if(!rows.length){content.innerHTML='<div class="empty-state"><div class="icon">✉️</div>Noch keine E-Mails im Versandverlauf</div>';return}
