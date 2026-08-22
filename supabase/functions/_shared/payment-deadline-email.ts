@@ -22,6 +22,11 @@ export interface PaymentDeadlineEmail {
   expiresAt: string;
 }
 
+import {
+  appendTalentexperteEmailSignature,
+  appendTalentexperteEmailSignatureText,
+} from "./talentexperte-email-signature.ts";
+
 const FROM_EMAIL = "TALENTEXPERTE Fußballschule <kontakt@talentexperte.de>";
 
 export function paymentDeadlineSender(): string {
@@ -219,8 +224,8 @@ www.talentexperte.de`;
     subject: `Zahlung erforderlich: Platz bis ${
       formatDate(expiresAt)
     } sichern – ${subjectCamp} | TALENTEXPERTE`,
-    html,
-    text,
+    html: appendTalentexperteEmailSignature(html),
+    text: appendTalentexperteEmailSignatureText(text),
     expiresAt,
   };
 }

@@ -2,6 +2,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import Stripe from "https://esm.sh/stripe@14.14.0?target=deno";
 import { AdminAuthError, requireDashboardAdmin } from "../_shared/admin-auth.ts";
 import { formatDeadline } from "../_shared/payment-deadline-email.ts";
+import {
+  appendTalentexperteEmailSignature,
+  appendTalentexperteEmailSignatureText,
+} from "../_shared/talentexperte-email-signature.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "https://www.talentexperte.de",
@@ -219,6 +223,12 @@ Deno.serve(async (req) => {
         bcc.push("kontakt@talentexperte.de");
       }
       sendPayload = { ...sendPayload, bcc };
+      if (typeof sendPayload.html === "string") {
+        sendPayload.html = appendTalentexperteEmailSignature(sendPayload.html);
+      }
+      if (typeof sendPayload.text === "string") {
+        sendPayload.text = appendTalentexperteEmailSignatureText(sendPayload.text);
+      }
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {

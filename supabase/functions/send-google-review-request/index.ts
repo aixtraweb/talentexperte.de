@@ -1,4 +1,5 @@
 import { AdminAuthError, requireDashboardAdmin } from "../_shared/admin-auth.ts";
+import { appendTalentexperteEmailSignature } from "../_shared/talentexperte-email-signature.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
 const GOOGLE_REVIEW_LINK = "https://g.page/r/CRwplaTKzL7VEBM/review";
@@ -19,14 +20,14 @@ function escapeHtml(value: unknown): string {
 }
 
 function mailHtml(familyName: string, children: string, campName: string): string {
-  return `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222">
+  return appendTalentexperteEmailSignature(`<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#222">
     <h1 style="color:#111">TALENTEXPERTE Fußballschule</h1>
     <p>Guten Tag Familie ${escapeHtml(familyName)},</p>
     <p>${escapeHtml(children)} war beim ${escapeHtml(campName)} dabei. Wir freuen uns über eine kurze Rückmeldung.</p>
     <p><a href="${GOOGLE_REVIEW_LINK}" style="display:inline-block;background:#eab308;color:#000;padding:14px 24px;border-radius:6px;text-decoration:none;font-weight:700">Google-Bewertung abgeben</a></p>
     <p>Vielen Dank für Ihre Unterstützung.</p>
     <p>Sportliche Grüße<br>TALENTEXPERTE Fußballschule</p>
-  </div>`;
+  </div>`);
 }
 
 Deno.serve(async (req) => {

@@ -11,6 +11,7 @@ import {
   verifyStoredConfirmationToken,
 } from "../_shared/stored-confirmation-token.ts";
 import { enqueueEmail } from "../_shared/email-outbox.ts";
+import { appendTalentexperteEmailSignature } from "../_shared/talentexperte-email-signature.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -54,7 +55,7 @@ function buildCompanyConfirmationHtml(opts: {
   uhrzeit: string;
   ort: string;
 }): string {
-  return `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#111;color:#fff;border-radius:12px;overflow:hidden">
+  return appendTalentexperteEmailSignature(`<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#111;color:#fff;border-radius:12px;overflow:hidden">
   <div style="background:#e50000;padding:24px 32px">
     <h1 style="margin:0;font-size:24px;color:#fff">TALENTEXPERTE</h1>
     <p style="margin:4px 0 0;font-size:14px;color:#fff;opacity:.9">Firmen-Anmeldung</p>
@@ -70,7 +71,7 @@ function buildCompanyConfirmationHtml(opts: {
     </table>
     <p style="font-size:13px;color:#888;margin-top:24px">Bei Fragen erreichst du uns unter <a href="mailto:kontakt@talentexperte.de" style="color:#e50000">kontakt@talentexperte.de</a>.</p>
   </div>
-</div>`;
+</div>`);
 }
 
 Deno.serve(async (req) => {
