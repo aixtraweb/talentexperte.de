@@ -342,6 +342,7 @@ Diese Liste ist ein dokumentierter Stand, keine dauerhafte Datenquelle.
 Das Dashboard unter `admin.html` ist die operative Oberfläche für:
 
 - Camp- und Kapazitätsübersicht
+- private Camp-Aufgaben mit Priorität, Fälligkeit, Erledigt-Status und optionaler Verknüpfung zur Anmeldung
 - Eltern-, Sponsor- und Firmenanmeldungen
 - private Zahlungs-KPIs und Umsatz
 - Camp-, Status-, Sponsor- und Suchfilter
@@ -354,7 +355,7 @@ Das Dashboard unter `admin.html` ist die operative Oberfläche für:
 - Sprint-, Torschuss- und Dribblingwerte
 - Verarbeitung der E-Mail-Warteschlange
 
-Zugriff erhalten nur Supabase-Auth-Konten, die in `dashboard_admins` aktiv freigeschaltet sind. Die Sitzung endet nach 30 Minuten Inaktivität. Anwesenheitsänderungen besitzen eine Offline-Warteschlange und werden bei wiederhergestellter Verbindung übertragen.
+Zugriff erhalten nur Supabase-Auth-Konten, die in `dashboard_admins` aktiv freigeschaltet sind. Die Sitzung endet nach 30 Minuten Inaktivität. Aufgaben liegen privat in `admin_todos`, sind durch dieselbe Allowlist geschützt und werden über `security_audit_log` journalisiert. Anwesenheitsänderungen besitzen eine Offline-Warteschlange und werden bei wiederhergestellter Verbindung übertragen.
 
 ## 12. Zahlungserinnerungen
 

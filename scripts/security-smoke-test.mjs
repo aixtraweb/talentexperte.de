@@ -28,12 +28,20 @@ await expect("Öffentliche Camp-Ansicht", {
   url: `${projectUrl}/rest/v1/camp_verfuegbarkeit_public?select=id&limit=1`,
   options: { headers: publicHeaders },
 }, [200]);
-for (const table of ["anmeldungen", "firmen_anmeldungen", "confirmation_tokens", "email_outbox"]) {
+for (const table of ["anmeldungen", "firmen_anmeldungen", "admin_todos", "confirmation_tokens", "email_outbox"]) {
   await expect(`Private Tabelle ${table}`, {
     url: `${projectUrl}/rest/v1/${table}?select=*&limit=1`,
     options: { headers: publicHeaders },
   }, [401, 403]);
 }
+await expect("Admin-Aufgabe anonym anlegen", {
+  url: `${projectUrl}/rest/v1/admin_todos`,
+  options: {
+    method: "POST",
+    headers: { ...publicHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify({ title: "anonymous-write-must-fail" }),
+  },
+}, [401, 403]);
 
 async function replayTest(slug, purposeLabel) {
   const tokenResponse = await expect(`${purposeLabel}: Token`, {

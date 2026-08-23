@@ -51,10 +51,32 @@
     </div>
     <div class="tabs">
       <button class="tab active" data-tab="camps" onclick="switchTab('camps',this)">⚽ Camps</button>
+      <button class="tab" data-tab="aufgaben" onclick="switchTab('aufgaben',this)">✓ Aufgaben <span class="todo-tab-count" id="todoTabCount">0</span></button>
       <button class="tab" data-tab="anmeldungen" onclick="switchTab('anmeldungen',this)">📋 Anmeldungen</button>
       <button class="tab" data-tab="anwesenheit" onclick="switchTab('anwesenheit',this)">📅 Anwesenheit</button>
     </div>
     <div class="tab-content active" id="tabCamps"><div class="camp-cards" id="campCards"><div class="empty-state"><div class="icon">⏳</div>Laden…</div></div></div>
+    <div class="tab-content" id="tabAufgaben">
+      <section class="todo-board" aria-labelledby="todoBoardTitle">
+        <div class="todo-board-head">
+          <div>
+            <div class="todo-kicker">Camp-Einsatz</div>
+            <h2 id="todoBoardTitle">Aufgaben im Blick</h2>
+            <p>Offene Punkte für Campbetrieb, Zahlungen und Abrechnungen.</p>
+          </div>
+          <div class="todo-board-actions">
+            <div class="todo-filters" aria-label="Aufgaben filtern">
+              <button type="button" class="todo-filter active" data-todo-filter="open" aria-pressed="true" onclick="setTodoFilter('open',this)">Offen</button>
+              <button type="button" class="todo-filter" data-todo-filter="all" aria-pressed="false" onclick="setTodoFilter('all',this)">Alle</button>
+              <button type="button" class="todo-filter" data-todo-filter="done" aria-pressed="false" onclick="setTodoFilter('done',this)">Erledigt</button>
+            </div>
+            <button type="button" class="todo-add" onclick="openTodoModal()">＋ Neue Aufgabe</button>
+          </div>
+        </div>
+        <div class="todo-summary" id="todoSummary" role="status" aria-live="polite"></div>
+        <div class="todo-list" id="todoList"><div class="empty-state"><div class="icon">⏳</div>Aufgaben werden geladen…</div></div>
+      </section>
+    </div>
     <div class="tab-content" id="tabAnwesenheit">
       <div class="anwesenheit-controls">
         <select class="filter-select" id="anwesenheitCampSel" aria-label="Camp für Anwesenheit" onchange="onAnwesenheitCampChange(this.value)"><option value="">– Camp auswählen –</option></select>
@@ -186,6 +208,30 @@
   </div>
 </div>
 
+<!-- TODO MODAL -->
+<div class="modal-overlay" id="todoModal" role="dialog" aria-modal="true" aria-labelledby="todoModalTitle" aria-hidden="true">
+  <div class="modal todo-modal" tabindex="-1">
+    <div class="modal-header"><h2 id="todoModalTitle">Aufgabe anlegen</h2><button class="modal-close" aria-label="Aufgabendialog schließen" onclick="closeTodoModal()">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="todoId">
+      <div class="modal-field"><label for="todoTitle">Aufgabe *</label><input type="text" id="todoTitle" maxlength="180" placeholder="Was ist zu erledigen?"></div>
+      <div class="modal-field"><label for="todoDetails">Hinweis</label><textarea id="todoDetails" maxlength="2000" rows="3" placeholder="Betrag, Zahlungsweg oder nächster Schritt"></textarea></div>
+      <div class="modal-row">
+        <div class="modal-field"><label for="todoDueOn">Fällig am</label><input type="date" id="todoDueOn"></div>
+        <div class="modal-field"><label for="todoPriority">Priorität</label><select id="todoPriority"><option value="urgent">Sofort</option><option value="high">Hoch</option><option value="normal">Normal</option></select></div>
+      </div>
+      <div class="modal-field"><label for="todoCampId">Camp</label><select id="todoCampId"><option value="">Allgemein</option></select></div>
+      <div class="modal-field"><label for="todoRegistrationId">Anmeldung verknüpfen</label><select id="todoRegistrationId"><option value="">Keine Verknüpfung</option></select><span class="hint">Optional: öffnet aus der Aufgabe direkt den Teilnehmerdatensatz.</span></div>
+    </div>
+    <div class="modal-footer todo-modal-footer">
+      <button type="button" class="btn-modal todo-delete" id="todoDeleteBtn" onclick="deleteTodoFromModal()" hidden>Löschen</button>
+      <span class="todo-modal-spacer"></span>
+      <button type="button" class="btn-modal btn-modal-cancel" onclick="closeTodoModal()">Abbrechen</button>
+      <button type="button" class="btn-modal btn-modal-save" id="todoSaveBtn" onclick="saveTodo()">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <!-- DETAIL PANEL -->
 <div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
 <div class="detail-panel" id="detailPanel" role="dialog" aria-modal="true" aria-labelledby="detailTitle" aria-hidden="true" tabindex="-1">
@@ -212,11 +258,12 @@ var SUPABASE_URL='https://yxygwwoocsdnneqykiym.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
 var accessToken=null,tokenExpiry=0,refreshing=null;
 var ADMIN_IDLE_MS=30*60*1000,lastAdminActivity=Date.now();
-var allCamps=[],allAnmeldungen=[],allSponsoringPartners=[],currentSort={field:'kind',dir:'asc'},onlyMitarbeiter=false,onlyOef=false;
+var allCamps=[],allAnmeldungen=[],allSponsoringPartners=[],allTodos=[],currentSort={field:'kind',dir:'asc'},onlyMitarbeiter=false,onlyOef=false;
 var selectedIds=new Set();
 var lastAnwCampId=null;
 var campReadMode='private';
 var allDashboardRows=[],privateKpi=null;
+var todoFilter='open',todoLoadFailed=false;
 var KNOWN_STATUS={offen:true,bezahlt:true,gesponsert:true,storniert:true,erstattet:true};
 var dialogReturnFocus={};
 function setDialogState(id,open){var el=document.getElementById(id);if(!el)return;el.classList.toggle('visible',open);if(open){dialogReturnFocus[id]=document.activeElement;el.setAttribute('aria-hidden','false');requestAnimationFrame(function(){var target=el.querySelector('.modal,[tabindex="-1"]')||el;target.focus()})}else{el.setAttribute('aria-hidden','true');var previous=dialogReturnFocus[id];if(previous&&previous.focus)previous.focus();delete dialogReturnFocus[id]}}
@@ -355,7 +402,7 @@ if(hasPaymentSignal(a)&&!hasPaymentSignal(b))return a;
 return new Date(b.created_at||0)>new Date(a.created_at||0)?b:a
 }
 
-async function loadAll(){await Promise.all([loadCamps(),loadSponsoringPartners(),loadAnmeldungen(),loadPrivateKpis()]);renderCamps();populateCampFilter();populateAnwesenheitCampSel();populateSponsorPartnerSelect();updateStats();if(lastAnwCampId){anwesenheitCampId=lastAnwCampId;await loadTeilnahme();renderTable()}}
+async function loadAll(){await Promise.all([loadCamps(),loadSponsoringPartners(),loadAnmeldungen(),loadPrivateKpis(),loadTodos()]);renderCamps();populateCampFilter();populateAnwesenheitCampSel();populateSponsorPartnerSelect();populateTodoSelectors();renderTodos();updateStats();if(lastAnwCampId){anwesenheitCampId=lastAnwCampId;await loadTeilnahme();renderTable()}}
 async function loadCamps(){
 campReadMode='private';
 var d=await apiGet('camps?select=*&order=datum_von.asc');
@@ -377,6 +424,105 @@ showToast('Camps konnten nicht geladen werden',true)
 async function loadSponsoringPartners(){
 var rows=await apiGet('sponsoring_partners?select=id,name,slug&order=name.asc');
 allSponsoringPartners=Array.isArray(rows)?rows:[]
+}
+async function loadTodos(){
+var rows=await apiGet('admin_todos?select=*&order=created_at.asc');
+todoLoadFailed=!Array.isArray(rows);
+allTodos=Array.isArray(rows)?rows:[]
+}
+function todoTodayKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function todoPriorityRank(value){var rank={urgent:0,high:1,normal:2}[String(value||'').toLowerCase()];return rank===undefined?3:rank}
+function todoPriorityLabel(value){return{urgent:'Sofort',high:'Hoch',normal:'Normal'}[String(value||'').toLowerCase()]||'Normal'}
+function todoDueMeta(value){
+if(!value)return{label:'Ohne Termin',className:'none'};
+var due=new Date(value+'T00:00:00'),today=new Date();today.setHours(0,0,0,0);
+var diff=Math.round((due.getTime()-today.getTime())/86400000);
+if(diff<0)return{label:'Überfällig · '+fD(value),className:'overdue'};
+if(diff===0)return{label:'Heute',className:'today'};
+if(diff===1)return{label:'Morgen',className:'soon'};
+return{label:fD(value),className:'future'}
+}
+function todoCampName(id){var camp=allCamps.find(function(c){return c.id===id});return camp?camp.name:'Allgemein'}
+function sortedTodos(rows){return rows.slice().sort(function(a,b){
+if(a.status!==b.status)return a.status==='open'?-1:1;
+var priorityDiff=todoPriorityRank(a.priority)-todoPriorityRank(b.priority);if(priorityDiff)return priorityDiff;
+var dueA=a.due_on||'9999-12-31',dueB=b.due_on||'9999-12-31';if(dueA!==dueB)return dueA<dueB?-1:1;
+var orderDiff=Number(a.sort_order||0)-Number(b.sort_order||0);if(orderDiff)return orderDiff;
+return new Date(a.created_at||0)-new Date(b.created_at||0)
+})}
+function renderTodos(){
+var list=document.getElementById('todoList'),summary=document.getElementById('todoSummary'),badge=document.getElementById('todoTabCount');if(!list||!summary||!badge)return;
+var open=allTodos.filter(function(t){return t.status==='open'}),done=allTodos.filter(function(t){return t.status==='done'});
+var today=todoTodayKey(),urgent=open.filter(function(t){return t.priority==='urgent'||(t.due_on&&t.due_on<=today)}).length;
+badge.textContent=String(open.length);badge.classList.toggle('is-empty',open.length===0);
+summary.innerHTML='<span><strong>'+open.length+'</strong> offen</span><span><strong>'+urgent+'</strong> heute / dringend</span><span><strong>'+done.length+'</strong> erledigt</span>';
+if(todoLoadFailed){list.innerHTML='<div class="todo-empty"><strong>Aufgaben konnten nicht geladen werden.</strong><span>Bitte Verbindung und Berechtigung prüfen und erneut laden.</span></div>';return}
+var visible=allTodos.filter(function(t){return todoFilter==='all'||t.status===todoFilter});
+visible=sortedTodos(visible);
+if(!visible.length){list.innerHTML='<div class="todo-empty"><strong>'+(todoFilter==='done'?'Noch nichts abgehakt.':'Keine offenen Aufgaben.')+'</strong><span>'+(todoFilter==='done'?'Erledigte Aufgaben erscheinen hier.':'Der Camp-Einsatz ist aktuell frei von offenen Punkten.')+'</span></div>';return}
+list.innerHTML=visible.map(function(t){
+var due=todoDueMeta(t.due_on),doneState=t.status==='done',registration=allAnmeldungen.find(function(a){return a.id===t.registration_id});
+var details=t.details?'<p>'+esc(t.details).replace(/\n/g,'<br>')+'</p>':'';
+var registrationButton=registration?'<button type="button" class="todo-link" onclick="openTodoRegistration(\''+registration.id+'\')">Teilnehmer öffnen ↗</button>':'';
+return '<article class="todo-item priority-'+safeClassToken(t.priority)+(doneState?' is-done':'')+'" data-todo-id="'+esc(t.id)+'">'+
+'<button type="button" class="todo-check" aria-label="'+esc(doneState?'Aufgabe wieder öffnen':'Aufgabe als erledigt markieren')+'" aria-pressed="'+(doneState?'true':'false')+'" onclick="toggleTodo(\''+t.id+'\')"><span>'+(doneState?'✓':'')+'</span></button>'+
+'<div class="todo-copy"><div class="todo-meta"><span class="todo-priority">'+todoPriorityLabel(t.priority)+'</span><span class="todo-due '+due.className+'">'+esc(due.label)+'</span><span class="todo-camp">'+esc(todoCampName(t.camp_id))+'</span></div><h3>'+esc(t.title)+'</h3>'+details+'<div class="todo-links">'+registrationButton+'</div></div>'+
+'<button type="button" class="todo-edit" aria-label="Aufgabe bearbeiten" onclick="openTodoModal(\''+t.id+'\')">Bearbeiten</button></article>'
+}).join('')
+}
+function setTodoFilter(value,button){
+todoFilter=value;
+document.querySelectorAll('[data-todo-filter]').forEach(function(el){var active=el===button;el.classList.toggle('active',active);el.setAttribute('aria-pressed',active?'true':'false')});
+renderTodos()
+}
+function populateTodoSelectors(){
+var campSelect=document.getElementById('todoCampId'),registrationSelect=document.getElementById('todoRegistrationId');if(!campSelect||!registrationSelect)return;
+var campValue=campSelect.value,registrationValue=registrationSelect.value;
+campSelect.replaceChildren(new Option('Allgemein',''));
+allCamps.forEach(function(c){campSelect.appendChild(new Option(String(c.name||''),String(c.id||'')))});
+registrationSelect.replaceChildren(new Option('Keine Verknüpfung',''));
+allAnmeldungen.filter(function(a){return a.__table==='anmeldungen'&&a.__effectiveStatus!=='storniert'&&a.__effectiveStatus!=='erstattet'}).sort(function(a,b){return (a.nachname+' '+a.vorname).localeCompare(b.nachname+' '+b.vorname,'de')}).forEach(function(a){var camp=a.camps&&a.camps.name?' · '+a.camps.name:'';registrationSelect.appendChild(new Option(a.vorname+' '+a.nachname+camp,a.id))});
+campSelect.value=campValue;registrationSelect.value=registrationValue
+}
+function openTodoModal(id){
+var todo=id?allTodos.find(function(t){return t.id===id}):null;
+populateTodoSelectors();
+document.getElementById('todoId').value=todo?todo.id:'';
+document.getElementById('todoTitle').value=todo?todo.title:'';
+document.getElementById('todoDetails').value=todo&&todo.details?todo.details:'';
+document.getElementById('todoDueOn').value=todo&&todo.due_on?todo.due_on:todoTodayKey();
+document.getElementById('todoPriority').value=todo?todo.priority:'normal';
+var nextCamp=allCamps.find(function(c){return c.datum_bis>=todoTodayKey()&&String(c.status||'')==='aktiv'});
+document.getElementById('todoCampId').value=todo&&todo.camp_id?todo.camp_id:(nextCamp?nextCamp.id:'');
+document.getElementById('todoRegistrationId').value=todo&&todo.registration_id?todo.registration_id:'';
+document.getElementById('todoModalTitle').textContent=todo?'Aufgabe bearbeiten':'Aufgabe anlegen';
+document.getElementById('todoDeleteBtn').hidden=!todo;
+setDialogState('todoModal',true);
+setTimeout(function(){document.getElementById('todoTitle').focus()},0)
+}
+function closeTodoModal(){setDialogState('todoModal',false)}
+async function saveTodo(){
+var id=document.getElementById('todoId').value,title=document.getElementById('todoTitle').value.trim(),button=document.getElementById('todoSaveBtn');
+if(!title){showToast('Bitte eine Aufgabe eintragen',true);document.getElementById('todoTitle').focus();return}
+var payload={title:title,details:document.getElementById('todoDetails').value.trim()||null,due_on:document.getElementById('todoDueOn').value||null,priority:document.getElementById('todoPriority').value,camp_id:document.getElementById('todoCampId').value||null,registration_id:document.getElementById('todoRegistrationId').value||null};
+button.disabled=true;button.textContent='Speichert…';
+var response=id?await apiPatch('admin_todos',id,payload):await apiPost('admin_todos',payload);
+button.disabled=false;button.textContent='Speichern';
+if(!response||!response.ok){showToast('Aufgabe konnte nicht gespeichert werden',true);return}
+closeTodoModal();await loadTodos();renderTodos();showToast(id?'Aufgabe aktualisiert ✓':'Aufgabe angelegt ✓')
+}
+async function toggleTodo(id){
+var todo=allTodos.find(function(t){return t.id===id});if(!todo)return;
+var next=todo.status==='done'?'open':'done',response=await apiPatch('admin_todos',id,{status:next});
+if(!response||!response.ok){showToast('Aufgabenstatus konnte nicht gespeichert werden',true);return}
+await loadTodos();renderTodos();showToast(next==='done'?'Aufgabe erledigt ✓':'Aufgabe wieder geöffnet')
+}
+function openTodoRegistration(id){var registration=allAnmeldungen.find(function(a){return a.id===id});if(!registration){showToast('Verknüpfte Anmeldung wurde nicht gefunden',true);return}openDetail(id)}
+async function deleteTodoFromModal(){
+var id=document.getElementById('todoId').value,todo=allTodos.find(function(t){return t.id===id});if(!id||!todo)return;
+if(!confirm('Aufgabe „'+todo.title+'“ wirklich löschen?'))return;
+var response=await apiDelete('admin_todos',id);if(!response||!response.ok){showToast('Aufgabe konnte nicht gelöscht werden',true);return}
+closeTodoModal();await loadTodos();renderTodos();showToast('Aufgabe gelöscht')
 }
 async function loadPrivateKpis(){
 var rows=await apiGet('anmeldungen?select=*&order=created_at.desc');
@@ -1008,7 +1154,7 @@ document.getElementById('manualModal').classList.add('visible');setDialogState('
 
 function closeManualAnmeldung(){document.getElementById('manualModal').classList.remove('visible');setDialogState('manualModal',false)}
 
-document.addEventListener('keydown',function(event){if(event.key!=='Escape')return;if(document.getElementById('manualModal').classList.contains('visible'))closeManualAnmeldung();else if(document.getElementById('campModal').classList.contains('visible'))closeCampModal();else if(document.getElementById('detailPanel').classList.contains('open'))closeDetail()});
+document.addEventListener('keydown',function(event){if(event.key!=='Escape')return;if(document.getElementById('todoModal').classList.contains('visible'))closeTodoModal();else if(document.getElementById('manualModal').classList.contains('visible'))closeManualAnmeldung();else if(document.getElementById('campModal').classList.contains('visible'))closeCampModal();else if(document.getElementById('detailPanel').classList.contains('open'))closeDetail()});
 
 function mTypChanged(preserveAmounts){
 var typ=document.getElementById('mTyp').value;

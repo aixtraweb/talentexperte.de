@@ -1,8 +1,34 @@
 # Architektur- und Projektentscheidungen
 
-Stand: 20. Juli 2026
+Stand: 23. August 2026
 Dokumentationsstatus: bestätigt aus Code, Migrationen und bestehenden Handbüchern
 Geltungsbereich: dauerhafte Entscheidungen; keine tagesaktuellen Betriebsstände
+
+## 2026-08-23 – Operative Camp-Aufgaben persistent und admin-geschützt führen
+
+### Status
+akzeptiert
+
+### Ausgangslage
+Kurzfristige Klärungen zu Barzahlungen, Erstattungen und Partnerabrechnungen waren im Zahlungscontrolling erkennbar, besaßen aber keine gemeinsame, direkt im Admin-Dashboard pflegbare Aufgabenansicht.
+
+### Entscheidung
+Das Admin-Dashboard erhält eine persistente Aufgabenliste mit Priorität, Fälligkeit, offen/erledigt und optionaler Verknüpfung zu einer Anmeldung. Die Daten liegen in `admin_todos`, sind anonym vollständig gesperrt und verwenden dieselbe `is_dashboard_admin()`-Allowlist wie die privaten Anmeldedaten. Jede Änderung wird im bestehenden Sicherheitsjournal protokolliert.
+
+### Begründung
+Campkritische Punkte bleiben geräteübergreifend sichtbar, können direkt zum Teilnehmerdatensatz führen und werden nicht mit Zahlungsstatus, Teilnehmernotizen oder einem öffentlichen Repository-Backlog vermischt.
+
+### Auswirkungen
+Admins können Aufgaben anlegen, bearbeiten, abhaken, wieder öffnen und löschen. Personenbezogene konkrete Aufgaben werden nur als private Live-Daten angelegt; Migration und Git enthalten keine Teilnehmernamen oder tagesaktuellen Zahlungsdetails.
+
+### Betroffene Dateien oder Komponenten
+`admin.html`, `css/admin.css`, `admin_todos`, `security_audit_log`, `scripts/security-smoke-test.mjs`
+
+### Alternativen
+Statische Aufgaben im HTML, Teilnehmernotizen oder das historische `todo.md`; verworfen, weil sie nicht geräteübergreifend pflegbar, fachlich vermischt oder nicht als aktueller Betriebsstand geeignet sind.
+
+### Ersetzt durch
+—
 
 ## 2026-07-20 – Zahlungsrückfragen unmittelbar über die bestätigten Live-Zugänge prüfen
 

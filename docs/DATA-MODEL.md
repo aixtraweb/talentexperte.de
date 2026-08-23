@@ -20,6 +20,7 @@ Das Repository enthält nur Migrationen ab Juli 2026, nicht die vollständige ur
 | `sponsoring_partners` | Bestätigt | Sponsorpartner und Aktivstatus |
 | `sponsoring_entitlements` | Bestätigt | gehashte, campgebundene, einmalige Berechtigungen |
 | `dashboard_admins` | Bestätigt | zusätzliche Admin-Allowlist |
+| `admin_todos` | Bestätigt | private, campbezogene Aufgabenliste für freigeschaltete Dashboard-Admins; optional mit Anmeldung verknüpft und vollständig auditiert |
 | `confirmation_tokens` | Bestätigt | widerrufbare gehashte Bestätigungstokens |
 | `form_submission_nonces`, `form_rate_limits` | Bestätigt | Replay- und Rate-Limit-Schutz |
 | `sponsoring_validation_limits` | Bestätigt | persistentes Sponsorcode-Limit ohne Klartextcode/IP |
@@ -85,6 +86,7 @@ Sponsorstatus und Sponsorabrechnung sind von Elternzahlung getrennt. Sponsorfall
 - **Bestätigt:** Stripe Payment Intent darf höchstens einer Anmeldung zugeordnet sein.
 - **Bestätigt:** Bestätigungs- und private Journaltabellen sind nicht anonym lesbar.
 - **Bestätigt:** sensible Inserts/Updates/Deletes werden auditierbar gemacht.
+- **Bestätigt:** `admin_todos` ist anonym gesperrt; nur freigeschaltete Dashboard-Admins dürfen Aufgaben lesen oder verändern.
 - **Bestätigt:** Stornieren bewahrt Historie; Löschen ist nur für echte Fehleinträge gedacht.
 
 ## Relevante Funktionen/RPCs

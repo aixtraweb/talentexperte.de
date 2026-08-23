@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-08-23 — Persistente Aufgabenliste im Admin-Dashboard
+
+### Admin-Dashboard und Supabase
+
+- Neuer Tab „Aufgaben“ mit Offen-/Alle-/Erledigt-Filter, offener Anzahl, Priorität, Fälligkeit und responsiver Camp-Einsatz-Ansicht.
+- Aufgaben können angelegt, bearbeitet, erledigt, wieder geöffnet und gelöscht werden; eine optionale Anmeldungsverknüpfung öffnet direkt den privaten Teilnehmerdatensatz.
+- Neue Tabelle `admin_todos` ausschließlich für freigeschaltete Dashboard-Admins; anonyme Rollen bleiben gesperrt und jede Änderung wird im vorhandenen `security_audit_log` protokolliert.
+- Migration ohne konkrete Teilnehmernamen oder Zahlungsdetails gehalten; operative Sommercamp-II-Aufgaben wurden separat als private Live-Daten angelegt.
+- Anonymer Negativtest für `admin_todos` in den Sicherheitstest aufgenommen.
+- Migration und Dashboard produktiv ausgerollt; lokale und entfernte Hashes von `admin.html` und `css/admin.css` stimmen überein, der Deployment-Sicherheitstest besteht.
+- Rollbackpunkt des Website-Rollouts: `/srv/www/medina-82/backups/talentexperte/backup_2026-08-23_21-48-32.tar.gz`.
+
 ## 2026-07-20 — Tagesgesamtzahl der anwesenden Kinder im Dashboard
 
 ### Admin-Dashboard
