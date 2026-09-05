@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-05 — Social-Produktion vorläufig pausiert
+
+- Vier Sommercamp-Codex-Aufgaben bleiben PAUSED.
+- Zwei Sommercamp-LaunchAgents auf dem MacBook und zwei kombinierte Blog-/Social-LaunchAgents auf dem Mini deaktiviert und entladen.
+- Betriebspause im Handbuch dokumentiert; Entwürfe und Zugangsdaten erhalten.
+
+
 ## 2026-08-23 — Persistente Aufgabenliste im Admin-Dashboard
 
 ### Admin-Dashboard und Supabase

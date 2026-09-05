@@ -408,6 +408,11 @@ Der Sync dient Kontaktpflege und Kommunikation. Er ersetzt weder Supabase noch S
 
 ## 14. Social Media und Content-Produktion
 
+**Betriebspause seit 05.09.2026 auf ausdrücklichen Nutzerwunsch:**
+Sommercamp-/TALENTEXPERTE-Instagram- und Facebook-Posts vorläufig einstellen.
+Keine Wiederaufnahme aus alten Saisonplänen oder Freigaben. Vier Codex-Aufgaben
+und vier LaunchAgents sind pausiert; [Nachweis und Grenzen](docs/SOCIAL-PAUSE-2026-09-05.md).
+
 ### Kanäle
 
 - Instagram

@@ -263,3 +263,12 @@ nur Online-Upsert; verworfen.
 
 ### Ersetzt durch
 —
+
+## 2026-09-05 – Social-Automation vorläufig pausieren
+
+Status: akzeptiert, ausdrücklicher Nutzerauftrag.
+
+Instagram-/Facebook-Posts für Sommercamp und TALENTEXPERTE bleiben bis zur
+erneuten Nutzeranweisung eingestellt. Auch kombinierte Blog-/Social-Zeitpläne
+sind gestoppt. Bestehende Inhalte und Zugangsdaten bleiben erhalten.
+[Nachweis und Wiederaufnahmegrenze](SOCIAL-PAUSE-2026-09-05.md).
