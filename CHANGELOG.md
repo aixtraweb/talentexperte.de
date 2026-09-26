@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-26 — Bestätigungsseite hell
+
+- `css/bestaetigung.css`: heller, kontrastreicher Stil passend zur Anmeldung (weiße Karten, dunkle Schrift, abgedunkelte Status-Farben für Grün/Türkis/Gelb/Rot, helle Statuskarten für Sponsoring und offene Zahlung, helle Buttons und Kontaktlinks, Lookup-Karte). Navigation bleibt dunkel; Logik unverändert.
+
 ## 2026-09-26 — Anmeldeseite: heller, kontrastreicher, Vertrauensnachweise
 
 - Formularbereich auf helles, warmes Design umgestellt (weiße Karten, dunkle Schrift, sichtbare Feldränder, Fokus-Ringe); Navigation und Erfolgs-/Fehler-Overlays bleiben dunkel.
