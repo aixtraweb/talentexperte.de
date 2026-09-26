@@ -222,3 +222,8 @@ img{max-width:100%;display:block}a{color:inherit;text-decoration:none}button{fon
   .camp-select{max-width:900px;margin:60px auto 48px}
   .form-column{max-width:900px;margin:0 auto}
 }
+/* Herbstcamp 2026 */
+.herbst-banner{display:block;max-width:860px;margin:0 auto 28px;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 0 1px rgba(243,154,30,.3);transition:transform .3s}
+.herbst-banner:hover{transform:translateY(-3px)}
+.herbst-banner img{width:100%;height:auto;display:block}
+.camp-past-note{grid-column:1/-1;font-size:.78rem;color:var(--gray-500);opacity:.8;margin-top:4px}

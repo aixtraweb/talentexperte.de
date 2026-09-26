@@ -258,7 +258,8 @@
 
 <!-- HERO -->
 <section class="hero-mini"><div class="container">
-  <div class="badge">⚽ Online-Anmeldung</div>
+  <a href="index.html#herbstcamp" class="herbst-banner" aria-label="Herbstcamps 2026 – mehr erfahren"><picture><source type="image/avif" srcset="images/herbstcamp-2026/herbstcamp-header-900.avif 900w, images/herbstcamp-2026/herbstcamp-header.avif 1672w" sizes="(max-width: 900px) 100vw, 860px"><source type="image/webp" srcset="images/herbstcamp-2026/herbstcamp-header-900.webp 900w, images/herbstcamp-2026/herbstcamp-header.webp 1672w" sizes="(max-width: 900px) 100vw, 860px"><img src="images/herbstcamp-2026/herbstcamp-header-900.jpg" alt="Herbstcamps 2026: 19.–22.10. oder 26.–29.10.2026 beim JSC BW Aachen, 5–14 Jahre, 149 € pro Kind und Camp" width="900" height="506" fetchpriority="high"></picture></a>
+  <div class="badge">🍂 Herbstcamps 2026</div>
   <h1>JETZT <span class="accent">ANMELDEN</span></h1>
   <p id="heroIntro">In 2 Minuten zum Camp-Platz. Wähle dein Camp und fülle das Formular aus. Falls ein Verein die Teilnahme finanziert, kannst du deinen persönlichen Code direkt bei den Kinderdaten prüfen.</p>
 </div></section>
@@ -684,12 +685,18 @@ async function loadCamps() {
       return;
     }
 
-    // Abgelaufene Camps bleiben sichtbar, sind aber klar als Vergangenheit
-    // markiert, nicht auswählbar und stehen am Ende der Liste.
+    // Abgelaufene Camps werden nicht mehr zur Auswahl angeboten, sondern nur
+    // noch als gedämpfte Zeile „Bereits abgeschlossen“ unter der Liste genannt.
     const heute = new Date();
     heute.setHours(0, 0, 0, 0);
     const istAbgelaufen = c => Boolean(c.datum_bis) && new Date(c.datum_bis + 'T23:59:59') < heute;
-    camps.sort((a, b) => Number(istAbgelaufen(a)) - Number(istAbgelaufen(b)));
+    const vergangen = camps.filter(istAbgelaufen);
+    camps = camps.filter(c => !istAbgelaufen(c));
+
+    if (camps.length === 0) {
+      grid.innerHTML = '<div class="camp-error">Aktuell sind keine Camps buchbar. Bitte schaue später wieder vorbei.</div>';
+      return;
+    }
 
     grid.innerHTML = camps.map(camp => {
       const abgelaufen = istAbgelaufen(camp);
@@ -728,7 +735,7 @@ async function loadCamps() {
           </div>
         </label>
       `;
-    }).join('');
+    }).join('') + (vergangen.length ? `<p class="camp-past-note">Bereits abgeschlossen: ${vergangen.map(c => escapeHtml(c.name)).join(' · ')}</p>` : '');
 
     // Click-Handler (Mehrfach-Auswahl)
     grid.querySelectorAll('.camp-option:not(.disabled)').forEach(el => {
@@ -753,6 +760,13 @@ async function loadCamps() {
         checkFormReady();
       });
     });
+
+    // Vorauswahl über Link von der Startseite (?camp=<id>)
+    const wunschCamp = new URLSearchParams(location.search).get('camp');
+    if (wunschCamp) {
+      const opt = Array.from(grid.querySelectorAll('.camp-option:not(.disabled)')).find(el => el.dataset.id === wunschCamp);
+      if (opt && !opt.classList.contains('selected')) opt.click();
+    }
 
   } catch (err) {
     console.error('Camps laden fehlgeschlagen:', err);

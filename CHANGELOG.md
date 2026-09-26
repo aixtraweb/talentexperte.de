@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-09-26 — Herbstcamp-Kampagne und Design-Upgrade der Startseite
+
+### Startseite (`index.html`, `css/main.css`)
+
+- Neuer Hero „Deine Ferien. Dein Spiel.“ mit beiden Herbstcamp-Terminen als klickbaren Karten, Countdown bis zum Anpfiff und Herbstcamp-Plakat.
+- Live-Verfügbarkeit der Herbstcamps aus der öffentlichen View `camp_verfuegbarkeit_public` (nur `freie_plaetze`); ab ≤10 Plätzen „Nur noch X Plätze“, bei 0 „Ausgebucht“.
+- Neue Sektion `#herbstcamp` mit Nutzen für Kinder und Eltern, Fakten und 5 Herbst-Motiven (Lightbox).
+- Termine: Herbstcamps als hervorgehobene Karten mit Motiv; Oster- und Sommercamps 2026 nur noch als gedämpfter „Rückblick 2026“.
+- Neue Sektion `#videos`: 6 Hochkant-Videos und 4 Teamfotos aus Sommercamp II (Teamfotos ohne Titelzeile und ohne AIXTRA-WEB-Fußzeile zugeschnitten).
+- CTA-Banner auf Herbst umgestellt, Sticky-Anmelde-Leiste auf Mobilgeräten, Navigation um Herbstcamp/Videos ergänzt.
+- Meta-Title/Description/OG-Bild auf Herbstcamp 2026; JSON-LD: vergangene Oster-/Sommer-Events entfernt, Herbst-Events mit neuen Bildern, neue FAQ „Wann sind die Herbstcamps 2026?“.
+- JSON-LD `aggregateRating.ratingCount` von 87 auf 43 an die sichtbare Angabe „43 Google-Rezensionen“ angeglichen.
+- `pdf/faq-camps.pdf` wiederhergestellt (lokal versehentlich gelöscht, aber von Startseite und Bestätigung verlinkt).
+- Fix: Fotostreifen-Bilder schrumpften auf Mobilgeräten auf wenige Pixel (`flex-shrink`).
+- Neue Assets: `images/herbstcamp-2026/`, `images/sommercamp-2026/`, `images/videos/` (AVIF/WebP/JPG bzw. MP4 mit `faststart`).
+
+### Anmeldung (`anmeldung.html`, `css/anmeldung.css`)
+
+- Abgelaufene Camps erscheinen nicht mehr in der Auswahl, nur noch als Hinweiszeile „Bereits abgeschlossen: …“.
+- Vorauswahl per Link `anmeldung.html?camp=<camp-id>` (von den Herbstcamp-Buttons der Startseite genutzt).
+- Herbstcamp-Banner oberhalb der Anmeldung.
+
 ## 2026-09-05 — Social-Produktion vorläufig pausiert
 
 - Vier Sommercamp-Codex-Aufgaben bleiben PAUSED.
