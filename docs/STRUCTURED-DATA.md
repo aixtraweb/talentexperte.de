@@ -1,6 +1,6 @@
 # Strukturierte Daten
 
-Stand: 18. Juli 2026
+Stand: 26. September 2026
 Dokumentationsstatus: bestätigt durch lokale JSON-Parse-Prüfung; nicht live validiert
 Geltungsbereich: JSON-LD in `index.html` und `anmeldung.html`
 
@@ -15,7 +15,7 @@ Geltungsbereich: JSON-LD in `index.html` und `anmeldung.html`
 | `Person` Elias Medina | `/#trainer-elias-medina` | eingebunden |
 | `Organization` | `/#organization` | eingebunden |
 | `WebSite` | `/#website` | eingebunden |
-| sechs `Event` | Oster I/II, Sommer I/II, Herbst I/II | eingebunden |
+| zwei `Event` | Herbst I/II 2026 (vergangene Camps am 26.09.2026 entfernt) | eingebunden |
 | `FAQPage` | `/#faq` | eingebunden |
 
 ### `anmeldung.html`
@@ -23,7 +23,7 @@ Geltungsbereich: JSON-LD in `index.html` und `anmeldung.html`
 | Typ | Umfang | Status |
 |---|---|---|
 | `WebPage` | Anmeldeseite | eingebunden |
-| sechs `Event` | gleicher Campzyklus | eingebunden |
+| zwei `Event` | Herbst I/II 2026, mit Kampagnenbildern | eingebunden |
 | `BreadcrumbList` | Startseite → Anmeldung | eingebunden |
 
 ## Datenquellen
@@ -32,13 +32,16 @@ Geltungsbereich: JSON-LD in `index.html` und `anmeldung.html`
 - **Bestätigt:** Eventdaten und Offers sind derzeit statisch in beiden HTML-Dateien dupliziert.
 - **Bestätigt:** sichtbare Campauswahl lädt dynamisch aus Supabase.
 - **Risiko:** JSON-LD aktualisiert sich nicht automatisch mit Supabase und kann abweichen.
+- **Regel seit 26.09.2026:** nur buchbare/kommende Camps als `Event` führen; vergangene Camps entfernen statt `EventCompleted` (kein gültiger schema.org-`eventStatus`).
+- `aggregateRating.ratingCount` = sichtbare Google-Rezensionszahl (aktuell 43, statisch). Bei neuen Bewertungen sichtbare Angaben auf Startseite/Anmeldung und JSON-LD gemeinsam ändern.
+- `FAQPage` enthält zusätzlich „Wann finden die Herbstcamps 2026 in Aachen statt?“ (sichtbar in der FAQ).
 
 ## Verbindliche Regeln
 
 - JSON muss syntaktisch parsebar sein und im `<script type="application/ld+json">` liegen.
 - `@id` stabil halten und Beziehungen über IDs statt konkurrierende Entitäten modellieren.
 - `Event` benötigt mindestens Name, Start/Ende, Status, Ort, Veranstalter und Offer, soweit tatsächlich belegt.
-- Eventstatus: vergangen `EventCompleted`, künftig `EventScheduled`; Verfügbarkeit separat im Offer.
+- Eventstatus: künftig `EventScheduled`; vergangene Events werden entfernt (nicht `EventCompleted`). Verfügbarkeit separat im Offer.
 - `Offer.price`, `priceCurrency`, `availability` und Ziel-URL nur nach aktueller Prüfung ändern.
 - Sichtbare FAQ-Frage/-Antwort und `FAQPage.mainEntity` wortsinngleich halten.
 - Breadcrumb muss der realen Nutzerhierarchie entsprechen.

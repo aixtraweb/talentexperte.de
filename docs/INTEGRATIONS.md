@@ -103,8 +103,9 @@ Vor jeder TALENTEXPERTE-E-Mail sind unmittelbar vor dem Senden zu bestätigen:
 
 | Dienst | Zweck | Quellen/Risiko |
 |---|---|---|
-| Leaflet + Carto Tiles | Karte/Standort | lazy geladen; externe Ressourcen/Datenschutz prüfen |
-| Elfsight | Instagram-Feed | lazy geladen; Consent/Verfügbarkeit/CLS prüfen |
+| Leaflet (unpkg) + OpenStreetMap-Kacheln | Karte/Standort | lazy geladen; CARTO seit 26.09.2026 ersetzt (API-Key-Pflicht); Namensnennung Pflicht; Datenschutzhinweis fehlt noch (siehe OPEN-QUESTIONS) |
+| Supabase `camp_verfuegbarkeit_public` (anon) | Live-Plätze auf der Startseite | nur Aggregate (`id`, `freie_plaetze`, `datum_bis`), Fallback-Text ohne Antwort |
+| Elfsight | Instagram-Feed | lazy geladen; **seit mind. 26.09.2026 `WIDGET_DISABLED`** – Bereich leer, Reaktivierung offen |
 | jsPDF | PDF-Erzeugung im Browser | CDN mit Integrity auf Bestätigungsseite; Offline-/CSP-Fallback prüfen |
 | Supabase JS CDN | Firmenformular | feste Versionsreferenz `2.49.1`; Update nur getestet |
 | WhatsApp | Kontakt-CTA | externer Link, keine Formulardaten automatisch mitsenden |

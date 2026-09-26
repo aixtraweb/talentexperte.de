@@ -53,8 +53,8 @@ Geltungsbereich: organische Suche, lokale Sichtbarkeit und KI-Suchsysteme
 
 ## Aktueller bestätigter Code-Stand
 
-- `index.html`: LocalBusiness/SportsActivityLocation, zwei Person-Nodes, Organization, WebSite, sechs Events und FAQPage.
-- `anmeldung.html`: WebPage, sechs Events und BreadcrumbList.
+- `index.html`: LocalBusiness/SportsActivityLocation, zwei Person-Nodes, Organization, WebSite, zwei Events (Herbstcamps 2026) und FAQPage. Title/Description/OG-Bild auf Herbstcamp 2026 (`images/herbstcamp-2026/herbstcamp-header.jpg`, 1672×942).
+- `anmeldung.html`: WebPage, zwei Events (Herbstcamps 2026) und BreadcrumbList.
 - Startseite enthält statische, crawlbare Google-Reviewkarten statt des früheren reinen Bewertungswidgets.
 - Fonts sind lokal; Bilder nutzen auf Hauptmotiven AVIF/WebP/JPEG.
 - `llms.txt`, `robots.txt` und `sitemap.xml` sind in der Deployment-Allowlist.

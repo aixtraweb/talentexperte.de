@@ -1,12 +1,12 @@
 # Designsystem
 
-Stand: 18. Juli 2026
+Stand: 26. September 2026
 Dokumentationsstatus: bestätigt für den aktuellen CSS-Bestand; einzelne Markenparameter sind offen
 Geltungsbereich: öffentliche Seiten, Formulare, Bestätigungen und Admin-Dashboard
 
 ## Gestaltungsprinzip
 
-- **Bestätigt:** dunkel, sportlich, hochwertig und kontrastreich.
+- **Bestätigt:** sportlich, hochwertig und kontrastreich. Seit 26.09.2026: Startseite im Hell/Dunkel-Rhythmus; Anmeldung und Bestätigung mit hellem, warmem Inhaltsbereich (Navigation bleibt dunkel).
 - **Bestätigt:** Rot kennzeichnet primäre Aktionen; Schwarz/Dunkelgrau bilden Flächen; Weiß/Grau tragen Text.
 - **Bestätigt:** Türkis kennzeichnet Sponsoring und „keine Elternzahlung“.
 - **Bestätigt:** echte Campfotos haben Vorrang vor generischen oder künstlich wirkenden Motiven.
@@ -46,7 +46,15 @@ Geltungsbereich: öffentliche Seiten, Formulare, Bestätigungen und Admin-Dashbo
 
 - `css/main.css`, `css/anmeldung.css`, `css/bestaetigung.css`, `css/admin.css` und `css/legal.css` definieren seitenlokale `:root`-Tokens. Werte nicht global angleichen, ohne alle Seitenzustände zu testen.
 - Rot und Türkis nicht austauschen: Türkis trägt fachliche Bedeutung für Sponsoring.
-- **Widerspruch:** `SOCIAL-CONTENT-PLAN.md` nennt Gold, der produktive Website-CSS-Bestand besitzt kein bestätigtes Gold-Token. Gold bleibt Social-Entwurfsakzent und ist keine allgemeine Website-CI-Farbe.
+- **Kampagnen-Akzent Herbst 2026:** `--herbst:#f39a1e`, `--herbst-deep:#d9660b`, `--gold:#f5b829`, `--herbst-glow` in `css/main.css` (Herbst-Sektion, Badges, Herbst-Buttons, Sticker). Gold/Orange sind **Saisonakzent**, keine allgemeine CI-Farbe; Rot bleibt Primäraktion.
+
+## Hell/Dunkel-Rhythmus und helle Seiten (seit 26.09.2026)
+
+- **Startseite:** Helle Sektionen per Klasse `.theme-light` (Creme `#f7f3ec`) bzw. `.theme-light theme-light--white` (Weiß) – aktuell Über uns, Bewertungen, Training, Ablauf, Galerie, Instagram, FAQ. Dunkel bleiben Hero, Herbstcamp, Leistungen, Termine, Videos, Standort, CTA, Footer (Bühne für Motive/Videos).
+- `.theme-light` überschreibt nur Variablen (`--white` wird Textfarbe `#1c1917`, `--gray-300` `#3f3a36`, `--gray-500` `#6b6560`, `--red` `#d40000`) plus gezielte Karten-/FAQ-/Review-Regeln. Neue Sektionen durch Hinzufügen der Klasse hell schalten, keine eigenen Farbwerte.
+- **Anmeldung (`css/anmeldung.css`) und Bestätigung (`css/bestaetigung.css`):** Variablen-Override auf `.hero-mini, .form-stepper, .main, .summary-bar, .footer-mini` bzw. `.main, .footer-mini`. Overlays (Erfolg/Fehler) bleiben bewusst dunkel.
+- Statusfarben auf Hell abgedunkelt: bezahlt/verfügbar `#15803d`, knapp/offen `#b45309`, Fehler/storniert `#b91c1c`, Sponsoring-Text `#0f766e`/`#115e59`. Sterne `#f5a300`.
+- Eingabefelder hell: weiß, Rand `#cfc8bd`, Fokus roter Ring; Platzhalter `#a8a29e`.
 
 ## Typografie
 
@@ -92,6 +100,8 @@ Geltungsbereich: öffentliche Seiten, Formulare, Bestätigungen und Admin-Dashbo
 - Social-Formate: 1080×1350 (4:5), 1080×1920 (9:16), 1080×1080 (1:1).
 - KI-Bilder dürfen keine Fantasieschrift, zusätzlichen Personen oder veränderte Gesichter erzeugen. Text/Logo kontrolliert im Layout setzen.
 - Rohmedien, PSDs und große Videos sind nicht automatisch öffentliche Assets; siehe [`DEPLOYMENT.md`](DEPLOYMENT.md).
+- Kampagnenmotive: `images/herbstcamp-2026/` (je `name.{avif,webp,jpg}` in voller Größe + `-600`/`-900`). Teamfotos: `images/sommercamp-2026/` (`-800` + 1600). Videos: `images/videos/*.mp4` (540×960, H.264, `+faststart`, `preload="none"`, Poster `.jpg/.webp`).
+- Fremd-Branding (z. B. AIXTRA-WEB-Fußzeilen auf Fotovorlagen) vor Veröffentlichung wegschneiden – Projekttrennung laut `AGENTS.md`.
 
 ## Animation
 

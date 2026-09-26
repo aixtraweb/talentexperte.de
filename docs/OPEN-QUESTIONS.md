@@ -1,8 +1,43 @@
 # Offene Fragen
 
-Stand: 20. Juli 2026
+Stand: 26. September 2026
 Dokumentationsstatus: offen und priorisiert
 Geltungsbereich: ungeklärte Punkte aus Repository- und Dokumentationsinventur
+
+## Instagram-Widget (Elfsight) deaktiviert
+
+- Status: zurückgestellt auf Wunsch des Betreibers („später“), Erinnerung eingeplant
+- Priorität: mittel
+- Betroffener Bereich: Startseite `#instagram`, `index.html`
+- Aktueller Kenntnisstand: Elfsight meldet `WIDGET_DISABLED` für Widget `53f9643a-8f40-4f11-917b-7ec3410b68bd`; der Bereich bleibt leer (nur Folgen-Button sichtbar).
+- Benötigte Entscheidung: Widget im Elfsight-Konto reaktivieren (Abo/Limit prüfen) oder Sektion durch statische Instagram-Kacheln/Link ersetzen bzw. ausblenden.
+- Verantwortlich: Betreiber
+- Datum: 26.09.2026
+
+## Datenschutzerklärung: Karte (OpenStreetMap/unpkg)
+
+- Status: offen
+- Priorität: hoch
+- Betroffener Bereich: `datenschutz.html`, `index.html#standorte`
+- Aktueller Kenntnisstand: Die Karte lädt Leaflet von `unpkg.com` und Kacheln von `tile.openstreetmap.org` (IP-Übertragung an Dritte). Die Datenschutzerklärung erwähnt die Karte bislang nicht (galt schon für CARTO).
+- Benötigte Entscheidung: Rechtstext ergänzen lassen; optional Leaflet lokal hosten und/oder Karte erst nach Klick laden.
+- Verantwortlich: Betreiber/Recht
+- Datum: 26.09.2026
+
+## Statische Bewertungsangaben
+
+- Status: offen (Pflegeaufgabe)
+- Priorität: niedrig
+- Aktueller Kenntnisstand: „5,0 · 43 Google-Rezensionen“ steht fest in `index.html` (sichtbar + JSON-LD `ratingCount`) und `anmeldung.html`. Am 26.09.2026 wurde JSON-LD von 87 auf 43 angeglichen.
+- Vorläufiges Verhalten: bei neuen Google-Bewertungen alle Stellen gemeinsam aktualisieren.
+- Datum: 26.09.2026
+
+## `pdf/faq-camps.pdf` lokal gelöscht vorgefunden
+
+- Status: behoben, Ursache offen
+- Aktueller Kenntnisstand: Datei war am 26.09.2026 lokal unversioniert gelöscht, wird aber von Startseite, `bestaetigung.html` und als Mail-Anhang genutzt. Aus Git wiederhergestellt, sonst hätte `ci/deploy.sh --delete` sie live entfernt.
+- Benötigte Entscheidung: Falls eine neue FAQ-Version geplant ist, Datei ersetzen statt löschen.
+- Datum: 26.09.2026
 
 ## Produktiver Rollout des Zahlungsfrist-Workflows
 

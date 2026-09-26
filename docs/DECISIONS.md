@@ -1,8 +1,39 @@
 # Architektur- und Projektentscheidungen
 
-Stand: 23. August 2026
+Stand: 26. September 2026
 Dokumentationsstatus: bestätigt aus Code, Migrationen und bestehenden Handbüchern
 Geltungsbereich: dauerhafte Entscheidungen; keine tagesaktuellen Betriebsstände
+
+## 2026-09-26 – Saisonkampagne, Hell/Dunkel-Design und nur buchbare Camps zeigen
+
+### Status
+akzeptiert
+
+### Ausgangslage
+Die Herbstcamps 2026 waren auf der Startseite nur eine von sechs gleichrangigen Karten; Oster- und Sommercamps waren bereits vorbei. Die komplett dunkle Gestaltung wurde auf Formular- und Bestätigungsseiten als schwer lesbar empfunden; die Camp-Auswahl lag weit unten. Die CARTO-Kartenkacheln lieferten nur noch „API KEY REQUIRED“.
+
+### Entscheidung
+1. Die jeweils nächste Saison führt die Startseite an (Hero, eigene Sektion, CTA, Sticky-Leiste, Meta/OG). Vergangene Camps erscheinen nur noch gedämpft als „Rückblick“, in der Anmeldung nur als Hinweiszeile, und werden aus dem JSON-LD entfernt.
+2. Startseite im Hell/Dunkel-Rhythmus (`.theme-light`); Anmeldung und Bestätigung mit hellem Inhaltsbereich, dunkler Navigation und dunklen Overlays.
+3. Freie Plätze auf der Startseite live aus der öffentlichen View `camp_verfuegbarkeit_public`.
+4. Direkter Einstieg in die Anmeldung per `?camp=<camp-id>`.
+5. Google-Sterne und echte Elternstimmen als Vertrauensnachweis direkt in der Anmeldung.
+6. Karte: OpenStreetMap-Standardkacheln statt CARTO.
+
+### Begründung
+Eltern sollen in Sekunden sehen, was jetzt buchbar ist, und ohne Umwege anmelden. Hoher Kontrast und helle Formulare senken Abbrüche; Live-Plätze vermeiden veraltete Knappheitsaussagen. OSM-Kacheln sind ohne Schlüssel nutzbar.
+
+### Auswirkungen
+Saisonwechsel erfordert Austausch von Motiven, Terminen und Camp-IDs an mehreren Stellen (siehe `COMPONENTS.md` → Saisonkampagne). Bewertungsanzahl ist statisch und manuell zu pflegen. Neue Datenschutz-Relevanz durch OSM-Kacheln (offen).
+
+### Betroffene Dateien oder Komponenten
+`index.html`, `anmeldung.html`, `css/main.css`, `css/anmeldung.css`, `css/bestaetigung.css`, `images/herbstcamp-2026/`, `images/sommercamp-2026/`, `images/videos/`
+
+### Alternativen
+Vergangene Camps weiter als deaktivierte Karten (verworfen: lenkt ab); komplett helles Redesign (verworfen: Motive/Videos wirken auf Dunkel stärker); CARTO mit API-Key (verworfen: zusätzliches Konto/Schlüssel ohne Mehrwert).
+
+### Ersetzt durch
+–
 
 ## 2026-08-23 – Operative Camp-Aufgaben persistent und admin-geschützt führen
 

@@ -1,6 +1,6 @@
 # Komponenten und Seitentypen
 
-Stand: 18. Juli 2026
+Stand: 26. September 2026
 Dokumentationsstatus: bestätigt für den aktuellen HTML-/CSS-Bestand
 Geltungsbereich: wiederkehrende UI-Muster und ihre verbindliche Wiederverwendung
 
@@ -31,13 +31,31 @@ Es gibt keine Template-Engine oder Komponentenbibliothek. Komponenten sind wiede
 ### Hero
 
 - Quellen: `.hero`, `.hero-bg`, `.hero-video`, `.hero-content`, `.hero-buttons`, `.hero-stats`.
+- Kampagnenvariante `.hero--herbst` (seit 26.09.2026): `.hero-split` (Text links, Plakat `.hero-poster` rechts), `.hero-kicker` in der H1, Terminkarten `.hero-date` (verlinken auf `anmeldung.html?camp=<camp-id>`), `#heroCountdown` (bis Campstart, blendet sich nach Start aus), dekorative `.hero-leaves` (aus bei reduced motion).
 - Pflicht: genau eine H1, konkrete lokale Leistung, primäre Anmeldung, vertrauensbildender Kontext.
 - Video benötigt Poster/Fallback; Text muss ohne Video verständlich bleiben.
 
 ### Inhaltssektionen
 
 - Standard: `.section-pad` + `.container`, `.section-label`, `.section-title`, `.section-subtitle`.
-- Bestehende Sektionen: Über uns, Bewertungen, Leistungen, Training, Camps, Ablauf, Galerie, Instagram, FAQ, Standort und CTA-Banner.
+- Bestehende Sektionen: Herbstcamp (`#herbstcamp`), Über uns, Bewertungen, Leistungen, Training, Camps, Ablauf, Videos (`#videos`), Galerie, Instagram, FAQ, Standort und CTA-Banner.
+- Hell/Dunkel: helle Sektionen tragen `.theme-light` (optional `.theme-light--white`), siehe [`DESIGN-SYSTEM.md`](DESIGN-SYSTEM.md).
+
+### Saisonkampagne (Herbstcamp 2026)
+
+- `#herbstcamp`: `.herbst-grid` (Motiv + Text), `.herbst-duo` (Für Kinder / Für Eltern), `.herbst-facts`, `.herbst-cta`, Motivleiste `.herbst-motif` (Buttons mit `data-full`, öffnen die Lightbox; mobil horizontal wischbar).
+- CTA-Banner `.cta-banner--herbst` mit Header-Motiv; mobile Sticky-Leiste `#stickyCta` erscheint zwischen Hero und Footer, verschiebt den WhatsApp-Button.
+- Nächste Saison: Motive in `images/<saison>-<jahr>/` ablegen, Texte/Termine/Camp-IDs in Hero, `#herbstcamp`, Campkarten, CTA, Sticky-Leiste, Meta/OG und JSON-LD austauschen.
+
+### Live-Verfügbarkeit
+
+- Elemente mit `data-spots-for="<camp-id>"` werden per `fetch` aus `camp_verfuegbarkeit_public` (anon, nur Aggregate) befüllt: `> 10` „X Plätze frei“, `≤ 10` „Nur noch X Plätze“, `0` „Ausgebucht“ (+ `.is-full` am Container). Ohne Antwort bleibt der statische Fallback-Text stehen.
+
+### Videos und Teamfotos
+
+- `.reels` mit `figure.reel` (Hochkant-`video` mit `controls`, `preload="none"`, Poster; Overlay `.reel-play`); JS pausiert andere Videos beim Abspielen. Mobil horizontal wischbar.
+- `.teamfotos-grid` mit `.team-photo`-Buttons (Lightbox wie Herbst-Motive).
+- Die Lightbox (`#galerieLightbox`) wird nur für Herbst-Motive und Teamfotos genutzt; die Hauptgalerie bleibt ohne Klick-Vergrößerung.
 - Neue Landingpage-Sektionen sollen diese Abstände/Typografie wiederverwenden.
 
 ### Bewertungen
@@ -51,6 +69,7 @@ Es gibt keine Template-Engine oder Komponentenbibliothek. Komponenten sind wiede
 - Quellen: `.camp-card`, `.camp-card-header`, `.camp-details`, `.camp-footer`, Statusklassen.
 - Pflicht: Saison/Name, Datum/Dauer, Ort, Alter, Preis/Leistung, Status und passende Aktion.
 - Abgelaufen/abgeschlossen: kein Anmelde-CTA; ausgebucht: nicht buchbar; verfügbar/knapp: Status aus aktueller Quelle.
+- Buchbare Camps als `.camp-card--featured` mit Motiv (`.camp-card-media`); vergangene Camps nicht mehr als Karte, sondern gedämpft in `.camps-past` („Rückblick <Jahr>“).
 - Campdaten existieren zusätzlich in Supabase und JSON-LD; alle Stellen synchron prüfen.
 
 ### FAQ/Akkordeon
@@ -71,7 +90,9 @@ Es gibt keine Template-Engine oder Komponentenbibliothek. Komponenten sind wiede
 
 - Quellen: `.form-stepper`, `.camp-select`, `.camp-option`, `.summary-sidebar`.
 - Auswahl muss Campname, Zeitraum, Preis und Verfügbarkeit verständlich machen.
-- Abgelaufene Camps sichtbar, deaktiviert und ans Ende sortiert; Servervalidierung bleibt maßgeblich.
+- Abgelaufene Camps (seit 26.09.2026) nicht mehr in der Auswahl, nur als Hinweiszeile `.camp-past-note` „Bereits abgeschlossen: …“; Servervalidierung bleibt maßgeblich.
+- Vorauswahl per `anmeldung.html?camp=<camp-id>` (nur buchbare Camps; klickt die Option programmatisch, damit Summe/Validierung identisch laufen).
+- Kopf kompakt: `.herbst-ribbon` (Saisonhinweis), `.trust-bar` (Sterne + Google-Rezensionen, Link zu Google), `.trust-points`. Vor AGB/Absenden: `.form-reviews` mit zwei echten Google-Elternstimmen. Bewertungsanzahl ist statisch – bei Änderung Startseite, Anmeldung und JSON-LD gemeinsam anpassen.
 
 ### Formularfelder
 
@@ -99,6 +120,12 @@ Es gibt keine Template-Engine oder Komponentenbibliothek. Komponenten sind wiede
 - `bestaetigung-firma.html`: Firmenbestätigung mit sicherem Token und passendem PDF/FAQ.
 - Ohne gültiges Token keine persönlichen Daten anzeigen.
 - Storniert/erstattet/gesponsert/bezahlt/offen sind getrennte Darstellungen.
+- Seit 26.09.2026 heller Inhaltsbereich (siehe Designsystem); Logik und Tokenprüfung unverändert.
+
+## Standortkarte
+
+- `#map` (Leaflet 1.9.4 von unpkg, lazy per IntersectionObserver) mit OpenStreetMap-Standardkacheln `tile.openstreetmap.org` (Klasse `.map-tiles`, dezent entsättigt) und sichtbarer Namensnennung „© OpenStreetMap-Mitwirkende“ (Pflicht, nicht entfernen). CARTO-Kacheln verlangen seit 2026 einen API-Key und sind entfernt.
+- Darunter `.map-route` → Google-Maps-Routenziel Branderhofer Weg 15.
 
 ## Admin
 

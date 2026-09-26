@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-09-26 — Dokumentation der Web-Arbeiten, JSON-LD Anmeldung
+
+- `anmeldung.html`: vergangene Oster-/Sommer-Events aus JSON-LD entfernt, Herbst-Events mit Kampagnenbildern (jetzt konsistent zur Startseite).
+- Dokumentiert in `docs/DESIGN-SYSTEM.md` (Hell/Dunkel, Herbst-Tokens, Medienpfade), `docs/COMPONENTS.md` (Saisonkampagne, Live-Verfügbarkeit, Videos, Anmeldung-Kopf, Karte), `docs/DECISIONS.md`, `docs/STRUCTURED-DATA.md`, `docs/SEO-GEO.md`, `docs/INTEGRATIONS.md`, `docs/OPEN-QUESTIONS.md` (Elfsight, Datenschutz Karte, statische Bewertungszahl, faq-camps.pdf).
+
 ## 2026-09-26 — Startseite: Hell/Dunkel-Rhythmus
 
 - Neue Klassen `.theme-light` / `.theme-light--white` in `css/main.css` (Variablen-Overrides + Karten, Bewertungen, Ablauf, FAQ).
