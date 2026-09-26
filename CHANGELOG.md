@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-26 — Ehemaliger Trainer entfernt
+
+- Foto des nicht mehr aktiven Trainers (`images/trainer.*`, `trainer-480/768.*`) aus „Alles inklusive“ entfernt und gelöscht; ersetzt durch Pokal-Foto aus Sommercamp II.
+
 ## 2026-09-26 — Herbstcamp-Kampagne und Design-Upgrade der Startseite
 
 ### Startseite (`index.html`, `css/main.css`)
