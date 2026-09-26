@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-09-26 — Startseite: Hell/Dunkel-Rhythmus
+
+- Neue Klassen `.theme-light` / `.theme-light--white` in `css/main.css` (Variablen-Overrides + Karten, Bewertungen, Ablauf, FAQ).
+- Hell: Über uns, Bewertungen, Training, Ablauf, Galerie, Instagram, FAQ. Dunkel bleiben Hero, Herbstcamp, Leistungen, Termine, Videos, Standort, CTA und Footer.
+
 ## 2026-09-26 — Bestätigungsseite hell
 
 - `css/bestaetigung.css`: heller, kontrastreicher Stil passend zur Anmeldung (weiße Karten, dunkle Schrift, abgedunkelte Status-Farben für Grün/Türkis/Gelb/Rot, helle Statuskarten für Sponsoring und offene Zahlung, helle Buttons und Kontaktlinks, Lookup-Karte). Navigation bleibt dunkel; Logik unverändert.

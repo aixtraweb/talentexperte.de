@@ -557,3 +557,49 @@ html{overflow-x:clip}
 .map-route{margin-top:18px;text-align:center}
 #map .leaflet-control-attribution{background:rgba(255,255,255,.85)!important;color:#333!important}
 #map .leaflet-control-attribution a{color:#333;text-decoration:underline}
+
+/* ==========================================
+   Hell/Dunkel-Rhythmus (2026-09-26)
+   Helle Sektionen: .theme-light (Creme) / .theme-light--white (Weiß)
+   ========================================== */
+.theme-light{
+  --black:#f7f3ec;--black-soft:#f7f3ec;--black-card:#fff;
+  --white:#1c1917;--gray-200:#292524;--gray-300:#3f3a36;--gray-500:#6b6560;--gray-700:#a8a29e;
+  --red:#d40000;--red-glow:rgba(212,0,0,.08);
+  background:#f7f3ec!important;color:#1c1917;color-scheme:light
+}
+.theme-light--white{background:#fff!important}
+.theme-light .section-subtitle{color:#44403c}
+.theme-light .btn-outline{color:#1c1917;border-color:#cfc8bd}
+.theme-light .btn-outline:hover{color:var(--red);border-color:var(--red)}
+.theme-light .btn-red,.theme-light .btn-red *{color:#fff}
+.theme-light::before{display:none}
+/* Karten */
+.theme-light :is(.about-value,.review-card,.skill-card){background:#fff;border:1px solid #ece4d8;box-shadow:0 4px 20px rgba(28,25,23,.05)}
+.theme-light--white :is(.review-card){background:#faf8f5}
+.theme-light :is(.about-value,.review-card,.skill-card):hover{border-color:rgba(212,0,0,.3);background:#fff;box-shadow:0 12px 34px rgba(28,25,23,.1)}
+.theme-light .about-value p,.theme-light .skill-card p{color:#57534e}
+.theme-light .about-image{box-shadow:0 20px 50px rgba(28,25,23,.18)}
+/* Bewertungen */
+.theme-light .reviews-stars,.theme-light .review-stars{color:#f5a300}
+.theme-light .review-avatar{color:#fff}
+.theme-light .review-source{box-shadow:0 0 0 1px #e7e0d5}
+.theme-light .reviews-google-link{color:#292524;border-bottom-color:#a8a29e}
+.theme-light .reviews-google-link:hover{color:var(--red);border-bottom-color:var(--red)}
+/* Ablauf */
+.theme-light .step-num{background:#fff;box-shadow:0 6px 24px rgba(212,0,0,.12)}
+.theme-light .step p{color:#57534e}
+.theme-light .step-reassurance{color:#b91c1c;opacity:1}
+.theme-light .timeline-label{color:#3f3a36}
+/* Galerie / Instagram */
+.theme-light .galerie-item{box-shadow:0 6px 20px rgba(28,25,23,.1)}
+.theme-light .galerie-scroll-hint{color:#6b6560}
+/* FAQ */
+.theme-light .faq-item{border-bottom-color:#e2dace}
+.theme-light .faq-icon{border-color:#cfc8bd}
+.theme-light .faq-item.open .faq-icon{color:#fff}
+.theme-light .faq-answer p{color:#3f3a36}
+.theme-light .faq-download-box{background:#fff;border-color:#f3c4c4;box-shadow:0 4px 20px rgba(28,25,23,.05)}
+.theme-light .faq-download-icon{color:#fff}
+/* Fokus auf hellem Grund */
+.theme-light :where(a,button):focus-visible{outline:3px solid var(--red);outline-offset:3px}
