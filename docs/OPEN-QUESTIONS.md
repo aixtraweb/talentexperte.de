@@ -16,11 +16,12 @@ Geltungsbereich: ungeklärte Punkte aus Repository- und Dokumentationsinventur
 
 ## Datenschutzerklärung: Karte (OpenStreetMap/unpkg)
 
-- Status: offen
+- Status: Entwurf erstellt, Freigabe offen
 - Priorität: hoch
 - Betroffener Bereich: `datenschutz.html`, `index.html#standorte`
-- Aktueller Kenntnisstand: Die Karte lädt Leaflet von `unpkg.com` und Kacheln von `tile.openstreetmap.org` (IP-Übertragung an Dritte). Die Datenschutzerklärung erwähnt die Karte bislang nicht (galt schon für CARTO).
-- Benötigte Entscheidung: Rechtstext ergänzen lassen; optional Leaflet lokal hosten und/oder Karte erst nach Klick laden.
+- Aktueller Kenntnisstand: Leaflet wird seit 26.09.2026 lokal aus `vendor/leaflet-1.9.4/` geladen (kein unpkg mehr). Kacheln kommen weiter von `tile.openstreetmap.org` (IP-Übertragung an OSMF), zusätzlich fragt die Startseite freie Plätze bei Supabase ab. Die Datenschutzerklärung erwähnt beides bislang nicht.
+- Entwurf liegt vor: [`DATENSCHUTZ-ENTWURF-KARTE.md`](DATENSCHUTZ-ENTWURF-KARTE.md) – wartet auf Freigabe; enthält außerdem eine Liste weiterer Lücken der Datenschutzerklärung.
+- Benötigte Entscheidung: Entwurf freigeben (automatisches Laden) oder Zwei-Klick-Lösung für die Karte.
 - Verantwortlich: Betreiber/Recht
 - Datum: 26.09.2026
 

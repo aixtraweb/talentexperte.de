@@ -677,11 +677,11 @@ function loadLeafletAssets(){
       var l=document.createElement('link');
       l.id=cssId;
       l.rel='stylesheet';
-      l.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      l.href='vendor/leaflet-1.9.4/leaflet.css';
       document.head.appendChild(l);
     }
     var s=document.createElement('script');
-    s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    s.src='vendor/leaflet-1.9.4/leaflet.js';
     s.async=true;
     s.onload=function(){resolve()};
     s.onerror=function(){reject(new Error('Leaflet konnte nicht geladen werden'))};

@@ -58,6 +58,7 @@ rsync -avz --delete --delete-excluded --prune-empty-dirs \
   --include "/favicon/***" \
   --include "/camps-in/***" \
   --include "/newsreader/***" \
+  --include "/vendor/***" \
   --include "/ci/" \
   --include "/ci/logo.png" \
   --include "/ci/logo.webp" \

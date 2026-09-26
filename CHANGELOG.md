@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-26 — Leaflet lokal, Datenschutz-Entwurf Karte
+
+- Leaflet 1.9.4 aus dem offiziellen npm-Paket (Prüfsumme gegen Registry verifiziert) nach `vendor/leaflet-1.9.4/` übernommen (JS, CSS, Bilder, Lizenz); `index.html` lädt nicht mehr von `unpkg.com`.
+- `ci/deploy.sh`: `/vendor/***` in die Deployment-Allowlist aufgenommen.
+- Entwurf für die Datenschutzerklärung (OpenStreetMap, Route-Link, Live-Plätze via Supabase) in `docs/DATENSCHUTZ-ENTWURF-KARTE.md` – nicht veröffentlicht, Freigabe offen.
+
 ## 2026-09-26 — Dokumentation der Web-Arbeiten, JSON-LD Anmeldung
 
 - `anmeldung.html`: vergangene Oster-/Sommer-Events aus JSON-LD entfernt, Herbst-Events mit Kampagnenbildern (jetzt konsistent zur Startseite).

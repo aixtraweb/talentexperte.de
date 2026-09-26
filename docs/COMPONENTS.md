@@ -124,7 +124,7 @@ Es gibt keine Template-Engine oder Komponentenbibliothek. Komponenten sind wiede
 
 ## Standortkarte
 
-- `#map` (Leaflet 1.9.4 von unpkg, lazy per IntersectionObserver) mit OpenStreetMap-Standardkacheln `tile.openstreetmap.org` (Klasse `.map-tiles`, dezent entsättigt) und sichtbarer Namensnennung „© OpenStreetMap-Mitwirkende“ (Pflicht, nicht entfernen). CARTO-Kacheln verlangen seit 2026 einen API-Key und sind entfernt.
+- `#map` (Leaflet 1.9.4 lokal aus `vendor/leaflet-1.9.4/`, lazy per IntersectionObserver; Update = neue Version in eigenen Ordner legen, Pfad in `index.html` ändern) mit OpenStreetMap-Standardkacheln `tile.openstreetmap.org` (Klasse `.map-tiles`, dezent entsättigt) und sichtbarer Namensnennung „© OpenStreetMap-Mitwirkende“ (Pflicht, nicht entfernen). CARTO-Kacheln verlangen seit 2026 einen API-Key und sind entfernt.
 - Darunter `.map-route` → Google-Maps-Routenziel Branderhofer Weg 15.
 
 ## Admin

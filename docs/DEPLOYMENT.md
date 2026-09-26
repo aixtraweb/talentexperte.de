@@ -36,7 +36,7 @@ Zielpfade und Benutzer stehen ausschließlich im Skript/Handbuch; keine Zugangsd
 ## Aktuelle Allowlist
 
 - Root: ausgewählte HTML-Seiten, `robots.txt`, `sitemap.xml`, `llms.txt`, `.htaccess`.
-- vollständig: `css/`, `fonts/`, `pdf/`, `favicon/`, `camps-in/`, `newsreader/`.
+- vollständig: `css/`, `fonts/`, `pdf/`, `favicon/`, `camps-in/`, `newsreader/`, `vendor/` (selbst gehostete Bibliotheken, seit 26.09.2026: Leaflet 1.9.4).
 - `images/` mit Ausnahme `images/social-input/`.
 - aus `ci/` nur drei Logos.
 
