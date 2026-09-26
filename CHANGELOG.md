@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-26 — Anmeldeseite: heller, kontrastreicher, Vertrauensnachweise
+
+- Formularbereich auf helles, warmes Design umgestellt (weiße Karten, dunkle Schrift, sichtbare Feldränder, Fokus-Ringe); Navigation und Erfolgs-/Fehler-Overlays bleiben dunkel.
+- Großes Herbst-Banner durch kompakte Herbst-Leiste ersetzt, Navigation verschlankt, Kopfbereich verkürzt: Camp-Auswahl liegt auf Desktop und Mobil jetzt im ersten Bildschirm; Stepper klebt korrekt unter der Navigation.
+- Sterne-Leiste „5,0 · 43 Google-Rezensionen“ (Link zu Google) plus „Seit 2005 · 4.000+ Kinder · Sichere Zahlung“ im Kopf; zwei echte Google-Elternstimmen direkt vor AGB und Absenden.
+- Camp-Auswahl zweispaltig, Grün-/Rottöne für helle Flächen kontraststark angepasst.
+
 ## 2026-09-26 — Standortkarte repariert
 
 - CARTO-Kacheln verlangen inzwischen einen API-Key („API KEY REQUIRED“); Leaflet-Karte auf OpenStreetMap-Standardkacheln umgestellt, dezent entsättigt, mit lesbarer Namensnennung.
