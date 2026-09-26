@@ -552,6 +552,7 @@
   <h2 class="section-title reveal reveal-delay-1">Unser <span class="text-red">Spielort</span></h2>
   <p class="section-subtitle reveal reveal-delay-2">Alle Camps finden auf dem modernen Kunstrasenplatz in Aachen-Burtscheid, Branderhofer Weg 15 – 52066 Aachen, statt.</p>
   <div id="map" class="reveal reveal-delay-3"></div>
+  <p class="map-route reveal reveal-delay-3"><a href="https://www.google.com/maps/dir/?api=1&amp;destination=Branderhofer+Weg+15%2C+52066+Aachen" target="_blank" rel="noopener" class="btn btn-outline">📍 Route planen</a></p>
 </div></section>
 
 <!-- CTA -->
@@ -692,8 +693,8 @@ function initMap(){
   initMap.__done=true;
   loadLeafletAssets().then(function(){
     var map=L.map('map',{zoomControl:false,dragging:false,touchZoom:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,tap:false,attributionControl:false}).setView([50.7624155,6.1042797],15);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'OpenStreetMap | CARTO'}).addTo(map);
-    L.control.attribution({prefix:false}).addTo(map).addAttribution('OpenStreetMap | CARTO');
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'map-tiles',attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-Mitwirkende'}).addTo(map);
+    L.control.attribution({prefix:false}).addTo(map);
     var pulse=L.divIcon({className:'pulse',iconSize:[20,20],iconAnchor:[10,10]});
     L.marker([50.7624155,6.1042797],{icon:pulse}).addTo(map);
     var popupOffset=0.008;
