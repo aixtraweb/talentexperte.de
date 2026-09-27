@@ -17,8 +17,8 @@ Geltungsbereich: ungeklärte Punkte aus Repository- und Dokumentationsinventur
 - Status: offen
 - Priorität: hoch
 - Betroffener Bereich: `datenschutz.html`, `impressum.html`, Verträge
-- Aktueller Kenntnisstand: Datenschutzerklärung am 27.09.2026 komplett neu gefasst (15 Abschnitte, alle Dienstleister namentlich, ohne Newsletter-Abschnitt). Verantwortliche Anschrift laut Betreiber: Kornelimünsterweg 15a, 52066 Aachen. Das Impressum nennt weiterhin Würselener Wall 8, 52070 Aachen – bewusst nicht geändert.
-- Offen: (1) Auftragsverarbeitungsverträge nach Art. 28 DSGVO mit Supabase, Resend, Feyer Media (hostingwerk) und Google Workspace abschließen bzw. nachweisen; die Erklärung behauptet bewusst keinen AVV. (2) Impressum-Anschrift mit der Verantwortlichen-Anschrift abgleichen. (3) Aufbewahrungs-/Löschkonzept für Anmelde-, Teilnahme- und Allergiedaten konkret festlegen (Erklärung nennt nur Grundsätze und gesetzliche Fristen). (4) Optional rechtliche Prüfung des Gesamttextes.
+- Aktueller Kenntnisstand: Datenschutzerklärung am 27.09.2026 komplett neu gefasst (15 Abschnitte, alle Dienstleister namentlich, ohne Newsletter-Abschnitt). Verantwortliche Anschrift laut Betreiber: Kornelimünsterweg 15a, 52066 Aachen. Impressum am 27.09.2026 auf Betreiberanweisung ebenfalls auf Kornelimünsterweg 15a, 52066 Aachen umgestellt (vorher Würselener Wall 8, 52070 Aachen).
+- Offen: (1) Auftragsverarbeitungsverträge nach Art. 28 DSGVO mit Supabase, Resend, Feyer Media (hostingwerk) und Google Workspace abschließen bzw. nachweisen; die Erklärung behauptet bewusst keinen AVV. (2) erledigt: Impressum-Anschrift angeglichen. (3) Aufbewahrungs-/Löschkonzept für Anmelde-, Teilnahme- und Allergiedaten konkret festlegen (Erklärung nennt nur Grundsätze und gesetzliche Fristen). (4) Optional rechtliche Prüfung des Gesamttextes.
 - Datum: 27.09.2026
 
 ## Google-Bewertungen: Anzahl und Texte

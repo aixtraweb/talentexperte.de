@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-27 — Impressum-Anschrift
+
+- `impressum.html`: Anschrift nach § 5 TMG auf Betreiberanweisung von Würselener Wall 8, 52070 Aachen auf Kornelimünsterweg 15a, 52066 Aachen geändert (jetzt identisch mit der verantwortlichen Stelle in der Datenschutzerklärung).
+
 ## 2026-09-27 — Datenschutzerklärung komplett neu, keine Drittanbieter-Ressourcen mehr
 
 - `datenschutz.html` vollständig neu gefasst (15 Abschnitte): Verantwortlicher (Kornelimünsterweg 15a laut Betreiber), Rechtsgrundlagen inkl. Art. 9 für Allergieangaben, Hoster Feyer Media GmbH (hostingwerk), Session Storage statt Cookies, Camp-Anmeldung (Supabase Frankfurt, Google Workspace Sheet/Kontakte), Förderpartner, Anwesenheit/Trainingswerte, Stripe/PayPal/Überweisung/bar, Resend (DPF + SCC) mit BCC-Archiv, Bewertungsanfragen (§ 7 Abs. 3 UWG, Widerspruch), WhatsApp-Links, Live-Plätze, OpenStreetMap, Google-Links, Instagram-Feed, Fotos/Videos (Einwilligung laut AGB), Drittlandübermittlung, Speicherdauer, Betroffenenrechte, LDI NRW. Newsletter-Abschnitt entfernt (kein Angebot).
