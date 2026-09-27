@@ -23,13 +23,13 @@ Geltungsbereich: ungeklärte Punkte aus Repository- und Dokumentationsinventur
 - Verantwortlich: Betreiber/Recht
 - Datum: 26.09.2026
 
-## Statische Bewertungsangaben
+## Google-Bewertungen: Anzahl und Texte
 
-- Status: offen (Pflegeaufgabe)
+- Status: teilautomatisiert
 - Priorität: niedrig
-- Aktueller Kenntnisstand: „5,0 · 43 Google-Rezensionen“ steht fest in `index.html` (sichtbar + JSON-LD `ratingCount`) und `anmeldung.html`. Am 26.09.2026 wurde JSON-LD von 87 auf 43 angeglichen.
-- Vorläufiges Verhalten: bei neuen Google-Bewertungen alle Stellen gemeinsam aktualisieren.
-- Datum: 26.09.2026
+- Aktueller Kenntnisstand: `scripts/google-reviews-sync.mjs` gleicht monatlich ab. Google zeigt nicht angemeldeten Sitzungen am 27.09.2026 eine eingeschränkte Ansicht (nur Note 5,0, kein Rezensions-Reiter, keine Anzahl). Dann werden nur die Noten-Stellen abgeglichen; „43 Google-Rezensionen“ und die Zitate bleiben stehen.
+- Vorläufiges Verhalten: Erscheint die volle Ansicht wieder, aktualisiert das Skript Anzahl und Rezensionen automatisch. Bis dahin neue Anzahl bei Bedarf manuell in den Markerblöcken und im JSON-LD ändern. Kein Login, keine Umgehung.
+- Datum: 27.09.2026
 
 ## `pdf/faq-camps.pdf` lokal gelöscht vorgefunden
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-27 — Google-Bewertungen per eigenem Sync
+
+- Neues Skript `scripts/google-reviews-sync.mjs`: liest den öffentlichen Google-Maps-Eintrag (ohne Login, Cookie-Banner abgelehnt, Identitätsprüfung Name + Adresse) und schreibt Note, Anzahl und neueste Rezensionen statisch in `index.html` (Karten, JSON-LD, Hero, Footer) und `anmeldung.html` (Sterne-Leiste, Zitate).
+- Markerblöcke `GOOGLE-REVIEWS`, `GOOGLE-TRUST`, `GOOGLE-QUOTES` um die bestehenden Inhalte gesetzt.
+- Rückfallstufe für Googles eingeschränkte Ansicht (aktuell aktiv): nur Note abgleichen, Anzahl/Zitate unverändert. Erster Lauf: Note 5,0 bestätigt, keine inhaltliche Änderung.
+
 ## 2026-09-27 — Instagram-Feed ohne Elfsight
 
 - Elfsight-Widget (deaktiviert, leerer Bereich) entfernt: Container, Lazy-Loader-Skript, Preconnect sowie `elfsightcdn.com`/`*.elfsight.com` und `unpkg.com` aus der CSP von `index.html`.

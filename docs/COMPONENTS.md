@@ -65,7 +65,8 @@ Es gibt keine Template-Engine oder Komponentenbibliothek. Komponenten sind wiede
 ### Bewertungen
 
 - Quellen: `.reviews-grid`, `.review-card`, `.reviews-rating`, `.reviews-google-link`.
-- Aktuell drei statische, sichtbare Reviewkarten plus Gesamtwert im HTML.
+- Drei statische, sichtbare Reviewkarten plus Gesamtwert im HTML zwischen `<!-- GOOGLE-REVIEWS:START … -->`/`END`; auf der Anmeldung `GOOGLE-TRUST` (Sterne-Leiste) und `GOOGLE-QUOTES` (zwei Zitate).
+- Seit 27.09.2026 gepflegt von `node scripts/google-reviews-sync.mjs --apply` (öffentlicher Google-Maps-Eintrag, kein Login, Cookie-Banner „Alle ablehnen“). Volle Ansicht: Note, Anzahl, neueste Rezensionen (3 Startseite, 2 kürzeste auf der Anmeldung) + JSON-LD, Hero-Kennzahl, Footer. Eingeschränkte Ansicht (Google zeigt anonym oft nur die Note): nur die Note wird abgeglichen, Anzahl/Zitate bleiben auf dem letzten bestätigten Stand.
 - Keine Bewertung, Quote oder Zitat ohne belegte Quelle ergänzen. Anzahl und Gesamtwert vor Änderung live verifizieren.
 
 ### Campkarten
