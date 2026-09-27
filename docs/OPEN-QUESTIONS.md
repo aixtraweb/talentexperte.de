@@ -12,16 +12,14 @@ Geltungsbereich: ungeklärte Punkte aus Repository- und Dokumentationsinventur
 - Offen: Turnus der Aktualisierung (monatlich) und ob automatisch deployt wird.
 - Datum: 27.09.2026
 
-## Datenschutzerklärung: Karte (OpenStreetMap/unpkg)
+## Datenschutzerklärung: Gesamtüberarbeitung
 
-- Status: Entwurf erstellt, Freigabe offen
+- Status: offen (Teil „Karte, Live-Plätze, Instagram, Google-Links“ am 27.09.2026 eingebaut)
 - Priorität: hoch
-- Betroffener Bereich: `datenschutz.html`, `index.html#standorte`
-- Aktueller Kenntnisstand: Leaflet wird seit 26.09.2026 lokal aus `vendor/leaflet-1.9.4/` geladen (kein unpkg mehr). Kacheln kommen weiter von `tile.openstreetmap.org` (IP-Übertragung an OSMF), zusätzlich fragt die Startseite freie Plätze bei Supabase ab. Die Datenschutzerklärung erwähnt beides bislang nicht.
-- Entwurf liegt vor: [`DATENSCHUTZ-ENTWURF-KARTE.md`](DATENSCHUTZ-ENTWURF-KARTE.md) – wartet auf Freigabe; enthält außerdem eine Liste weiterer Lücken der Datenschutzerklärung.
-- Benötigte Entscheidung: Entwurf freigeben (automatisches Laden) oder Zwei-Klick-Lösung für die Karte.
-- Verantwortlich: Betreiber/Recht
-- Datum: 26.09.2026
+- Betroffener Bereich: `datenschutz.html`
+- Aktueller Kenntnisstand: Abschnitt 8 „Plugins und Tools“ (OpenStreetMap, Google-Links, Live-Plätze via Supabase) und der Instagram-Absatz sind aktuell. Weiterhin nicht namentlich genannt: Hoster, Supabase für die Anmeldedaten, Resend (E-Mail), Stripe (Zahlung). Der Abschnitt „Newsletter“ beschreibt ein nicht vorhandenes Angebot. Details in [`DATENSCHUTZ-ENTWURF-KARTE.md`](DATENSCHUTZ-ENTWURF-KARTE.md).
+- Benötigte Entscheidung: Gesamttext mit Generator oder Rechtsberatung neu aufsetzen; Auftragsverarbeitungsverträge (Supabase, Resend, Stripe, Hoster) prüfen.
+- Datum: 27.09.2026
 
 ## Google-Bewertungen: Anzahl und Texte
 

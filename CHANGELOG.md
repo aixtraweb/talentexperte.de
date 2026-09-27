@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-09-27 — Datenschutzerklärung ergänzt
+
+- `datenschutz.html`: neuer Abschnitt „8. Plugins und Tools“ (OpenStreetMap-Kacheln mit lokal gehostetem Leaflet, Google-Links für Route/Rezensionen erst nach Klick, Live-Anzeige freier Plätze über Supabase, Server Frankfurt). Instagram-Absatz auf den lokalen Feed umgestellt (keine Übermittlung beim Seitenaufruf, Anbieter Meta Platforms Ireland).
+- Fakten vor Veröffentlichung geprüft: Supabase-Region `eu-central-1`, Supabase-Anschrift laut Nutzungsbedingungen, UK-Angemessenheitsbeschluss (erneuert 19.12.2025, gültig bis 27.12.2031).
+
 ## 2026-09-27 — Google-Bewertungen per eigenem Sync
 
 - Neues Skript `scripts/google-reviews-sync.mjs`: liest den öffentlichen Google-Maps-Eintrag (ohne Login, Cookie-Banner abgelehnt, Identitätsprüfung Name + Adresse) und schreibt Note, Anzahl und neueste Rezensionen statisch in `index.html` (Karten, JSON-LD, Hero, Footer) und `anmeldung.html` (Sterne-Leiste, Zitate).

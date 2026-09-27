@@ -1,7 +1,7 @@
 # Entwurf: Datenschutzerklärung – Karte und Live-Verfügbarkeit
 
 Stand: 26. September 2026
-Dokumentationsstatus: **Entwurf – nicht veröffentlicht.** Vor Übernahme in `datenschutz.html` durch den Betreiber bzw. eine Rechtsberatung prüfen und freigeben.
+Dokumentationsstatus: **Am 27.09.2026 auf Anweisung des Betreibers in `datenschutz.html` übernommen** (Abschnitt „8. Plugins und Tools“, Instagram-Absatz angepasst). Prüfstellen aufgelöst: Supabase-Region `eu-central-1` (Frankfurt, über Management-API), Anbieter Supabase Pte. Ltd., 65 Chulia Street #38-02/03, OCBC Centre, Singapore 049513 (laut supabase.com/terms; die frühere Anschrift im Entwurf war falsch), UK-Angemessenheitsbeschluss am 19.12.2025 erneuert, gültig bis 27.12.2031. Dieses Dokument bleibt als Herleitung; maßgeblich ist `datenschutz.html`.
 Geltungsbereich: `index.html` (Abschnitt „Standort“ und Camp-Termine), `datenschutz.html`
 
 ## Technischer Ist-Stand (geprüft 26.09.2026)
