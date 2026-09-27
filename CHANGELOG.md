@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-27 — Aufbewahrung statt Löschroutine
+
+- Betreiberentscheidung: Zu Anmeldungen wird nichts gelöscht (Aufbewahrung für Steuerberater und Finanzamt). Die vorbereiteten, **nie eingespielten** Migrationen `20260927120000_add_retention_policy.sql` und `20260927121000_schedule_retention_policy.sql` entfernt; Datenbank geprüft: keine Funktionen, Tabellen oder Cron-Jobs angelegt, nichts gelöscht.
+- `docs/LOESCHKONZEPT.md` als Aufbewahrungskonzept neu gefasst.
+- `datenschutz.html` Abschnitt 12: Anmelde-, Teilnahme-, Zahlungs- und Rechnungsdaten bis zu 10 Jahre (§ 147 AO, § 257 HGB), E-Mails bis 6/10 Jahre, Bestätigungslinks ungültig 30 Tage nach Campende, Server-Logs 7 Tage; Löschwunsch → Löschung bzw. Sperrung.
+
 ## 2026-09-27 — Löschkonzept (vorbereitet, Aktivierung ausstehend)
 
 - `docs/LOESCHKONZEPT.md`: Fristen R1–R13 für Datenbank, Google Workspace, Postfach, Server-Logs (7 Tage, geprüft), Browser und Fotos.

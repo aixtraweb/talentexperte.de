@@ -1,45 +1,28 @@
-# Löschkonzept
+# Aufbewahrungs- und Löschkonzept
 
 Stand: 27. September 2026
-Dokumentationsstatus: festgelegt auf Betreiberanweisung; automatische Regeln R1–R6 vorbereitet (Migration `20260927120000_add_retention_policy.sql`), Aktivierung siehe unten
+Dokumentationsstatus: bestätigt durch Betreiberentscheidung vom 27.09.2026
 Geltungsbereich: Supabase-Projekt `yxygwwoocsdnneqykiym`, Google Workspace, Postfach kontakt@talentexperte.de, Webserver
 
-## Grundsätze
+## Verbindliche Betreiberentscheidung (27.09.2026)
 
-- Daten nur so lange wie für den Zweck nötig; gesetzliche Aufbewahrung geht vor, dann nur noch Aufbewahrung.
-- Fristen beginnen mit dem **Campende** (`camps.datum_bis`) bzw. mit dem **Ende des Kalenderjahres** des Camps (Verjährung/Aufbewahrung).
-- Gesundheitsangaben (Allergien) werden am frühesten gelöscht.
-- Löschen schließt Kopien ein (Sicherheitsprotokoll, Warteschlange, Google, Postfach).
+**Zu den Anmeldungen wird nichts automatisch gelöscht.** Anmeldedaten (Eltern- und Firmenanmeldungen einschließlich aller Formularangaben), Teilnahme-/Anwesenheitsdaten, Förderberechtigungen, Zahlungs- und Rechnungsdaten sowie zugehörige E-Mails und Protokolle werden für Steuerberater und Finanzamt bis zum Ende der gesetzlichen Aufbewahrungsfristen aufbewahrt.
 
-## Fristen
+- Keine Löschroutine, kein pg_cron-Job und keine Anonymisierung von Anmeldedaten einführen. Eine am 27.09.2026 vorbereitete Routine (R1–R6) wurde **nicht** eingespielt und aus dem Repository entfernt.
+- Löschung erst nach Ablauf der Aufbewahrungsfrist und nur nach ausdrücklicher Freigabe durch den Betreiber.
+- Löschwünsche von Betroffenen: Daten, für die keine Aufbewahrungspflicht besteht, auf Anfrage löschen; aufbewahrungspflichtige Daten bis Fristende sperren (nur Aufbewahrung, keine weitere Nutzung). Vor jeder Löschung Betreiber fragen.
 
-| Nr. | Daten | Ort | Frist | Umsetzung |
-|---|---|---|---|---|
-| R1 | Allergien/Unverträglichkeiten/Besonderheiten, Freitext-Hinweise (`allergien`, `notizen`; Marker `[TYP:…]` bleiben) | `anmeldungen`, `firmen_anmeldungen`, Kopien in `security_audit_log` | 3 Monate nach Campende | automatisch (`apply_retention_policy`) |
-| R2 | Anwesenheit, Sprint/Torschuss/Dribbling | `teilnahme` + Protokollkopien | 12 Monate nach Campende | automatisch |
-| R3 | Bestätigungslinks (Token-Hashes) | `confirmation_tokens` | 30 Tage nach Ablauf (Ablauf = Campende + 30 Tage) | automatisch |
-| R4 | Formular-Schutzdaten | `form_submission_nonces`, `form_rate_limits` | 30 Tage | automatisch |
-| R5 | E-Mail-Warteschlange inkl. Inhalt | `email_outbox` | 90 Tage nach Versand | automatisch |
-| R6 | Sicherheitsprotokoll | `security_audit_log` | 12 Monate | automatisch |
-| R7 | Anmeldedaten (Kind, Elternteil, Kontakt), Förderberechtigungen | `anmeldungen`, `firmen_anmeldungen`, `sponsoring_entitlements` | 3 Jahre nach Ende des Camp-Jahres (Verjährung § 195 BGB), danach Anonymisierung; zahlungsrelevante Angaben (Name Zahler, Betrag, Datum, Camp, Zahlungs-IDs, Rechnungsnummer) bis 8 Jahre nach Ende des Jahres (§ 147 AO, § 257 HGB) | **noch manuell** – erster Fall fällig am 01.01.2030; Anonymisierung muss die Trigger `enforce_registration_entitlement_match` (Identität gesponserter Anmeldungen unveränderlich) berücksichtigen |
-| R8 | Stripe-Webhook-Journal | `stripe_webhook_events` | 8 Jahre nach Ende des Jahres | noch manuell (keine Namen, nur IDs/Beträge) |
-| R9 | Google-Tabelle und Google-Kontakte | Google Workspace | wie R7: Kontakte 3 Jahre nach letztem Camp | manuell, jährlich im Januar |
-| R10 | E-Mails im Postfach (inkl. BCC-Kopien der Bestätigungen) | kontakt@talentexperte.de | 6 Jahre (Handels-/Geschäftsbriefe, § 257 HGB), danach löschen | manuell, jährlich im Januar |
-| R11 | Server-Logdateien | Webserver (hostingwerk) | 7 Tage (tägliche Rotation, geprüft 27.09.2026) | durch Hoster |
-| R12 | Sitzungsspeicher im Browser | Endgerät | beim Schließen des Fensters | technisch |
-| R13 | Fotos/Videos | Website, Social Media | bis zum Widerruf der Einwilligung | manuell auf Anfrage |
+## Fristen (wie in `datenschutz.html`, Abschnitt 12)
 
-## Technik
+| Daten | Aufbewahrung |
+|---|---|
+| Anmelde-, Teilnahme-, Förder-, Zahlungs- und Rechnungsdaten (Supabase, Google-Tabelle/-Kontakte) | bis zum Ablauf der gesetzlichen Aufbewahrungsfristen: bis zu 10 Jahre ab Ende des Kalenderjahres (§ 147 AO, § 257 HGB; Buchungsbelege 8 Jahre, Handels-/Geschäftsbriefe 6 Jahre, Bücher/Aufzeichnungen 10 Jahre) |
+| E-Mails inkl. BCC-Kopien der Bestätigungen | bis zu 6 Jahre (Geschäftsbriefe), soweit steuerlich relevant bis zu 10 Jahre |
+| Bestätigungslinks | werden 30 Tage nach Campende ungültig (Datensatz bleibt) |
+| Server-Logdateien (Hoster) | 7 Tage (tägliche Rotation, geprüft 27.09.2026) |
+| Sitzungsspeicher im Browser | beim Schließen des Fensters |
+| Fotos/Videos | bis zum Widerruf der Einwilligung |
 
-- `public.retention_counts()` – nur Zählwerte je Regel.
-- `public.retention_preview()` – Zählwerte + Eintrag in `retention_runs`.
-- `public.apply_retention_policy()` – führt R1–R6 aus, bereinigt Protokollkopien, schreibt Vorher/Nachher-Zählwerte in `retention_runs`.
-- Alle Funktionen `security definer`, für `anon`/`authenticated` gesperrt.
-- Zeitplan: `supabase/migrations/20260927121000_schedule_retention_policy.sql` (täglich 03:30 UTC via pg_cron).
+## Hinweis (nicht umgesetzt, nur zur Entscheidung)
 
-## Aktivierung
-
-1. Migration `20260927120000_add_retention_policy.sql` einspielen (legt nur Funktionen/Tabelle an).
-2. `select public.retention_preview();` prüfen.
-3. Probelauf ohne Wirkung: `do $$ declare r jsonb; begin r := public.apply_retention_policy(); raise exception 'ROLLBACK_TEST %', r; end $$;`
-4. Nach Freigabe: Zeitplan-Migration einspielen (erster Lauf löscht u. a. Allergieangaben der Oster- und Sommercamps 2026 – nicht umkehrbar).
+Allergie- und Gesundheitsangaben sind für Steuerberater und Finanzamt in der Regel nicht erforderlich. Datenschutzrechtlich wäre es sauberer, nur diese Freitextfelder nach dem Camp zu leeren. Umsetzung ausschließlich nach ausdrücklicher Betreiberfreigabe.
