@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-27 — Löschkonzept (vorbereitet, Aktivierung ausstehend)
+
+- `docs/LOESCHKONZEPT.md`: Fristen R1–R13 für Datenbank, Google Workspace, Postfach, Server-Logs (7 Tage, geprüft), Browser und Fotos.
+- Migration `20260927120000_add_retention_policy.sql`: `retention_counts()`, `retention_preview()`, `apply_retention_policy()` (R1 Freitext/Allergien 3 Monate, R2 Teilnahme 12 Monate, R3 Tokens, R4 Formularschutz, R5 Outbox, R6 Sicherheitsprotokoll; bereinigt Protokollkopien mit), Tabelle `retention_runs`. Migration `20260927121000_schedule_retention_policy.sql`: täglicher pg_cron-Lauf 03:30 UTC.
+- `datenschutz.html` Abschnitt 12 „Speicherdauer und Löschfristen“ neu – **noch nicht deployt**, bis die Löschroutine aktiv ist.
+
 ## 2026-09-27 — Impressum-Anschrift
 
 - `impressum.html`: Anschrift nach § 5 TMG auf Betreiberanweisung von Würselener Wall 8, 52070 Aachen auf Kornelimünsterweg 15a, 52066 Aachen geändert (jetzt identisch mit der verantwortlichen Stelle in der Datenschutzerklärung).
