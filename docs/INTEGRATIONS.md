@@ -107,8 +107,8 @@ Vor jeder TALENTEXPERTE-E-Mail sind unmittelbar vor dem Senden zu bestätigen:
 | Supabase `camp_verfuegbarkeit_public` (anon) | Live-Plätze auf der Startseite | nur Aggregate (`id`, `freie_plaetze`, `datum_bis`), Fallback-Text ohne Antwort |
 | Google-Bewertungen (öffentlicher Maps-Eintrag, eigenes Skript) | Note, Anzahl, Rezensionen auf Startseite/Anmeldung | seit 27.09.2026 `scripts/google-reviews-sync.mjs`, statisches HTML, keine Google-Skripte beim Besucher; anonym derzeit „eingeschränkte Ansicht“ → nur Note automatisch |
 | Instagram (öffentliches Profil, eigenes Skript) | Instagram-Feed auf der Startseite | seit 27.09.2026 statt Elfsight: `scripts/instagram-sync.mjs` (Playwright, kein Login) → Bilder lokal `images/instagram/`, HTML statisch in `index.html`; Besucher laden nichts von Instagram, erst ein Klick öffnet den Beitrag |
-| jsPDF | PDF-Erzeugung im Browser | CDN mit Integrity auf Bestätigungsseite; Offline-/CSP-Fallback prüfen |
-| Supabase JS CDN | Firmenformular | feste Versionsreferenz `2.49.1`; Update nur getestet |
+| jsPDF 2.5.1 (lokal, `vendor/jspdf-2.5.1/`) | PDF-Erzeugung im Browser | seit 27.09.2026 selbst gehostet (npm-Paket, byte-identisch zur bisherigen cdnjs-Datei, SRI-Hash unverändert) |
+| Supabase JS 2.49.1 (lokal, `vendor/supabase-js-2.49.1/`) | Firmenformular | seit 27.09.2026 selbst gehostet statt jsDelivr; Update nur getestet |
 | WhatsApp | Kontakt-CTA | externer Link, keine Formulardaten automatisch mitsenden |
 
 ## Integrationsänderung – Pflichtprüfung

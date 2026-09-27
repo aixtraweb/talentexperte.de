@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-27 — Datenschutzerklärung komplett neu, keine Drittanbieter-Ressourcen mehr
+
+- `datenschutz.html` vollständig neu gefasst (15 Abschnitte): Verantwortlicher (Kornelimünsterweg 15a laut Betreiber), Rechtsgrundlagen inkl. Art. 9 für Allergieangaben, Hoster Feyer Media GmbH (hostingwerk), Session Storage statt Cookies, Camp-Anmeldung (Supabase Frankfurt, Google Workspace Sheet/Kontakte), Förderpartner, Anwesenheit/Trainingswerte, Stripe/PayPal/Überweisung/bar, Resend (DPF + SCC) mit BCC-Archiv, Bewertungsanfragen (§ 7 Abs. 3 UWG, Widerspruch), WhatsApp-Links, Live-Plätze, OpenStreetMap, Google-Links, Instagram-Feed, Fotos/Videos (Einwilligung laut AGB), Drittlandübermittlung, Speicherdauer, Betroffenenrechte, LDI NRW. Newsletter-Abschnitt entfernt (kein Angebot).
+- jsPDF 2.5.1 (bisher cdnjs) und Supabase JS 2.49.1 (bisher jsDelivr) nach `vendor/` übernommen; npm-Prüfsummen und Abgleich mit den CDN-Dateien.
+- `agb.html`, `impressum.html`, `datenschutz.html` luden Google Fonts von Google-Servern – auf lokale `css/fonts.css` umgestellt.
+- Statische Prüfung aller öffentlichen Seiten: keine externen Ressourcen außer eigener Supabase-Datenbank und OpenStreetMap-Kacheln.
+
 ## 2026-09-27 — Datenschutzerklärung ergänzt
 
 - `datenschutz.html`: neuer Abschnitt „8. Plugins und Tools“ (OpenStreetMap-Kacheln mit lokal gehostetem Leaflet, Google-Links für Route/Rezensionen erst nach Klick, Live-Anzeige freier Plätze über Supabase, Server Frankfurt). Instagram-Absatz auf den lokalen Feed umgestellt (keine Übermittlung beim Seitenaufruf, Anbieter Meta Platforms Ireland).
