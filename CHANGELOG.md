@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-27 — Instagram-Feed ohne Elfsight
+
+- Elfsight-Widget (deaktiviert, leerer Bereich) entfernt: Container, Lazy-Loader-Skript, Preconnect sowie `elfsightcdn.com`/`*.elfsight.com` und `unpkg.com` aus der CSP von `index.html`.
+- Neues Skript `scripts/instagram-sync.mjs`: liest @talentexperte öffentlich ohne Login (Playwright, wenige Seitenaufrufe), lädt die letzten 8 Beiträge als vollständige 4:5-Bilder nach `images/instagram/` (JPG + WebP, 640×800) und schreibt das Raster statisch zwischen die `INSTAGRAM-FEED`-Marker in `index.html` (Alt-Texte aus Bildunterschrift ohne Emojis/Hashtags).
+- `css/main.css`: `.insta-grid`/`.insta-post` (4 Spalten, mobil 2).
+- Eigenständige TALENTEXPERTE-Umsetzung nach dem Prinzip des Elfsight-Ersatzes; keine AIXTRA-WEB-Skripte, -Widgets oder -Datenquellen (Projekttrennung).
+
 ## 2026-09-26 — Leaflet lokal, Datenschutz-Entwurf Karte
 
 - Leaflet 1.9.4 aus dem offiziellen npm-Paket (Prüfsumme gegen Registry verifiziert) nach `vendor/leaflet-1.9.4/` übernommen (JS, CSS, Bilder, Lizenz); `index.html` lädt nicht mehr von `unpkg.com`.

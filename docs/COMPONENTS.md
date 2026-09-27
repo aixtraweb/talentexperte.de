@@ -56,6 +56,10 @@ Es gibt keine Template-Engine oder Komponentenbibliothek. Komponenten sind wiede
 - `.reels` mit `figure.reel` (Hochkant-`video` mit `controls`, `preload="none"`, Poster; Overlay `.reel-play`); JS pausiert andere Videos beim Abspielen. Mobil horizontal wischbar.
 - `.teamfotos-grid` mit `.team-photo`-Buttons (Lightbox wie Herbst-Motive).
 - Die Lightbox (`#galerieLightbox`) wird nur für Herbst-Motive und Teamfotos genutzt; die Hauptgalerie bleibt ohne Klick-Vergrößerung.
+
+### Instagram-Feed
+
+- `.insta-grid` mit `a.insta-post` (4:5, Link auf den Beitrag, `--video` zeigt ▶). Inhalt zwischen `<!-- INSTAGRAM-FEED:START … -->` und `<!-- INSTAGRAM-FEED:END -->` wird von `node scripts/instagram-sync.mjs --apply` erzeugt – nicht von Hand bearbeiten. Probelauf ohne `--apply`. Bei Login-Sperre/Strukturänderung bricht das Skript ohne Änderung ab.
 - Neue Landingpage-Sektionen sollen diese Abstände/Typografie wiederverwenden.
 
 ### Bewertungen

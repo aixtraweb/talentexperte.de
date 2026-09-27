@@ -47,7 +47,7 @@ Die Datenschutzerklärung nennt bislang **keinen** der eingesetzten Dienstleiste
 
 - Hoster (r20.hostingwerk.de) – Abschnitt „Externes Hosting“ ohne Namen/Anschrift;
 - Supabase (Speicherung der Anmeldungen), Resend (Bestätigungs-E-Mails), Stripe (Zahlung; Abschnitt 7 nennt nur „Kreditinstitut“);
-- Elfsight (Instagram-Widget, lädt Skripte von `elfsightcdn.com`, aktuell deaktiviert);
+- Abschnitt „Instagram“: seit 27.09.2026 werden Beitragsbilder lokal ausgeliefert, beim Besuch findet keine Übermittlung an Instagram statt (erst beim Klick auf einen Beitrag). Text entsprechend präzisieren; Elfsight ist entfernt;
 - Abschnitt „Newsletter“, obwohl kein Newsletter-Formular erkennbar ist.
 
 Empfehlung: Datenschutzerklärung insgesamt mit einem aktuellen Generator oder einer Rechtsberatung neu aufsetzen und dabei die obigen Abschnitte übernehmen.

@@ -105,7 +105,7 @@ Vor jeder TALENTEXPERTE-E-Mail sind unmittelbar vor dem Senden zu bestätigen:
 |---|---|---|
 | Leaflet 1.9.4 (lokal, `vendor/leaflet-1.9.4/`, BSD-2) + OpenStreetMap-Kacheln | Karte/Standort | lazy geladen; Leaflet seit 26.09.2026 selbst gehostet (npm-Paket, SHA-1 `23fae724…` geprüft); CARTO ersetzt; Namensnennung Pflicht; Datenschutztext als Entwurf in `DATENSCHUTZ-ENTWURF-KARTE.md` |
 | Supabase `camp_verfuegbarkeit_public` (anon) | Live-Plätze auf der Startseite | nur Aggregate (`id`, `freie_plaetze`, `datum_bis`), Fallback-Text ohne Antwort |
-| Elfsight | Instagram-Feed | lazy geladen; **seit mind. 26.09.2026 `WIDGET_DISABLED`** – Bereich leer, Reaktivierung offen |
+| Instagram (öffentliches Profil, eigenes Skript) | Instagram-Feed auf der Startseite | seit 27.09.2026 statt Elfsight: `scripts/instagram-sync.mjs` (Playwright, kein Login) → Bilder lokal `images/instagram/`, HTML statisch in `index.html`; Besucher laden nichts von Instagram, erst ein Klick öffnet den Beitrag |
 | jsPDF | PDF-Erzeugung im Browser | CDN mit Integrity auf Bestätigungsseite; Offline-/CSP-Fallback prüfen |
 | Supabase JS CDN | Firmenformular | feste Versionsreferenz `2.49.1`; Update nur getestet |
 | WhatsApp | Kontakt-CTA | externer Link, keine Formulardaten automatisch mitsenden |

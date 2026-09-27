@@ -4,15 +4,13 @@ Stand: 26. September 2026
 Dokumentationsstatus: offen und priorisiert
 Geltungsbereich: ungeklärte Punkte aus Repository- und Dokumentationsinventur
 
-## Instagram-Widget (Elfsight) deaktiviert
+## Instagram-Feed ohne Elfsight
 
-- Status: zurückgestellt auf Wunsch des Betreibers („später“), Erinnerung eingeplant
-- Priorität: mittel
-- Betroffener Bereich: Startseite `#instagram`, `index.html`
-- Aktueller Kenntnisstand: Elfsight meldet `WIDGET_DISABLED` für Widget `53f9643a-8f40-4f11-917b-7ec3410b68bd`; der Bereich bleibt leer (nur Folgen-Button sichtbar).
-- Benötigte Entscheidung: Widget im Elfsight-Konto reaktivieren (Abo/Limit prüfen) oder Sektion durch statische Instagram-Kacheln/Link ersetzen bzw. ausblenden.
-- Verantwortlich: Betreiber
-- Datum: 26.09.2026
+- Status: umgesetzt am 27.09.2026; Elfsight-Abo kann geprüft/gekündigt werden (Betreiberentscheidung)
+- Priorität: niedrig
+- Aktueller Kenntnisstand: Elfsight-Widget (`WIDGET_DISABLED`) entfernt. `scripts/instagram-sync.mjs` liest das öffentliche Profil @talentexperte ohne Login, speichert die letzten 8 Beiträge lokal in `images/instagram/` und schreibt das Raster statisch in `index.html` (Marker `INSTAGRAM-FEED`). Keine Drittanbieter-Skripte, keine AIXTRA-WEB-Infrastruktur.
+- Offen: Turnus der Aktualisierung (monatlich) und ob automatisch deployt wird.
+- Datum: 27.09.2026
 
 ## Datenschutzerklärung: Karte (OpenStreetMap/unpkg)
 

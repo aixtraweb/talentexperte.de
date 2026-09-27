@@ -603,3 +603,14 @@ html{overflow-x:clip}
 .theme-light .faq-download-icon{color:#fff}
 /* Fokus auf hellem Grund */
 .theme-light :where(a,button):focus-visible{outline:3px solid var(--red);outline-offset:3px}
+
+/* Instagram-Feed (lokal, ersetzt Elfsight seit 27.09.2026; Inhalt generiert von scripts/instagram-sync.mjs) */
+.insta-feed{min-height:0;overflow:visible}
+.insta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.insta-post{position:relative;display:block;border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:4/5;background:#e7e0d5;box-shadow:0 6px 20px rgba(28,25,23,.1)}
+.insta-post img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.16,1,.3,1)}
+.insta-post::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.45));opacity:0;transition:opacity .3s}
+.insta-post:hover img,.insta-post:focus-visible img{transform:scale(1.05)}
+.insta-post:hover::after,.insta-post:focus-visible::after{opacity:1}
+.insta-post--video::before{content:'▶';position:absolute;top:10px;right:10px;z-index:1;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:.75rem;display:flex;align-items:center;justify-content:center;padding-left:2px}
+@media(max-width:768px){.insta-grid{grid-template-columns:repeat(2,1fr);gap:8px}}
