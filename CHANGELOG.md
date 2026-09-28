@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-28 — Allergieangaben 3 Monate nach Campende leeren
+
+- Betreiberentscheidung: ausschließlich Allergie-/Gesundheitsangaben werden 3 Monate nach Campende entfernt; alle übrigen Anmeldedaten bleiben für Steuer/Finanzamt erhalten.
+- Migration `20260928090000_clear_expired_health_data.sql` eingespielt: `clear_expired_health_data()` leert `anmeldungen.allergien`/`firmen_anmeldungen.allergien` und bereinigt Kopien in `security_audit_log`; täglicher pg_cron-Job 03:30 UTC; Protokoll `health_data_cleanup_runs`. Probelauf mit Rollback, danach erster Lauf: 18 + 2 Datensätze (Ostercamp I/II); Anmeldungen, Notizen und Teilnahmedaten unverändert.
+- `code.gs`: `previewAllergyCleanup()`, `clearExpiredAllergies()`, `setupAllergyCleanupTrigger()` für Google-Tabelle (Spalte M) und Google-Kontakte; `setupTrigger()` ersetzt nur noch den eigenen Trigger. Muss im Apps-Script-Projekt eingefügt und einmal eingerichtet werden.
+- `datenschutz.html`: Löschfrist für Gesundheitsangaben in Abschnitt 3 und 12.
+
 ## 2026-09-27 — Aufbewahrung statt Löschroutine
 
 - Betreiberentscheidung: Zu Anmeldungen wird nichts gelöscht (Aufbewahrung für Steuerberater und Finanzamt). Die vorbereiteten, **nie eingespielten** Migrationen `20260927120000_add_retention_policy.sql` und `20260927121000_schedule_retention_policy.sql` entfernt; Datenbank geprüft: keine Funktionen, Tabellen oder Cron-Jobs angelegt, nichts gelöscht.

@@ -372,9 +372,11 @@ function testSync() {
 // ============================================================
 
 function setupTrigger() {
-  // Alle bestehenden Trigger löschen
-  const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => ScriptApp.deleteTrigger(trigger));
+  // Nur den bisherigen Sync-Trigger ersetzen (andere Trigger, z. B. die
+  // Allergie-Bereinigung, bleiben erhalten).
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === 'syncToGoogleContacts')
+    .forEach(t => ScriptApp.deleteTrigger(t));
   
   // Neuen Trigger erstellen: Alle 5 Minuten
   ScriptApp.newTrigger('syncToGoogleContacts')
@@ -383,4 +385,115 @@ function setupTrigger() {
     .create();
   
   Logger.log('✅ Trigger eingerichtet: syncToGoogleContacts läuft jetzt alle 5 Minuten.');
+}
+
+
+// ============================================================
+// DATENSCHUTZ: ALLERGIEANGABEN 3 MONATE NACH CAMPENDE LEEREN
+// ============================================================
+//
+// Betreiberentscheidung 28.09.2026 (docs/LOESCHKONZEPT.md): Nur die
+// Allergie-/Gesundheitsangaben werden 3 Monate nach dem letzten Camptag
+// entfernt – in Spalte M der Tabelle und als Zeile "⚠️ ALLERGIEN: …" in der
+// Notiz der Google-Kontakte. Alle anderen Angaben bleiben unverändert.
+// Dieselbe Regel läuft in Supabase (clear_expired_health_data).
+//
+// Einrichtung (einmalig): previewAllergyCleanup() ausführen und Log prüfen,
+// dann setupAllergyCleanupTrigger() ausführen (täglich ca. 4 Uhr).
+
+const ALLERGY_COLUMN = 13;          // Spalte M
+const ALLERGY_RETENTION_MONTHS = 3;
+const CAMP_API = 'https://yxygwwoocsdnneqykiym.supabase.co/rest/v1/camp_verfuegbarkeit_public?select=name,datum_bis';
+const CAMP_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U'; // öffentlicher Anon-Key (wie auf der Website)
+
+function previewAllergyCleanup() { return clearExpiredAllergies_(true); }
+function clearExpiredAllergies() { return clearExpiredAllergies_(false); }
+
+function setupAllergyCleanupTrigger() {
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === 'clearExpiredAllergies')
+    .forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('clearExpiredAllergies').timeBased().everyDays(1).atHour(4).create();
+  Logger.log('✅ Trigger eingerichtet: clearExpiredAllergies läuft täglich gegen 4 Uhr.');
+}
+
+function clearExpiredAllergies_(dryRun) {
+  const camps = loadCampEnds_();
+  if (!camps.length) { Logger.log('❌ Keine Campdaten erhalten – Abbruch ohne Änderung.'); return; }
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() - ALLERGY_RETENTION_MONTHS);
+  const expired = (campName, regDate) => {
+    const end = resolveCampEnd_(camps, campName, regDate);
+    return end !== null && end < cutoff;
+  };
+
+  // 1) Tabelle
+  let sheetCount = 0;
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  if (sheet) {
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      const allergien = String(data[i][ALLERGY_COLUMN - 1] || '').trim();
+      if (!allergien) continue;
+      if (!expired(data[i][11], parseDeDate_(data[i][1]))) continue;
+      sheetCount++;
+      if (!dryRun) sheet.getRange(i + 1, ALLERGY_COLUMN).setValue('');
+    }
+  }
+
+  // 2) Google-Kontakte mit Label TALENTEXPERTE
+  let contactCount = 0;
+  const labelId = getOrCreateContactLabel(CONTACT_LABEL);
+  if (labelId) {
+    const members = People.ContactGroups.get(labelId, { maxMembers: 1000 }).memberResourceNames || [];
+    for (let i = 0; i < members.length; i += 200) {
+      const batch = People.People.getBatchGet({ resourceNames: members.slice(i, i + 200), personFields: 'biographies' });
+      (batch.responses || []).forEach(r => {
+        const person = r.person;
+        const bio = person && person.biographies && person.biographies[0];
+        if (!bio || bio.value.indexOf('⚠️ ALLERGIEN:') === -1) return;
+        const camp = (bio.value.match(/🏕️ Camp: (.+)/) || [])[1];
+        const reg = parseDeDate_((bio.value.match(/📅 Angemeldet: (\d{2}\.\d{2}\.\d{4})/) || [])[1]);
+        if (!expired(camp ? camp.trim() : '', reg)) return;
+        contactCount++;
+        if (dryRun) return;
+        const cleaned = bio.value.split('\n').filter(line => line.indexOf('⚠️ ALLERGIEN:') !== 0).join('\n');
+        People.People.updateContact(
+          { etag: person.etag, biographies: [{ value: cleaned, contentType: 'TEXT_PLAIN' }] },
+          person.resourceName,
+          { updatePersonFields: 'biographies' });
+        Utilities.sleep(300);
+      });
+    }
+  }
+
+  Logger.log((dryRun ? '🔎 Vorschau – nichts geändert. ' : '🧹 Bereinigt. ') +
+    'Tabelle: ' + sheetCount + ' Zeilen, Kontakte: ' + contactCount + ' (Campende vor ' + formatDate(cutoff) + ').');
+  return { sheet: sheetCount, contacts: contactCount, dryRun: dryRun };
+}
+
+function loadCampEnds_() {
+  const res = UrlFetchApp.fetch(CAMP_API, {
+    headers: { apikey: CAMP_API_KEY, Authorization: 'Bearer ' + CAMP_API_KEY },
+    muteHttpExceptions: true
+  });
+  if (res.getResponseCode() !== 200) return [];
+  return JSON.parse(res.getContentText())
+    .map(c => ({ name: String(c.name || '').trim(), end: new Date(c.datum_bis + 'T23:59:59') }));
+}
+
+// Camp mit passendem Namen, das als erstes nach der Anmeldung endet
+// (Campnamen wiederholen sich jährlich). Unklar → null (nichts ändern).
+function resolveCampEnd_(camps, campName, regDate) {
+  const name = String(campName || '').trim();
+  if (!name || !regDate) return null;
+  const candidates = camps.filter(c => c.name === name && c.end >= regDate).sort((a, b) => a.end - b.end);
+  return candidates.length ? candidates[0].end : null;
+}
+
+function parseDeDate_(value) {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  const m = String(value).match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  return m ? new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1])) : null;
 }
