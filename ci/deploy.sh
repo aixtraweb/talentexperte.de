@@ -48,6 +48,7 @@ rsync -avz --delete --delete-excluded --prune-empty-dirs \
   --include "/robots.txt" \
   --include "/sitemap.xml" \
   --include "/llms.txt" \
+  --include "/googled0f4b13b6eb20b6f.html" \
   --include "/.htaccess" \
   --include "/css/***" \
   --exclude "/images/social-input/***" \

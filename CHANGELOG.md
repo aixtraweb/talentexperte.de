@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-09-28 — Search-Console-Verifizierung (Ausnahme zur Projekttrennung)
+
+- Betreiberentscheidung: Property per `googled0f4b13b6eb20b6f.html` mit dem AIXTRA-WEB-Google-Konto bestätigen, Reporting-Service-Account lesend als „Nutzer“ berechtigen (siehe `docs/DECISIONS.md`).
+- `ci/deploy.sh`: Verifizierungsdatei auf die Positivliste, damit `--delete-excluded` sie nicht entfernt.
+
 ## 2026-09-28 — Allergieangaben 3 Monate nach Campende leeren
 
 - Betreiberentscheidung: ausschließlich Allergie-/Gesundheitsangaben werden 3 Monate nach Campende entfernt; alle übrigen Anmeldedaten bleiben für Steuer/Finanzamt erhalten.

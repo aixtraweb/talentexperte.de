@@ -1,8 +1,33 @@
 # Architektur- und Projektentscheidungen
 
-Stand: 26. September 2026
+Stand: 28. September 2026
 Dokumentationsstatus: bestätigt aus Code, Migrationen und bestehenden Handbüchern
 Geltungsbereich: dauerhafte Entscheidungen; keine tagesaktuellen Betriebsstände
+
+## 2026-09-28 – Ausnahme: Search Console über AIXTRA-WEB-Google-Konto und Reporting-Service-Account
+
+### Status
+akzeptiert, ausdrückliche Betreiberentscheidung vom 28.09.2026 als Ausnahme zur Projekttrennung in `AGENTS.md`
+
+### Ausgangslage
+Der Reporting-Service-Account sah die Property `https://www.talentexperte.de/`, Search Analytics lieferte aber HTTP 403 (fehlende Nutzerrolle). Die Projekttrennung verbietet AIXTRA-WEB-Konten und Connector-Identitäten für TALENTEXPERTE.
+
+### Entscheidung
+1. Die Property wird per HTML-Datei `googled0f4b13b6eb20b6f.html` mit dem AIXTRA-WEB-Google-Konto bestätigt.
+2. Der Service-Account `seo-reporting-bot@seo-reporting-490320.iam.gserviceaccount.com` erhält in der Search Console die Rolle „Nutzer“ (nur lesend) für Search-Console-Berichte.
+3. Die Ausnahme gilt ausschließlich für diesen Search-Console-Lesezugriff. Absender, Konten, Signaturen und alle übrigen Betriebsstrecken bleiben strikt getrennt.
+
+### Begründung
+Die Search-Console-Daten sollen im bestehenden SEO-Reporting ausgewertet werden; ein lesender Zugriff hat keine Außenwirkung für Eltern oder Partner.
+
+### Auswirkungen
+`googled0f4b13b6eb20b6f.html` muss im Webroot bleiben; sie steht deshalb auf der Positivliste in `ci/deploy.sh`, sonst entfernt `--delete-excluded` sie beim nächsten Deploy.
+
+### Betroffene Dateien oder Komponenten
+`googled0f4b13b6eb20b6f.html`, `ci/deploy.sh`
+
+### Ersetzt durch
+—
 
 ## 2026-09-26 – Saisonkampagne, Hell/Dunkel-Design und nur buchbare Camps zeigen
 
