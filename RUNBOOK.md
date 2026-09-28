@@ -3,6 +3,8 @@
 ## Zweck
 Schnelle Notfall-Anleitung für häufige Live-Probleme (Anmeldung, Zahlung, Dashboard, Löschen).
 
+> **Verbindlicher Vorrang bei einzelnen Zahlungsrückfragen:** [`docs/PAYMENT-INQUIRY-WORKFLOW.md`](docs/PAYMENT-INQUIRY-WORKFLOW.md) verwenden. Dort sind die bestätigten Live-Zugänge, die vollständige Supabase-/Stripe-Suche, abweichende PayPal-Daten, gemeinsame Zahlungen und die sichere Statuskorrektur dokumentiert. Die älteren Payment-Heuristiken in diesem Root-Runbook sind dafür nicht maßgeblich.
+
 ## 1) Anmeldung funktioniert nicht
 ### Symptom
 - Formular sendet nicht

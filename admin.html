@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://elfsightcdn.com https://*.elfsight.com; connect-src 'self' https://yxygwwoocsdnneqykiym.supabase.co https://elfsightcdn.com https://*.elfsight.com; frame-src https://buy.stripe.com https://*.stripe.com https://*.elfsight.com; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin – TALENTEXPERTE</title>
 <meta name="robots" content="noindex, nofollow">
@@ -27,36 +28,58 @@
   <div class="login-card">
     <h1>TALENT<span>EXPERTE</span></h1>
     <p>Admin-Dashboard – Bitte einloggen</p>
-    <div class="login-field"><label>E-Mail</label><input type="email" id="loginEmail" placeholder="kontakt@talentexperte.de"></div>
-    <div class="login-field"><label>Passwort</label><input type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="login-field"><label for="loginEmail">E-Mail</label><input type="email" id="loginEmail" name="email" autocomplete="username" spellcheck="false" placeholder="kontakt@talentexperte.de"></div>
+    <div class="login-field"><label for="loginPassword">Passwort</label><input type="password" id="loginPassword" name="password" autocomplete="current-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="login-btn" onclick="doLogin()">Einloggen</button>
-    <div class="login-error" id="loginError"></div>
+    <div class="login-error" id="loginError" role="alert" aria-live="assertive"></div>
   </div>
 </div>
 
 <div class="dashboard" id="dashboard">
   <nav class="dash-nav">
     <div class="dash-nav-left"><h1>TALENT<span>EXPERTE</span></h1><span class="dash-nav-badge">Admin</span></div>
-    <div class="dash-nav-right"><span class="dash-time" id="dashTime"></span><button class="dash-logout" onclick="doLogout()">Abmelden ↗</button></div>
+    <div class="dash-nav-right"><span class="dash-time" id="dashTime"></span><button class="dash-logout" onclick="openEmailHistory()">E-Mail-Verlauf</button><button class="dash-logout" onclick="processEmailOutbox()">E-Mail-Warteschlange</button><button class="dash-logout" onclick="doLogout()">Abmelden ↗</button></div>
   </nav>
   <div class="dash-content">
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-label">Camps aktiv</div><div class="stat-value" id="statCamps">–</div><div class="stat-sub" id="statCampsSub"></div></div>
       <div class="stat-card"><div class="stat-label">Anmeldungen</div><div class="stat-value red" id="statAnmeldungen">–</div><div class="stat-sub" id="statAnmeldungenSub"></div></div>
       <div class="stat-card"><div class="stat-label">Elternzahlungen bezahlt</div><div class="stat-value green" id="statBezahlt">–</div><div class="stat-sub" id="statBezahltSub"></div></div>
-      <div class="stat-card" id="statCardOffen" style="cursor:pointer;"><div class="stat-label">Elternzahlungen offen</div><div class="stat-value yellow" id="statOffen">–</div><div class="stat-sub" id="statOffenSub"></div></div>
+      <button type="button" class="stat-card" id="statCardOffen"><span class="stat-label">Elternzahlungen offen</span><span class="stat-value yellow" id="statOffen">–</span><span class="stat-sub" id="statOffenSub"></span></button>
       <div class="stat-card"><div class="stat-label">Elternumsatz (bezahlt)</div><div class="stat-value green" id="statUmsatz">–</div><div class="stat-sub" id="statUmsatzSub"></div></div>
       <div class="stat-card"><div class="stat-label">Auslastung ∅</div><div class="stat-value" id="statAuslastung">–</div><div class="stat-sub" id="statAuslastungSub"></div></div>
     </div>
     <div class="tabs">
       <button class="tab active" data-tab="camps" onclick="switchTab('camps',this)">⚽ Camps</button>
+      <button class="tab" data-tab="aufgaben" onclick="switchTab('aufgaben',this)">✓ Aufgaben <span class="todo-tab-count" id="todoTabCount">0</span></button>
       <button class="tab" data-tab="anmeldungen" onclick="switchTab('anmeldungen',this)">📋 Anmeldungen</button>
       <button class="tab" data-tab="anwesenheit" onclick="switchTab('anwesenheit',this)">📅 Anwesenheit</button>
     </div>
     <div class="tab-content active" id="tabCamps"><div class="camp-cards" id="campCards"><div class="empty-state"><div class="icon">⏳</div>Laden…</div></div></div>
+    <div class="tab-content" id="tabAufgaben">
+      <section class="todo-board" aria-labelledby="todoBoardTitle">
+        <div class="todo-board-head">
+          <div>
+            <div class="todo-kicker">Camp-Einsatz</div>
+            <h2 id="todoBoardTitle">Aufgaben im Blick</h2>
+            <p>Offene Punkte für Campbetrieb, Zahlungen und Abrechnungen.</p>
+          </div>
+          <div class="todo-board-actions">
+            <div class="todo-filters" aria-label="Aufgaben filtern">
+              <button type="button" class="todo-filter active" data-todo-filter="open" aria-pressed="true" onclick="setTodoFilter('open',this)">Offen</button>
+              <button type="button" class="todo-filter" data-todo-filter="all" aria-pressed="false" onclick="setTodoFilter('all',this)">Alle</button>
+              <button type="button" class="todo-filter" data-todo-filter="done" aria-pressed="false" onclick="setTodoFilter('done',this)">Erledigt</button>
+            </div>
+            <button type="button" class="todo-add" onclick="openTodoModal()">＋ Neue Aufgabe</button>
+          </div>
+        </div>
+        <div class="todo-summary" id="todoSummary" role="status" aria-live="polite"></div>
+        <div class="todo-list" id="todoList"><div class="empty-state"><div class="icon">⏳</div>Aufgaben werden geladen…</div></div>
+      </section>
+    </div>
     <div class="tab-content" id="tabAnwesenheit">
       <div class="anwesenheit-controls">
-        <select class="filter-select" id="anwesenheitCampSel" onchange="onAnwesenheitCampChange(this.value)"><option value="">– Camp auswählen –</option></select>
+        <select class="filter-select" id="anwesenheitCampSel" aria-label="Camp für Anwesenheit" onchange="onAnwesenheitCampChange(this.value)"><option value="">– Camp auswählen –</option></select>
         <button class="btn-sm btn-refresh" onclick="reloadAnwesenheit()">↻ Aktualisieren</button>
         <span id="syncIndicator" class="sync-indicator sync-ok"></span>
       </div>
@@ -64,10 +87,10 @@
     </div>
     <div class="tab-content" id="tabAnmeldungen">
       <div class="table-controls">
-        <input type="text" class="table-search" id="searchInput" placeholder="🔍 Name, E-Mail, Telefon…" oninput="filterTable()">
+        <label class="sr-only" for="searchInput">Anmeldungen durchsuchen</label><input type="search" class="table-search" id="searchInput" name="dashboard_search" autocomplete="off" placeholder="Name, E-Mail oder Telefon…" oninput="filterTable()">
         <div class="table-filters">
-          <select class="filter-select" id="filterCamp" onchange="filterTable()"><option value="">Alle Camps</option></select>
-          <select class="filter-select" id="filterStatus" onchange="filterTable()"><option value="">Alle Status</option><option value="offen">⏳ Elternzahlung offen</option><option value="bezahlt">✅ Elternzahlung bezahlt</option><option value="gesponsert">🤝 Voll gesponsert</option><option value="storniert">❌ Storniert</option><option value="erstattet">↩ Erstattet</option></select>
+          <select class="filter-select" id="filterCamp" aria-label="Nach Camp filtern" onchange="filterTable()"><option value="">Alle Camps</option></select>
+          <select class="filter-select" id="filterStatus" aria-label="Nach Status filtern" onchange="filterTable()"><option value="">Alle Status</option><option value="offen">⏳ Elternzahlung offen</option><option value="bezahlt">✅ Elternzahlung bezahlt</option><option value="gesponsert">🤝 Voll gesponsert</option><option value="storniert">❌ Storniert</option><option value="erstattet">↩ Erstattet</option></select>
           <button class="btn-sm" id="filterMitarbeiterBtn" onclick="toggleMitarbeiterFilter()">🏭 Saint-Gobain</button>
           <button class="btn-sm btn-sponsor-filter" id="filterOefBtn" onclick="toggleOefFilter()">🤝 ÖF / Sponsoring</button>
           <button class="btn-sm btn-col-toggle" id="toggleElternBtn" onclick="toggleCol('eltern')" title="Spalte Eltern ein-/ausblenden">👤 Eltern</button>
@@ -78,11 +101,12 @@
         </div>
       </div>
       <div class="result-count" id="resultCount"></div>
+      <div class="aw-summary aw-summary-main" id="mainAttendanceSummary" role="status" aria-live="polite" aria-atomic="true" hidden></div>
       <div class="bulk-bar" id="bulkBar">
         <span class="bulk-count" id="bulkCount">0 ausgewählt</span>
         <button class="bulk-btn bulk-paid" onclick="bulkSetStatus('bezahlt')">✓ Bezahlt</button>
         <button class="bulk-btn bulk-cancel" onclick="bulkSetStatus('storniert')">✕ Stornieren</button>
-        <button class="bulk-btn bulk-remind" onclick="bulkReminder()">📧 Zahlungserinnerung</button>
+        <button class="bulk-btn bulk-remind" onclick="bulkReminder()">📧 Letzte Zahlungsfrist</button>
         <button class="bulk-btn bulk-delete" onclick="bulkDelete()">🗑 Löschen</button>
         <button class="bulk-btn bulk-deselect" onclick="deselectAll()">✕ Auswahl aufheben</button>
       </div>
@@ -92,66 +116,66 @@
 </div>
 
 <!-- CAMP EDIT MODAL -->
-<div class="modal-overlay" id="campModal">
-  <div class="modal">
-    <div class="modal-header"><h2 id="campModalTitle">Camp bearbeiten</h2><button class="modal-close" onclick="closeCampModal()">✕</button></div>
+<div class="modal-overlay" id="campModal" role="dialog" aria-modal="true" aria-labelledby="campModalTitle" aria-hidden="true">
+  <div class="modal" tabindex="-1">
+    <div class="modal-header"><h2 id="campModalTitle">Camp bearbeiten</h2><button class="modal-close" aria-label="Camp-Dialog schließen" onclick="closeCampModal()">✕</button></div>
     <div class="modal-body">
       <input type="hidden" id="editCampId">
-      <div class="modal-field"><label>Name</label><input type="text" id="editCampName"></div>
-      <div class="modal-row"><div class="modal-field"><label>Datum von</label><input type="date" id="editCampVon"></div><div class="modal-field"><label>Datum bis</label><input type="date" id="editCampBis"></div></div>
-      <div class="modal-row"><div class="modal-field"><label>Uhrzeit von</label><input type="time" id="editCampUhrzeitVon"></div><div class="modal-field"><label>Uhrzeit bis</label><input type="time" id="editCampUhrzeitBis"></div></div>
-      <div class="modal-row"><div class="modal-field"><label>Preis (€)</label><input type="number" id="editCampPreis" step="0.01"></div><div class="modal-field"><label>Max. Plätze</label><input type="number" id="editCampPlaetze"></div></div>
-      <div class="modal-row"><div class="modal-field"><label>Frühbucher-Preis (€)</label><input type="number" id="editCampFruehPreis" step="0.01" placeholder="Leer = kein Frühbucher"></div><div class="modal-field"><label>Frühbucher bis</label><input type="date" id="editCampFruehBis"></div></div>
-      <div class="modal-field"><label>Status</label><select id="editCampStatus"><option value="aktiv">Aktiv</option><option value="ausgebucht">Ausgebucht</option><option value="archiviert">Archiviert</option></select></div>
-      <div class="modal-field"><label>Stripe Payment Link</label><input type="url" id="editCampStripe" placeholder="https://buy.stripe.com/..."><span class="hint">Bezahl-Link nach Anmeldung</span></div>
-      <div class="modal-field"><label>Beschreibung</label><textarea id="editCampBeschreibung" rows="3"></textarea></div>
+      <div class="modal-field"><label for="editCampName">Name</label><input type="text" id="editCampName"></div>
+      <div class="modal-row"><div class="modal-field"><label for="editCampVon">Datum von</label><input type="date" id="editCampVon"></div><div class="modal-field"><label for="editCampBis">Datum bis</label><input type="date" id="editCampBis"></div></div>
+      <div class="modal-row"><div class="modal-field"><label for="editCampUhrzeitVon">Uhrzeit von</label><input type="time" id="editCampUhrzeitVon"></div><div class="modal-field"><label for="editCampUhrzeitBis">Uhrzeit bis</label><input type="time" id="editCampUhrzeitBis"></div></div>
+      <div class="modal-row"><div class="modal-field"><label for="editCampPreis">Preis (€)</label><input type="number" id="editCampPreis" step="0.01"></div><div class="modal-field"><label for="editCampPlaetze">Max. Plätze</label><input type="number" id="editCampPlaetze"></div></div>
+      <div class="modal-row"><div class="modal-field"><label for="editCampFruehPreis">Frühbucher-Preis (€)</label><input type="number" id="editCampFruehPreis" step="0.01" placeholder="Leer = kein Frühbucher"></div><div class="modal-field"><label for="editCampFruehBis">Frühbucher bis</label><input type="date" id="editCampFruehBis"></div></div>
+      <div class="modal-field"><label for="editCampStatus">Status</label><select id="editCampStatus"><option value="aktiv">Aktiv</option><option value="ausgebucht">Ausgebucht</option><option value="archiviert">Archiviert</option></select></div>
+      <div class="modal-field"><label for="editCampStripe">Stripe Payment Link</label><input type="url" id="editCampStripe" placeholder="https://buy.stripe.com/..."><span class="hint">Bezahl-Link nach Anmeldung</span></div>
+      <div class="modal-field"><label for="editCampBeschreibung">Beschreibung</label><textarea id="editCampBeschreibung" rows="3"></textarea></div>
     </div>
     <div class="modal-footer"><button class="btn-modal btn-modal-cancel" onclick="closeCampModal()">Abbrechen</button><button class="btn-modal btn-modal-save" onclick="saveCamp()">Speichern</button></div>
   </div>
 </div>
 
 <!-- MANUELLE ANMELDUNG MODAL -->
-<div class="modal-overlay" id="manualModal">
-  <div class="modal" style="max-width:640px;max-height:90vh;overflow-y:auto;">
-    <div class="modal-header"><h2 id="manualModalTitle">Manuelle Anmeldung erfassen</h2><button class="modal-close" onclick="closeManualAnmeldung()">✕</button></div>
+<div class="modal-overlay" id="manualModal" role="dialog" aria-modal="true" aria-labelledby="manualModalTitle" aria-hidden="true">
+  <div class="modal" tabindex="-1" style="max-width:640px;max-height:90vh;overflow-y:auto;">
+    <div class="modal-header"><h2 id="manualModalTitle">Manuelle Anmeldung erfassen</h2><button class="modal-close" aria-label="Anmeldedialog schließen" onclick="closeManualAnmeldung()">✕</button></div>
     <div class="modal-body">
-      <div class="modal-field"><label>Camp *</label><select id="mCamp" onchange="mCampChanged()"><option value="">– Bitte wählen –</option></select></div>
+      <div class="modal-field"><label for="mCamp">Camp *</label><select id="mCamp" onchange="mCampChanged()"><option value="">– Bitte wählen –</option></select></div>
       <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;margin:16px 0 8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);">Kind</div>
       <div class="modal-row">
-        <div class="modal-field"><label>Vorname Kind *</label><input type="text" id="mVorname" placeholder="Max"></div>
-        <div class="modal-field"><label>Nachname Kind *</label><input type="text" id="mNachname" placeholder="Mustermann"></div>
+        <div class="modal-field"><label for="mVorname">Vorname Kind *</label><input type="text" id="mVorname" placeholder="Max"></div>
+        <div class="modal-field"><label for="mNachname">Nachname Kind *</label><input type="text" id="mNachname" placeholder="Mustermann"></div>
       </div>
       <div class="modal-row">
-        <div class="modal-field"><label>Geburtsdatum *</label><input type="date" id="mGeburtsdatum"></div>
-        <div class="modal-field"><label>Trikotgröße</label><select id="mTrikot"><option value="">–</option><option>116</option><option>128</option><option>140</option><option>152</option><option>164</option><option>S</option><option>M</option><option>L</option><option>XL</option></select></div>
+        <div class="modal-field"><label for="mGeburtsdatum">Geburtsdatum *</label><input type="date" id="mGeburtsdatum"></div>
+        <div class="modal-field"><label for="mTrikot">Trikotgröße</label><select id="mTrikot"><option value="">–</option><option>116</option><option>128</option><option>140</option><option>152</option><option>164</option><option>S</option><option>M</option><option>L</option><option>XL</option></select></div>
       </div>
       <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;margin:16px 0 8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);">Eltern / Kontakt</div>
       <div class="modal-row">
-        <div class="modal-field"><label>Vorname Elternteil *</label><input type="text" id="mElternVorname"></div>
-        <div class="modal-field"><label>Nachname Elternteil *</label><input type="text" id="mElternNachname"></div>
+        <div class="modal-field"><label for="mElternVorname">Vorname Elternteil *</label><input type="text" id="mElternVorname"></div>
+        <div class="modal-field"><label for="mElternNachname">Nachname Elternteil *</label><input type="text" id="mElternNachname"></div>
       </div>
       <div class="modal-row">
-        <div class="modal-field"><label>E-Mail *</label><input type="email" id="mEmail" placeholder="eltern@beispiel.de"></div>
-        <div class="modal-field"><label>Telefon</label><input type="tel" id="mTelefon" placeholder="+49 …"></div>
+        <div class="modal-field"><label for="mEmail">E-Mail *</label><input type="email" id="mEmail" placeholder="eltern@beispiel.de"></div>
+        <div class="modal-field"><label for="mTelefon">Telefon</label><input type="tel" id="mTelefon" placeholder="+49 …"></div>
       </div>
-      <div class="modal-field"><label>Adresse</label><input type="text" id="mAdresse" placeholder="Musterstraße 1, 52066 Aachen"></div>
+      <div class="modal-field"><label for="mAdresse">Adresse</label><input type="text" id="mAdresse" placeholder="Musterstraße 1, 52066 Aachen"></div>
       <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;margin:16px 0 8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);">Weitere Angaben</div>
       <div class="modal-row">
-        <div class="modal-field"><label>Erfahrung</label><input type="text" id="mErfahrung" placeholder="z.B. Vereinsspieler, Anfänger…"></div>
-        <div class="modal-field"><label id="mBetragLabel">Elternbetrag (€) *</label><input type="number" id="mBetrag" step="0.01" min="0" placeholder="0.00"><span class="hint" id="mBetragHint">Betrag, den die Eltern selbst zahlen.</span></div>
+        <div class="modal-field"><label for="mErfahrung">Erfahrung</label><input type="text" id="mErfahrung" placeholder="z.B. Vereinsspieler, Anfänger…"></div>
+        <div class="modal-field"><label for="mBetrag" id="mBetragLabel">Elternbetrag (€) *</label><input type="number" id="mBetrag" step="0.01" min="0" placeholder="0.00"><span class="hint" id="mBetragHint">Betrag, den die Eltern selbst zahlen.</span></div>
       </div>
-      <div class="modal-field"><label>Allergien / Besonderheiten</label><textarea id="mAllergien" rows="2" placeholder="Keine Angabe"></textarea></div>
-      <div class="modal-field"><label>Notizen</label><textarea id="mNotizen" rows="2" placeholder="Interne Notizen"></textarea></div>
+      <div class="modal-field"><label for="mAllergien">Allergien / Besonderheiten</label><textarea id="mAllergien" rows="2" placeholder="Keine Angabe"></textarea></div>
+      <div class="modal-field"><label for="mNotizen">Notizen</label><textarea id="mNotizen" rows="2" placeholder="Interne Notizen"></textarea></div>
       <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;margin:16px 0 8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);">Zahlung &amp; Herkunft</div>
       <div class="modal-row">
-        <div class="modal-field"><label>Anmeldungstyp</label>
+        <div class="modal-field"><label for="mTyp">Anmeldungstyp</label>
           <select id="mTyp" onchange="mTypChanged()">
             <option value="Privat">👤 Privat</option>
             <option value="Sponsor">🤝 Voll gesponsert</option>
             <option value="Saint-Gobain">🏢 Saint-Gobain – Mitarbeiter</option>
           </select>
         </div>
-        <div class="modal-field"><label>Zahlungsstatus</label>
+        <div class="modal-field"><label for="mZahlungsstatus">Zahlungsstatus</label>
           <select id="mZahlungsstatus">
             <option value="offen">⏳ Offen – noch nicht bezahlt</option>
             <option value="bezahlt">✅ Bezahlt – Banküberweisung erhalten</option>
@@ -159,15 +183,15 @@
             <option value="not_required">🤝 Nicht erforderlich – voll gesponsert</option>
           </select>
         </div>
-        <div class="modal-field"><label>Anmeldekanal</label><input type="text" id="mKanal" placeholder="z.B. Telefon, Vor Ort, E-Mail…"></div>
+        <div class="modal-field"><label for="mKanal">Anmeldekanal</label><input type="text" id="mKanal" placeholder="z.B. Telefon, Vor Ort, E-Mail…"></div>
       </div>
       <div class="sponsor-admin-fields" id="mSponsorFields" hidden>
         <div class="sponsor-admin-note"><strong>Voll gesponsert:</strong> Die Eltern zahlen 0 €. Der Sponsor-Betrag wird getrennt von der Elternzahlung geführt.</div>
         <div class="modal-row">
-          <div class="modal-field"><label>Sponsoring-Partner *</label><select id="mSponsorPartner"><option value="">– Partner auswählen –</option></select></div>
-          <div class="modal-field"><label>Sponsor-Betrag (voller Listenpreis)</label><input type="number" id="mSponsorAmount" step="0.01" min="0" placeholder="149.00" readonly></div>
+          <div class="modal-field"><label for="mSponsorPartner">Sponsoring-Partner *</label><select id="mSponsorPartner"><option value="">– Partner auswählen –</option></select></div>
+          <div class="modal-field"><label for="mSponsorAmount">Sponsor-Betrag (voller Listenpreis)</label><input type="number" id="mSponsorAmount" step="0.01" min="0" placeholder="149.00" readonly></div>
         </div>
-        <div class="modal-field"><label>Sponsor-Abrechnung</label>
+        <div class="modal-field"><label for="mSponsorSettlement">Sponsor-Abrechnung</label>
           <select id="mSponsorSettlement">
             <option value="open">Offen</option>
             <option value="invoiced">In Rechnung gestellt</option>
@@ -184,26 +208,65 @@
   </div>
 </div>
 
+<!-- TODO MODAL -->
+<div class="modal-overlay" id="todoModal" role="dialog" aria-modal="true" aria-labelledby="todoModalTitle" aria-hidden="true">
+  <div class="modal todo-modal" tabindex="-1">
+    <div class="modal-header"><h2 id="todoModalTitle">Aufgabe anlegen</h2><button class="modal-close" aria-label="Aufgabendialog schließen" onclick="closeTodoModal()">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="todoId">
+      <div class="modal-field"><label for="todoTitle">Aufgabe *</label><input type="text" id="todoTitle" maxlength="180" placeholder="Was ist zu erledigen?"></div>
+      <div class="modal-field"><label for="todoDetails">Hinweis</label><textarea id="todoDetails" maxlength="2000" rows="3" placeholder="Betrag, Zahlungsweg oder nächster Schritt"></textarea></div>
+      <div class="modal-row">
+        <div class="modal-field"><label for="todoDueOn">Fällig am</label><input type="date" id="todoDueOn"></div>
+        <div class="modal-field"><label for="todoPriority">Priorität</label><select id="todoPriority"><option value="urgent">Sofort</option><option value="high">Hoch</option><option value="normal">Normal</option></select></div>
+      </div>
+      <div class="modal-field"><label for="todoCampId">Camp</label><select id="todoCampId"><option value="">Allgemein</option></select></div>
+      <div class="modal-field"><label for="todoRegistrationId">Anmeldung verknüpfen</label><select id="todoRegistrationId"><option value="">Keine Verknüpfung</option></select><span class="hint">Optional: öffnet aus der Aufgabe direkt den Teilnehmerdatensatz.</span></div>
+    </div>
+    <div class="modal-footer todo-modal-footer">
+      <button type="button" class="btn-modal todo-delete" id="todoDeleteBtn" onclick="deleteTodoFromModal()" hidden>Löschen</button>
+      <span class="todo-modal-spacer"></span>
+      <button type="button" class="btn-modal btn-modal-cancel" onclick="closeTodoModal()">Abbrechen</button>
+      <button type="button" class="btn-modal btn-modal-save" id="todoSaveBtn" onclick="saveTodo()">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <!-- DETAIL PANEL -->
 <div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
-<div class="detail-panel" id="detailPanel">
-  <div class="detail-header"><h2 id="detailTitle">Details</h2><button class="modal-close" onclick="closeDetail()">✕</button></div>
+<div class="detail-panel" id="detailPanel" role="dialog" aria-modal="true" aria-labelledby="detailTitle" aria-hidden="true" tabindex="-1">
+  <div class="detail-header"><h2 id="detailTitle">Details</h2><button class="modal-close" aria-label="Details schließen" onclick="closeDetail()">✕</button></div>
   <div id="detailContent"></div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+<div class="modal-overlay" id="emailHistoryModal" role="dialog" aria-modal="true" aria-labelledby="emailHistoryTitle" aria-hidden="true">
+  <div class="modal" tabindex="-1" style="max-width:900px;">
+    <div class="modal-header"><h2 id="emailHistoryTitle">E-Mail-Verlauf</h2><button class="modal-close" aria-label="E-Mail-Verlauf schließen" onclick="closeEmailHistory()">✕</button></div>
+    <div class="modal-body"><div id="emailHistoryContent" class="empty-state"><div class="icon">⏳</div>Laden…</div></div>
+  </div>
+</div>
+<div class="modal-overlay" id="emailDetailModal" role="dialog" aria-modal="true" aria-labelledby="emailDetailTitle" aria-hidden="true">
+  <div class="modal" tabindex="-1" style="max-width:760px;">
+    <div class="modal-header"><h2 id="emailDetailTitle">E-Mail-Details</h2><button class="modal-close" aria-label="E-Mail-Details schließen" onclick="closeEmailDetail()">✕</button></div>
+    <div class="modal-body" id="emailDetailContent"><div class="empty-state"><div class="icon">⏳</div>Laden…</div></div>
+  </div>
+</div>
 
 <script>
 var SUPABASE_URL='https://yxygwwoocsdnneqykiym.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4eWd3d29vY3Nkbm5lcXlraXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0OTE3ODAsImV4cCI6MjA4NjA2Nzc4MH0.DaFBgiJYfA_cFoRv-P9u_Bqjn-SnFaOJo8fRNe066-U';
 var accessToken=null,tokenExpiry=0,refreshing=null;
 var ADMIN_IDLE_MS=30*60*1000,lastAdminActivity=Date.now();
-var allCamps=[],allAnmeldungen=[],allSponsoringPartners=[],currentSort={field:'kind',dir:'asc'},onlyMitarbeiter=false,onlyOef=false;
+var allCamps=[],allAnmeldungen=[],allSponsoringPartners=[],allTodos=[],currentSort={field:'kind',dir:'asc'},onlyMitarbeiter=false,onlyOef=false;
 var selectedIds=new Set();
 var lastAnwCampId=null;
 var campReadMode='private';
 var allDashboardRows=[],privateKpi=null;
+var todoFilter='open',todoLoadFailed=false;
 var KNOWN_STATUS={offen:true,bezahlt:true,gesponsert:true,storniert:true,erstattet:true};
+var dialogReturnFocus={};
+function setDialogState(id,open){var el=document.getElementById(id);if(!el)return;el.classList.toggle('visible',open);if(open){dialogReturnFocus[id]=document.activeElement;el.setAttribute('aria-hidden','false');requestAnimationFrame(function(){var target=el.querySelector('.modal,[tabindex="-1"]')||el;target.focus()})}else{el.setAttribute('aria-hidden','true');var previous=dialogReturnFocus[id];if(previous&&previous.focus)previous.focus();delete dialogReturnFocus[id]}}
 function statusToken(v){var s=String(v||'').toLowerCase().trim();if(s==='paid'||s==='zahlung_erfolgt'||s==='bezahlt')return 'bezahlt';if(s==='cancelled'||s==='storniert')return 'storniert';if(s==='refunded'||s==='erstattet')return 'erstattet';if(s==='open'||s==='offen'||s==='pending')return 'offen';return ''}
 
 function hasLegacySponsorMarker(a){return /\[TYP:(?:ÖF|OEF)\]/i.test(String((a&&a.notizen)||''))}
@@ -246,6 +309,39 @@ return j
 }
 async function apiPatch(t,id,d){var r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?id=eq.'+id,{method:'PATCH',headers:apiH(),body:JSON.stringify(d)});if(r.status===401){doLogout();return null}return r}
 async function apiDelete(t,id){var r=await fetch(SUPABASE_URL+'/rest/v1/'+t+'?id=eq.'+id,{method:'DELETE',headers:apiH()});if(r.status===401){doLogout();return null}return r}
+async function apiRpc(name,payload){var r=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:apiH(),body:JSON.stringify(payload||{})});if(r.status===401){doLogout();return null}return r}
+async function processEmailOutbox(){
+await ensureFreshToken();
+var r=await fetch(SUPABASE_URL+'/functions/v1/process-email-outbox',{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:'{}'});
+var p=await r.json().catch(function(){return{}});
+if(!r.ok){showToast(p.error||'E-Mail-Warteschlange konnte nicht verarbeitet werden',true);return}
+showToast('E-Mail-Warteschlange: '+Number(p.sent||0)+' versendet, '+Number(p.failed||0)+' weiter offen')
+}
+function escHtml(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function formatMailTime(v){if(!v)return '–';var d=new Date(v);return isNaN(d)?'–':d.toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'})}
+function emailStatusLabel(s){return {sent:'Versendet',pending:'Wartet',sending:'Wird versendet',failed:'Fehlgeschlagen',cancelled:'Abgebrochen'}[String(s||'').toLowerCase()]||'Unbekannt'}
+function emailStatusStyle(s){return {sent:'sync-ok',pending:'sync-pending',sending:'sync-pending',failed:'sync-error',cancelled:'sync-error'}[String(s||'').toLowerCase()]||'sync-error'}
+function mailText(v){var html=String(v||'');if(!html)return '';return new DOMParser().parseFromString(html,'text/html').body.textContent.replace(/\n\s*\n\s*\n+/g,'\n\n').trim()}
+function mailMetaLabel(label,value){return '<div style="font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#8d8d8d;margin-bottom:4px">'+escHtml(label)+'</div><div style="color:#fff;font-size:.95rem;overflow-wrap:anywhere">'+escHtml(value||'–')+'</div>'}
+async function openEmailHistory(){
+var content=document.getElementById('emailHistoryContent');content.innerHTML='<div class="empty-state"><div class="icon">⏳</div>Laden…</div>';setDialogState('emailHistoryModal',true);
+if(!await ensureFreshToken()){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.</div>';return}
+var r,p;try{r=await fetch(SUPABASE_URL+'/functions/v1/list-email-outbox',{headers:{'Authorization':'Bearer '+accessToken}});p=await r.json().catch(function(){return{}})}catch(e){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>Der E-Mail-Verlauf konnte nicht geladen werden. Bitte versuchen Sie es erneut.</div>';return}
+if(!r.ok){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>'+escHtml(p.error||'E-Mail-Verlauf konnte nicht geladen werden')+'</div>';return}
+var rows=Array.isArray(p.messages)?p.messages:[];
+if(!rows.length){content.innerHTML='<div class="empty-state"><div class="icon">✉️</div>Noch keine E-Mails im Versandverlauf</div>';return}
+content.innerHTML='<div style="overflow:auto"><table class="data-table"><thead><tr><th>Empfänger</th><th>Typ</th><th>Status</th><th>Versendet</th><th></th></tr></thead><tbody>'+rows.map(function(m){return '<tr><td>'+escHtml(m.recipient)+'</td><td>'+escHtml(m.message_type)+'</td><td><span class="sync-indicator '+emailStatusStyle(m.status)+'">'+emailStatusLabel(m.status)+'</span></td><td>'+formatMailTime(m.sent_at||m.created_at)+'</td><td><button type="button" class="btn-sm" onclick="openEmailDetail(\''+escHtml(m.id)+'\')">Details</button></td></tr>'}).join('')+'</tbody></table></div>'
+}
+function closeEmailHistory(){setDialogState('emailHistoryModal',false)}
+async function openEmailDetail(id){
+var content=document.getElementById('emailDetailContent');content.innerHTML='<div class="empty-state"><div class="icon">⏳</div>Laden…</div>';setDialogState('emailDetailModal',true);
+if(!await ensureFreshToken()){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.</div>';return}
+var r,p;try{r=await fetch(SUPABASE_URL+'/functions/v1/get-email-outbox-detail?id='+encodeURIComponent(id),{headers:{'Authorization':'Bearer '+accessToken}});p=await r.json().catch(function(){return{}})}catch(e){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>Die E-Mail-Details konnten nicht geladen werden.</div>';return}
+if(!r.ok||!p.message){content.innerHTML='<div class="empty-state"><div class="icon">⚠️</div>'+escHtml(p.error||'Die E-Mail-Details konnten nicht geladen werden.')+'</div>';return}
+var m=p.message,body=mailText(m.html)||String(m.text||'').trim()||'Kein Textinhalt gespeichert.';
+content.innerHTML='<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;padding:4px 0 24px">'+mailMetaLabel('An',m.recipient)+mailMetaLabel('Status',emailStatusLabel(m.status))+mailMetaLabel('Betreff',m.subject)+mailMetaLabel('Versendet',formatMailTime(m.sent_at||m.created_at))+'</div><div style="border-top:1px solid rgba(255,255,255,.1);padding-top:20px">'+mailMetaLabel('Nachricht','')+'<pre style="margin:10px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.65;color:#dedede">'+escHtml(body)+'</pre></div>';
+}
+function closeEmailDetail(){setDialogState('emailDetailModal',false)}
 async function apiPost(t,d){
 var h=Object.assign({},apiH(),{'Prefer':'return=minimal'});
 var r=await fetch(SUPABASE_URL+'/rest/v1/'+t,{method:'POST',headers:h,body:JSON.stringify(d)});
@@ -306,7 +402,7 @@ if(hasPaymentSignal(a)&&!hasPaymentSignal(b))return a;
 return new Date(b.created_at||0)>new Date(a.created_at||0)?b:a
 }
 
-async function loadAll(){await Promise.all([loadCamps(),loadSponsoringPartners(),loadAnmeldungen(),loadPrivateKpis()]);renderCamps();populateCampFilter();populateAnwesenheitCampSel();populateSponsorPartnerSelect();updateStats();if(lastAnwCampId){anwesenheitCampId=lastAnwCampId;await loadTeilnahme();renderTable()}}
+async function loadAll(){await Promise.all([loadCamps(),loadSponsoringPartners(),loadAnmeldungen(),loadPrivateKpis(),loadTodos()]);renderCamps();populateCampFilter();populateAnwesenheitCampSel();populateSponsorPartnerSelect();populateTodoSelectors();renderTodos();updateStats();if(lastAnwCampId){anwesenheitCampId=lastAnwCampId;await loadTeilnahme();renderTable()}}
 async function loadCamps(){
 campReadMode='private';
 var d=await apiGet('camps?select=*&order=datum_von.asc');
@@ -328,6 +424,105 @@ showToast('Camps konnten nicht geladen werden',true)
 async function loadSponsoringPartners(){
 var rows=await apiGet('sponsoring_partners?select=id,name,slug&order=name.asc');
 allSponsoringPartners=Array.isArray(rows)?rows:[]
+}
+async function loadTodos(){
+var rows=await apiGet('admin_todos?select=*&order=created_at.asc');
+todoLoadFailed=!Array.isArray(rows);
+allTodos=Array.isArray(rows)?rows:[]
+}
+function todoTodayKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function todoPriorityRank(value){var rank={urgent:0,high:1,normal:2}[String(value||'').toLowerCase()];return rank===undefined?3:rank}
+function todoPriorityLabel(value){return{urgent:'Sofort',high:'Hoch',normal:'Normal'}[String(value||'').toLowerCase()]||'Normal'}
+function todoDueMeta(value){
+if(!value)return{label:'Ohne Termin',className:'none'};
+var due=new Date(value+'T00:00:00'),today=new Date();today.setHours(0,0,0,0);
+var diff=Math.round((due.getTime()-today.getTime())/86400000);
+if(diff<0)return{label:'Überfällig · '+fD(value),className:'overdue'};
+if(diff===0)return{label:'Heute',className:'today'};
+if(diff===1)return{label:'Morgen',className:'soon'};
+return{label:fD(value),className:'future'}
+}
+function todoCampName(id){var camp=allCamps.find(function(c){return c.id===id});return camp?camp.name:'Allgemein'}
+function sortedTodos(rows){return rows.slice().sort(function(a,b){
+if(a.status!==b.status)return a.status==='open'?-1:1;
+var priorityDiff=todoPriorityRank(a.priority)-todoPriorityRank(b.priority);if(priorityDiff)return priorityDiff;
+var dueA=a.due_on||'9999-12-31',dueB=b.due_on||'9999-12-31';if(dueA!==dueB)return dueA<dueB?-1:1;
+var orderDiff=Number(a.sort_order||0)-Number(b.sort_order||0);if(orderDiff)return orderDiff;
+return new Date(a.created_at||0)-new Date(b.created_at||0)
+})}
+function renderTodos(){
+var list=document.getElementById('todoList'),summary=document.getElementById('todoSummary'),badge=document.getElementById('todoTabCount');if(!list||!summary||!badge)return;
+var open=allTodos.filter(function(t){return t.status==='open'}),done=allTodos.filter(function(t){return t.status==='done'});
+var today=todoTodayKey(),urgent=open.filter(function(t){return t.priority==='urgent'||(t.due_on&&t.due_on<=today)}).length;
+badge.textContent=String(open.length);badge.classList.toggle('is-empty',open.length===0);
+summary.innerHTML='<span><strong>'+open.length+'</strong> offen</span><span><strong>'+urgent+'</strong> heute / dringend</span><span><strong>'+done.length+'</strong> erledigt</span>';
+if(todoLoadFailed){list.innerHTML='<div class="todo-empty"><strong>Aufgaben konnten nicht geladen werden.</strong><span>Bitte Verbindung und Berechtigung prüfen und erneut laden.</span></div>';return}
+var visible=allTodos.filter(function(t){return todoFilter==='all'||t.status===todoFilter});
+visible=sortedTodos(visible);
+if(!visible.length){list.innerHTML='<div class="todo-empty"><strong>'+(todoFilter==='done'?'Noch nichts abgehakt.':'Keine offenen Aufgaben.')+'</strong><span>'+(todoFilter==='done'?'Erledigte Aufgaben erscheinen hier.':'Der Camp-Einsatz ist aktuell frei von offenen Punkten.')+'</span></div>';return}
+list.innerHTML=visible.map(function(t){
+var due=todoDueMeta(t.due_on),doneState=t.status==='done',registration=allAnmeldungen.find(function(a){return a.id===t.registration_id});
+var details=t.details?'<p>'+esc(t.details).replace(/\n/g,'<br>')+'</p>':'';
+var registrationButton=registration?'<button type="button" class="todo-link" onclick="openTodoRegistration(\''+registration.id+'\')">Teilnehmer öffnen ↗</button>':'';
+return '<article class="todo-item priority-'+safeClassToken(t.priority)+(doneState?' is-done':'')+'" data-todo-id="'+esc(t.id)+'">'+
+'<button type="button" class="todo-check" aria-label="'+esc(doneState?'Aufgabe wieder öffnen':'Aufgabe als erledigt markieren')+'" aria-pressed="'+(doneState?'true':'false')+'" onclick="toggleTodo(\''+t.id+'\')"><span>'+(doneState?'✓':'')+'</span></button>'+
+'<div class="todo-copy"><div class="todo-meta"><span class="todo-priority">'+todoPriorityLabel(t.priority)+'</span><span class="todo-due '+due.className+'">'+esc(due.label)+'</span><span class="todo-camp">'+esc(todoCampName(t.camp_id))+'</span></div><h3>'+esc(t.title)+'</h3>'+details+'<div class="todo-links">'+registrationButton+'</div></div>'+
+'<button type="button" class="todo-edit" aria-label="Aufgabe bearbeiten" onclick="openTodoModal(\''+t.id+'\')">Bearbeiten</button></article>'
+}).join('')
+}
+function setTodoFilter(value,button){
+todoFilter=value;
+document.querySelectorAll('[data-todo-filter]').forEach(function(el){var active=el===button;el.classList.toggle('active',active);el.setAttribute('aria-pressed',active?'true':'false')});
+renderTodos()
+}
+function populateTodoSelectors(){
+var campSelect=document.getElementById('todoCampId'),registrationSelect=document.getElementById('todoRegistrationId');if(!campSelect||!registrationSelect)return;
+var campValue=campSelect.value,registrationValue=registrationSelect.value;
+campSelect.replaceChildren(new Option('Allgemein',''));
+allCamps.forEach(function(c){campSelect.appendChild(new Option(String(c.name||''),String(c.id||'')))});
+registrationSelect.replaceChildren(new Option('Keine Verknüpfung',''));
+allAnmeldungen.filter(function(a){return a.__table==='anmeldungen'&&a.__effectiveStatus!=='storniert'&&a.__effectiveStatus!=='erstattet'}).sort(function(a,b){return (a.nachname+' '+a.vorname).localeCompare(b.nachname+' '+b.vorname,'de')}).forEach(function(a){var camp=a.camps&&a.camps.name?' · '+a.camps.name:'';registrationSelect.appendChild(new Option(a.vorname+' '+a.nachname+camp,a.id))});
+campSelect.value=campValue;registrationSelect.value=registrationValue
+}
+function openTodoModal(id){
+var todo=id?allTodos.find(function(t){return t.id===id}):null;
+populateTodoSelectors();
+document.getElementById('todoId').value=todo?todo.id:'';
+document.getElementById('todoTitle').value=todo?todo.title:'';
+document.getElementById('todoDetails').value=todo&&todo.details?todo.details:'';
+document.getElementById('todoDueOn').value=todo&&todo.due_on?todo.due_on:todoTodayKey();
+document.getElementById('todoPriority').value=todo?todo.priority:'normal';
+var nextCamp=allCamps.find(function(c){return c.datum_bis>=todoTodayKey()&&String(c.status||'')==='aktiv'});
+document.getElementById('todoCampId').value=todo&&todo.camp_id?todo.camp_id:(nextCamp?nextCamp.id:'');
+document.getElementById('todoRegistrationId').value=todo&&todo.registration_id?todo.registration_id:'';
+document.getElementById('todoModalTitle').textContent=todo?'Aufgabe bearbeiten':'Aufgabe anlegen';
+document.getElementById('todoDeleteBtn').hidden=!todo;
+setDialogState('todoModal',true);
+setTimeout(function(){document.getElementById('todoTitle').focus()},0)
+}
+function closeTodoModal(){setDialogState('todoModal',false)}
+async function saveTodo(){
+var id=document.getElementById('todoId').value,title=document.getElementById('todoTitle').value.trim(),button=document.getElementById('todoSaveBtn');
+if(!title){showToast('Bitte eine Aufgabe eintragen',true);document.getElementById('todoTitle').focus();return}
+var payload={title:title,details:document.getElementById('todoDetails').value.trim()||null,due_on:document.getElementById('todoDueOn').value||null,priority:document.getElementById('todoPriority').value,camp_id:document.getElementById('todoCampId').value||null,registration_id:document.getElementById('todoRegistrationId').value||null};
+button.disabled=true;button.textContent='Speichert…';
+var response=id?await apiPatch('admin_todos',id,payload):await apiPost('admin_todos',payload);
+button.disabled=false;button.textContent='Speichern';
+if(!response||!response.ok){showToast('Aufgabe konnte nicht gespeichert werden',true);return}
+closeTodoModal();await loadTodos();renderTodos();showToast(id?'Aufgabe aktualisiert ✓':'Aufgabe angelegt ✓')
+}
+async function toggleTodo(id){
+var todo=allTodos.find(function(t){return t.id===id});if(!todo)return;
+var next=todo.status==='done'?'open':'done',response=await apiPatch('admin_todos',id,{status:next});
+if(!response||!response.ok){showToast('Aufgabenstatus konnte nicht gespeichert werden',true);return}
+await loadTodos();renderTodos();showToast(next==='done'?'Aufgabe erledigt ✓':'Aufgabe wieder geöffnet')
+}
+function openTodoRegistration(id){var registration=allAnmeldungen.find(function(a){return a.id===id});if(!registration){showToast('Verknüpfte Anmeldung wurde nicht gefunden',true);return}openDetail(id)}
+async function deleteTodoFromModal(){
+var id=document.getElementById('todoId').value,todo=allTodos.find(function(t){return t.id===id});if(!id||!todo)return;
+if(!confirm('Aufgabe „'+todo.title+'“ wirklich löschen?'))return;
+var response=await apiDelete('admin_todos',id);if(!response||!response.ok){showToast('Aufgabe konnte nicht gelöscht werden',true);return}
+closeTodoModal();await loadTodos();renderTodos();showToast('Aufgabe gelöscht')
 }
 async function loadPrivateKpis(){
 var rows=await apiGet('anmeldungen?select=*&order=created_at.desc');
@@ -403,6 +598,11 @@ telefon:a.kontakt_telefon||a.mitarbeiter_telefon||a.telefon||a.firma_telefon||''
 adresse:a.adresse||a.rechnungsadresse||'',
 erfahrung:a.erfahrung||null,allergien:a.allergien||null,notizen:a.notizen||null,
 erinnerung_gesendet_am:a.erinnerung_gesendet_am||null,
+payment_deadline_reminder_sent_at:a.payment_deadline_reminder_sent_at||null,
+payment_due_at:a.payment_due_at||null,
+payment_reminder_queued_at:a.payment_reminder_queued_at||null,
+reservation_expires_at:a.reservation_expires_at||null,
+released_due_to_nonpayment_at:a.released_due_to_nonpayment_at||null,
 zahlungsstatus:statusNorm,
 payer_type:typ==='Sponsoring'?'sponsor':(typ==='Firma'?'company':(payerType||'parent')),
 parent_payment_status:a.parent_payment_status||(typ==='Sponsoring'?'not_required':null),
@@ -430,6 +630,10 @@ allDashboardRows=[];
 var rows=[];
 if(Array.isArray(priv))rows=rows.concat(priv.map(function(a){return normalize(a,'anmeldungen')}));
 if(Array.isArray(firm))rows=rows.concat(firm.map(function(a){return normalize(a,'firmen_anmeldungen')}));
+// Historische company-Mirrorzeilen aus anmeldungen nicht zusätzlich zur
+// kanonischen Firmenanmeldung anzeigen oder in Kapazitäten zählen.
+var companyKeys=new Set(rows.filter(function(a){return a.__table==='firmen_anmeldungen'}).map(function(a){return[a.camp_id,String(a.vorname||'').toLowerCase(),String(a.nachname||'').toLowerCase(),String(a.email||'').toLowerCase()].join('|')}));
+rows=rows.filter(function(a){if(a.__table!=='anmeldungen'||a.payer_type!=='company')return true;var key=[a.camp_id,String(a.vorname||'').toLowerCase(),String(a.nachname||'').toLowerCase(),String(a.email||'').toLowerCase()].join('|');return!companyKeys.has(key)});
 var merged={};
 rows.forEach(function(a){
 var k=(a.__table||'')+':'+a.id;
@@ -538,9 +742,9 @@ document.getElementById('editCampPreis').value=c.preis_euro;document.getElementB
 document.getElementById('editCampFruehPreis').value=c.fruehbucher_preis||'';document.getElementById('editCampFruehBis').value=c.fruehbucher_bis||'';
 document.getElementById('editCampStatus').value=c.status;document.getElementById('editCampStripe').value=c.stripe_link||'';
 document.getElementById('editCampBeschreibung').value=c.beschreibung||'';
-document.getElementById('campModalTitle').textContent=c.name+' bearbeiten';document.getElementById('campModal').classList.add('visible')}
+document.getElementById('campModalTitle').textContent=c.name+' bearbeiten';document.getElementById('campModal').classList.add('visible');setDialogState('campModal',true)}
 
-function closeCampModal(){document.getElementById('campModal').classList.remove('visible')}
+function closeCampModal(){document.getElementById('campModal').classList.remove('visible');setDialogState('campModal',false)}
 
 async function saveCamp(){var id=document.getElementById('editCampId').value;
 var u={name:document.getElementById('editCampName').value,datum_von:document.getElementById('editCampVon').value,datum_bis:document.getElementById('editCampBis').value,
@@ -563,6 +767,7 @@ var campId=document.getElementById('filterCamp').value;
 var camp=campId?allCamps.find(function(c){return c.id===campId}):null;
 var days=camp?getCampDays(camp.datum_von,camp.datum_bis):[];
 var showCampCol=!campId;
+renderMainAttendanceSummary(campId);
 // Build thead dynamically
 var th='<tr>';
 th+='<th class="th-check"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>';
@@ -608,7 +813,7 @@ row+='<td class="td-check" onclick="event.stopPropagation()"><input type="checkb
 if(showCampCol)row+='<td>'+esc(a.camps?a.camps.name:'–')+'</td>';
 row+='<td><strong>'+esc(a.vorname)+' '+esc(a.nachname)+'</strong>'+(a.allergien?' <span title="Hat Allergien/Hinweise" class="badge-allergy">⚠️</span>':'')+'</td>';
 row+='<td>'+getAge(a.geburtsdatum)+'</td>';
-row+='<td><span class="status-badge status-'+safeClassToken(statusClass)+'">'+esc(statusText)+'</span>'+(isSponsored(a)?'<span class="partner-under-badge">'+esc(sponsorPartnerName(a))+'</span>':'')+(a.erinnerung_gesendet_am&&isParentPaymentOpen(a)?' <span class="badge-reminded" title="Erinnerung gesendet am '+esc(fDT(a.erinnerung_gesendet_am))+'">📨</span>':'')+'</td>';
+row+='<td><span class="status-badge status-'+safeClassToken(statusClass)+'">'+esc(statusText)+'</span>'+(isSponsored(a)?'<span class="partner-under-badge">'+esc(sponsorPartnerName(a))+'</span>':'')+(a.payment_deadline_reminder_sent_at&&isParentPaymentOpen(a)?' <span class="badge-reminded" title="Letztfrist gesendet am '+esc(fDT(a.payment_deadline_reminder_sent_at))+(a.reservation_expires_at?' · automatische Freigabe ab '+esc(fDT(a.reservation_expires_at)):'')+'">📨</span>':'')+'</td>';
 var anw=(teilnahmeCache[a.id]||{}).anwesenheit||{};
 days.forEach(function(day){row+='<td class="aw-td-day" onclick="event.stopPropagation()"><input type="checkbox" class="aw-checkbox"'+(anw[day]?' checked':'')+' onchange="toggleAnwesenheitMain(\''+a.id+'\',\''+a.__table+'\',\''+campId+'\',\''+day+'\',this.checked)"></td>';});
 if(days.length>0){var t=teilnahmeCache[a.id]||{};row+='<td class="aw-td-metric" onclick="event.stopPropagation()"><input type="number" step="0.1" min="0" placeholder="–" value="'+(t.sprint!=null?t.sprint:'')+'" class="metric-input" onblur="saveMetric(\''+a.id+'\',\''+a.__table+'\',\'sprint\',this.value)" onclick="event.stopPropagation();this.select()"></td>';row+='<td class="aw-td-metric" onclick="event.stopPropagation()"><input type="number" step="1" min="0" placeholder="–" value="'+(t.torschuss!=null?t.torschuss:'')+'" class="metric-input" onblur="saveMetric(\''+a.id+'\',\''+a.__table+'\',\'torschuss\',this.value)" onclick="event.stopPropagation();this.select()"></td>';row+='<td class="aw-td-metric" onclick="event.stopPropagation()"><input type="number" step="0.1" min="0" placeholder="–" value="'+(t.dribbling!=null?t.dribbling:'')+'" class="metric-input" onblur="saveMetric(\''+a.id+'\',\''+a.__table+'\',\'dribbling\',this.value)" onclick="event.stopPropagation();this.select()"></td>';}
@@ -638,7 +843,7 @@ h+='<div class="detail-section"><h3>Eltern & Kontakt</h3>'+rw('Elternteil',a.elt
 if(isSponsored(a)){
 h+='<div class="detail-section"><h3>Camp & Finanzierung</h3><div class="sponsor-finance-box"><strong>Voll gesponsert</strong><br>Für die Eltern entstehen keine Kosten. Eine Elternzahlung ist nicht erforderlich.</div>'+rw('Camp',cn)+rw('Anmeldestatus','<span class="status-badge status-'+safeClassToken(a.__effectiveStatus==='gesponsert'?'sponsored':a.__effectiveStatus)+'">'+esc(a.__effectiveStatus==='gesponsert'?'Voll gesponsert':a.__effectiveStatus)+'</span>',true)+rw('Partner',sponsorPartnerName(a))+rw('Listenpreis',money(getListPrice(a)))+rw('Elternzahlung','<strong>0 € · nicht erforderlich</strong>',true)+rw('Sponsor-Betrag',money(getSponsorAmount(a)))+rw('Sponsor-Abrechnung',settlementBadge(a),true)+rw('Angemeldet',fDT(a.created_at))+rw('Storniert am',a.storniert_am?fDT(a.storniert_am):'–')+rw('Zahlungserinnerung',a.erinnerung_gesendet_am?'⚠ Historisch gesendet: '+fDT(a.erinnerung_gesendet_am):'Keine – gesperrt')+'</div>'
 }else{
-h+='<div class="detail-section"><h3>Camp & Zahlung</h3>'+rw('Camp',cn)+rw('Zahlungsstatus','<span class="status-badge status-'+safeClassToken(a.__effectiveStatus)+'">'+esc(a.__effectiveStatus)+'</span>',true)+rw('Elternzahlung',money(getParentAmount(a)))+rw('Angemeldet',fDT(a.created_at))+rw('Bezahlt am',a.zahlung_am?fDT(a.zahlung_am):'–')+rw('Storniert am',a.storniert_am?fDT(a.storniert_am):'–')+rw('Erinnerung gesendet',a.erinnerung_gesendet_am?'📨 '+fDT(a.erinnerung_gesendet_am):'–')+'</div>'
+h+='<div class="detail-section"><h3>Camp & Zahlung</h3>'+rw('Camp',cn)+rw('Zahlungsstatus','<span class="status-badge status-'+safeClassToken(a.__effectiveStatus)+'">'+esc(a.__effectiveStatus)+'</span>',true)+rw('Elternzahlung',money(getParentAmount(a)))+rw('Angemeldet',fDT(a.created_at))+rw('Zahlung fällig',a.payment_due_at?fDT(a.payment_due_at):'–')+rw('Letzter Hinweis gesendet',a.payment_deadline_reminder_sent_at?'📨 '+fDT(a.payment_deadline_reminder_sent_at):(a.payment_reminder_queued_at?'In E-Mail-Warteschlange':'–'))+rw('Frühere Erinnerung',a.erinnerung_gesendet_am&&!a.payment_deadline_reminder_sent_at?fDT(a.erinnerung_gesendet_am):'–')+rw('Automatische Freigabe ab',a.reservation_expires_at?fDT(a.reservation_expires_at):'–')+rw('Automatisch freigegeben',a.released_due_to_nonpayment_at?fDT(a.released_due_to_nonpayment_at):'–')+rw('Bezahlt am',a.zahlung_am?fDT(a.zahlung_am):'–')+rw('Storniert am',a.storniert_am?fDT(a.storniert_am):'–')+'</div>'
 }
 if(a.erfahrung||a.allergien||a.notizen){h+='<div class="detail-section"><h3>Zusätzliche Infos</h3>';
 if(a.erfahrung)h+='<div class="detail-info-block"><div class="detail-info-label">ERFAHRUNG</div><div class="detail-notes">'+esc(a.erfahrung)+'</div></div>';
@@ -657,9 +862,9 @@ var waNum=a.telefon.replace(/[^0-9]/g,'').replace(/^0/,'');
 h+='<a class="detail-action-btn btn-wa" href="https://wa.me/49'+waNum+'?text='+encodeURIComponent(waMsg)+'" target="_blank" rel="noopener">💬 WhatsApp</a>';
 h+='<a class="detail-action-btn btn-mail" href="'+esc(safeMailto(a.email,'Feriencamp TALENTEXPERTE'))+'" target="_blank" rel="noopener">📧 E-Mail</a></div>';
 document.getElementById('detailContent').innerHTML=h;
-document.getElementById('detailOverlay').classList.add('visible');document.getElementById('detailPanel').classList.add('open')}
+document.getElementById('detailOverlay').classList.add('visible');document.getElementById('detailPanel').classList.add('open');setDialogState('detailPanel',true)}
 
-function closeDetail(){document.getElementById('detailOverlay').classList.remove('visible');document.getElementById('detailPanel').classList.remove('open')}
+function closeDetail(){document.getElementById('detailOverlay').classList.remove('visible');document.getElementById('detailPanel').classList.remove('open');setDialogState('detailPanel',false)}
 function rw(l,v,trustedHtml){return '<div class="detail-row"><span class="label">'+esc(l)+'</span><span class="value">'+(trustedHtml?String(v):esc(v))+'</span></div>'}
 
 function getFiltered(){var s=document.getElementById('searchInput').value.toLowerCase(),cf=document.getElementById('filterCamp').value,sf=document.getElementById('filterStatus').value;
@@ -708,8 +913,9 @@ function sortTable(f){if(currentSort.field===f){currentSort.dir=currentSort.dir=
 function populateCampFilter(){var s=document.getElementById('filterCamp'),c=s.value;s.replaceChildren(new Option('Alle Camps',''));allCamps.forEach(function(x){s.appendChild(new Option(String(x.name||''),String(x.id||'')))});s.value=c}
 
 async function setStatus(id,st){var lb={bezahlt:'als bezahlt markieren',storniert:'stornieren',erstattet:'als erstattet markieren'};
-if(!confirm('Anmeldung wirklich '+lb[st]+'?'))return;
 var a=allAnmeldungen.find(function(x){return x.id===id});
+if(st==='erstattet'&&a&&a.__table==='anmeldungen'){await refundRegistration(id);return}
+if(!confirm('Anmeldung wirklich '+lb[st]+'?'))return;
 if(a&&isSponsored(a)&&st==='bezahlt'){showToast('Gesponserte Anmeldung: keine Elternzahlung erforderlich',true);return}
 var table=(a&&a.__table)||'anmeldungen';
 var u={};
@@ -726,6 +932,21 @@ if(st==='storniert')u.storniert_am=new Date().toISOString();
 }
 var r=await apiPatch(table,id,u);if(r&&r.ok){showToast('Status: '+st+' ✓');closeDetail();await loadAll()}else{showToast('Fehler',true)}}
 
+async function refundRegistration(id){
+var a=allAnmeldungen.find(function(x){return x.id===id});
+if(!a||a.__table!=='anmeldungen'||a.payer_type!=='parent'||a.__effectiveStatus!=='bezahlt'){showToast('Nur eindeutig bezahlte Elternanmeldungen können über Stripe erstattet werden',true);return}
+var reason=window.prompt('Grund für die Stripe-Erstattung (mindestens 5 Zeichen):','Stornierung durch Familie');
+if(reason===null)return;
+reason=reason.trim();
+if(reason.length<5){showToast('Bitte einen nachvollziehbaren Erstattungsgrund angeben',true);return}
+if(!confirm('Stripe-Zahlung für '+a.vorname+' '+a.nachname+' in Höhe von '+money(getParentAmount(a))+' jetzt vollständig erstatten?'))return;
+await ensureFreshToken();
+var response=await fetch(SUPABASE_URL+'/functions/v1/admin-payment-action',{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({registration_id:id,reason:reason})});
+var payload=await response.json().catch(function(){return{}});
+if(!response.ok||!payload.success){showToast(payload.error||'Erstattung fehlgeschlagen; Zahlung wurde nicht als erstattet markiert',true);return}
+showToast('Stripe-Erstattung bestätigt ✓');closeDetail();await loadAll()
+}
+
 async function deleteAnmeldung(id){
 var a=allAnmeldungen.find(function(x){return x.id===id});
 if(!a){showToast('Eintrag nicht gefunden',true);return}
@@ -735,12 +956,10 @@ var doStorno=confirm('Anmeldung von '+name+'\n\nEmpfehlung: STORNIEREN statt lö
 if(doStorno){await setStatus(id,'storniert');return}
 if(a.sponsoring_entitlement_id){showToast('Codegebundene Sponsorplätze werden aus Nachweisgründen storniert, nicht gelöscht',true);return}
 /* Stufe 2: Doppelte Bestätigung für echten DELETE */
-if(!confirm('⚠️ ENDGÜLTIG LÖSCHEN?\n\n'+name+' wird unwiderruflich aus der Datenbank entfernt. Verknüpfte Anwesenheits-Daten bleiben als verwaiste Einträge zurück.\n\nNur fortfahren, wenn Stornieren nicht passt.\n\nOK = Löschen\nAbbrechen = Nichts tun'))return;
+if(!confirm('⚠️ ENDGÜLTIG LÖSCHEN?\n\n'+name+' und die verknüpften Anwesenheits-Daten werden unwiderruflich entfernt.\n\nNur fortfahren, wenn Stornieren nicht passt.\n\nOK = Löschen\nAbbrechen = Nichts tun'))return;
 if(!confirm('Letzte Bestätigung: '+name+' wirklich löschen?'))return;
-var tables=[(a.__table)||'anmeldungen'];
-var alt=(tables[0]==='anmeldungen')?'firmen_anmeldungen':'anmeldungen';
-if(tables.indexOf(alt)===-1)tables.push(alt);
-for(var i=0;i<tables.length;i++){await apiDelete(tables[i],id)}
+var deleteResponse=await apiRpc('dashboard_delete_registration',{p_table:(a.__table)||'anmeldungen',p_registration_id:id});
+if(!deleteResponse||!deleteResponse.ok){showToast('Löschen fehlgeschlagen; es wurden keine verknüpften Daten entfernt',true);return}
 closeDetail();
 await loadAll();
 var stillThere=allAnmeldungen.some(function(x){return x.id===id});
@@ -820,23 +1039,21 @@ if(doStorno){await bulkSetStatus('storniert');return}
 var codeBound=sel.filter(function(a){return !!a.sponsoring_entitlement_id});
 if(codeBound.length){showToast(codeBound.length+' codegebundene Sponsorplätze können nur storniert werden',true);return}
 /* Stufe 2: Doppelte Bestätigung für echten DELETE */
-if(!confirm('⚠️ '+sel.length+' Anmeldung(en) ENDGÜLTIG LÖSCHEN?\n\nUnwiderruflich. Verknüpfte Anwesenheits-Daten bleiben als verwaiste Einträge zurück.\n\nNur fortfahren, wenn Stornieren nicht passt.\n\nOK = Löschen\nAbbrechen = Nichts tun'))return;
+if(!confirm('⚠️ '+sel.length+' Anmeldung(en) ENDGÜLTIG LÖSCHEN?\n\nUnwiderruflich. Verknüpfte Anwesenheits-Daten werden mit entfernt.\n\nNur fortfahren, wenn Stornieren nicht passt.\n\nOK = Löschen\nAbbrechen = Nichts tun'))return;
 if(!confirm('Letzte Bestätigung: '+sel.length+' Anmeldung(en) wirklich löschen?'))return;
 var ok=0;
 for(var i=0;i<sel.length;i++){
-var a=sel[i];var tables=[(a.__table)||'anmeldungen'];
-var alt=(tables[0]==='anmeldungen')?'firmen_anmeldungen':'anmeldungen';
-if(tables.indexOf(alt)===-1)tables.push(alt);
-for(var t=0;t<tables.length;t++){await apiDelete(tables[t],a.id)}
-ok++}
+var a=sel[i];var response=await apiRpc('dashboard_delete_registration',{p_table:(a.__table)||'anmeldungen',p_registration_id:a.id});
+if(response&&response.ok)ok++}
 selectedIds.clear();
 showToast(ok+' Anmeldung(en) gelöscht ✓');
 await loadAll()}
 
 async function bulkReminder(){
-var sel=getSelectedAnmeldungen().filter(function(a){return isParentPaymentOpen(a)&&a.email});
-if(sel.length===0){showToast('Keine offenen Elternzahlungen mit E-Mail ausgewählt',true);return}
-if(!confirm(sel.length+' Zahlungserinnerung(en) jetzt versenden?'))return;
+var now=Date.now();
+var sel=getSelectedAnmeldungen().filter(function(a){return isParentPaymentOpen(a)&&a.email&&a.payment_due_at&&new Date(a.payment_due_at).getTime()<=now&&!a.payment_deadline_reminder_sent_at&&!a.payment_reminder_queued_at});
+if(sel.length===0){showToast('Keine fälligen, noch nicht erinnerten Elternzahlungen ausgewählt',true);return}
+if(!confirm(sel.length+' Letzterinnerung(en) mit verbindlicher 24-Stunden-Frist versenden? Ohne Zahlung werden die Plätze danach automatisch freigegeben.'))return;
 /* Resend via Edge Function */
 try{
 var ids=sel.map(function(a){return a.id});
@@ -845,18 +1062,16 @@ method:'POST',
 headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken},
 body:JSON.stringify({anmeldung_ids:ids})});
 var data=await resp.json();
-if(resp.ok&&data.sent>0){
-showToast(data.sent+' Erinnerung(en) versendet ✓'+(data.failed?' · '+data.failed+' fehlgeschlagen':''));
+if(resp.ok&&(data.sent>0||data.failed>0)){
+showToast(data.sent+' Letzterinnerung(en) versendet ✓'+(data.failed?' · '+data.failed+' in Warteschlange/fehlgeschlagen':''));
 await loadAll()}
 else if(data.error){
 showToast('Fehler: '+data.error,true);
-console.warn('send-reminder error, fallback to mailto');
-bulkReminderMailto(sel)}
-else{showToast('Keine E-Mails versendet',true);bulkReminderMailto(sel)}
+console.warn('send-reminder error')}
+else{showToast('Keine E-Mails versendet',true)}
 }catch(e){
 console.error('send-reminder exception:',e);
-showToast('Server nicht erreichbar – öffne E-Mail-Entwurf',true);
-bulkReminderMailto(sel)}}
+showToast('Server nicht erreichbar – keine Letztfrist wurde versendet',true)}}
 
 /* ========= MANUELLE ANMELDUNG / EDIT ========= */
 var manualEditId=null,manualEditTable=null;
@@ -910,7 +1125,7 @@ document.getElementById('mSponsorPartner').disabled=codeBound;
 document.getElementById('mVorname').disabled=codeBound;
 document.getElementById('mNachname').disabled=codeBound;
 document.getElementById('mGeburtsdatum').disabled=codeBound;
-document.getElementById('manualModal').classList.add('visible')}
+document.getElementById('manualModal').classList.add('visible');setDialogState('manualModal',true)}
 
 function openManualAnmeldung(){
 manualEditId=null;manualEditTable=null;
@@ -935,9 +1150,11 @@ document.getElementById('mSponsorAmount').value='';
 document.getElementById('mSponsorSettlement').value='open';
 document.getElementById('manualModalTitle').textContent='Manuelle Anmeldung erfassen';
 document.getElementById('manualModalSaveBtn').textContent='Anmeldung speichern';mTypChanged(true);
-document.getElementById('manualModal').classList.add('visible')}
+document.getElementById('manualModal').classList.add('visible');setDialogState('manualModal',true)}
 
-function closeManualAnmeldung(){document.getElementById('manualModal').classList.remove('visible')}
+function closeManualAnmeldung(){document.getElementById('manualModal').classList.remove('visible');setDialogState('manualModal',false)}
+
+document.addEventListener('keydown',function(event){if(event.key!=='Escape')return;if(document.getElementById('todoModal').classList.contains('visible'))closeTodoModal();else if(document.getElementById('manualModal').classList.contains('visible'))closeManualAnmeldung();else if(document.getElementById('campModal').classList.contains('visible'))closeCampModal();else if(document.getElementById('detailPanel').classList.contains('open'))closeDetail()});
 
 function mTypChanged(preserveAmounts){
 var typ=document.getElementById('mTyp').value;
@@ -1086,19 +1303,43 @@ var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getD
 days.push(y+'-'+m+'-'+day);d.setDate(d.getDate()+1)}
 return days}
 
+function getAttendanceSummaryData(campId){
+var camp=allCamps.find(function(c){return c.id===campId});
+if(!camp)return null;
+var days=getCampDays(camp.datum_von,camp.datum_bis);
+var kids=allAnmeldungen.filter(function(a){return a.camp_id===campId&&a.__effectiveStatus!=='storniert'&&a.__effectiveStatus!=='erstattet'});
+var counts={};days.forEach(function(day){counts[day]=0});
+kids.forEach(function(a){
+var anw=(teilnahmeCache[a.id]||{}).anwesenheit||{};
+days.forEach(function(day){if(anw[day])counts[day]++})});
+return{camp:camp,days:days,kids:kids,counts:counts}}
+
+function attendanceSummaryHtml(data){
+var html='<div class="aw-summary-heading"><span class="aw-summary-kicker">Anwesende Kinder</span><span class="aw-summary-label">Tagesgesamtzahl · '+data.kids.length+' aktive Camp-Anmeldungen</span></div>';
+data.days.forEach(function(day){
+var dt=new Date(day+'T00:00:00');
+html+='<div class="aw-summary-day" data-attendance-day="'+day+'">';
+html+='<span class="aw-day-name">'+AWD[dt.getDay()]+' <span>'+dt.getDate()+'.'+(dt.getMonth()+1)+'.</span></span>';
+html+='<span class="aw-day-count" data-attendance-count>'+data.counts[day]+'</span>';
+html+='</div>'});
+return html}
+
+function renderMainAttendanceSummary(campId){
+var el=document.getElementById('mainAttendanceSummary');if(!el)return;
+var data=campId?getAttendanceSummaryData(campId):null;
+if(!data||data.days.length===0){el.hidden=true;el.innerHTML='';el.removeAttribute('data-attendance-camp');return}
+el.hidden=false;el.setAttribute('data-attendance-camp',campId);el.innerHTML=attendanceSummaryHtml(data)}
+
 function renderAnwesenheit(){
 var camp=allCamps.find(function(c){return c.id===anwesenheitCampId});
 if(!camp)return;
-var days=getCampDays(camp.datum_von,camp.datum_bis);
-var kids=allAnmeldungen.filter(function(a){return a.camp_id===anwesenheitCampId&&a.__effectiveStatus!=='storniert'&&a.__effectiveStatus!=='erstattet'})
+var summary=getAttendanceSummaryData(anwesenheitCampId);
+var days=summary.days;
+var kids=summary.kids
 .sort(function(a,b){return a.vorname.localeCompare(b.vorname,'de')});
 if(kids.length===0){document.getElementById('anwesenheitContent').innerHTML='<div class="empty-state"><div class="icon">📭</div>Keine Anmeldungen für dieses Camp</div>';return}
 // Summary
-var sum={};days.forEach(function(d){sum[d]=0});
-kids.forEach(function(a){var anw=(teilnahmeCache[a.id]||{}).anwesenheit||{};days.forEach(function(d){if(anw[d])sum[d]++})});
-var html='<div class="aw-summary"><span class="aw-summary-label">Anwesenheit pro Tag:</span>';
-days.forEach(function(d){var dt=new Date(d+'T00:00:00');html+='<span class="aw-summary-day"><span class="aw-day-name">'+AWD[dt.getDay()]+' '+dt.getDate()+'.'+(dt.getMonth()+1)+'.</span><span class="aw-day-count">'+sum[d]+'/'+kids.length+'</span></span>'});
-html+='</div>';
+var html='<div class="aw-summary" data-attendance-camp="'+esc(anwesenheitCampId)+'">'+attendanceSummaryHtml(summary)+'</div>';
 // Table
 html+='<div class="table-wrap aw-table-wrap"><table class="anwesenheit-table"><thead><tr>';
 html+='<th class="aw-th-nr">Nr.</th><th class="aw-th-name">Vorname</th><th class="aw-th-name">Nachname</th><th class="aw-th-typ">Typ</th>';
@@ -1164,7 +1405,7 @@ for(var k of keys){
 var item=q[k];
 var result=await upsertTeilnahmeRaw(item.referenz_id,item.quelle,item.camp_id,item.data);
 if(result){dequeue(item.referenz_id,item.camp_id);teilnahmeCache[item.referenz_id]=result;ok++}}
-if(ok>0){if(anwesenheitCampId)updateAnwesenheitSummary();if(ok===keys.length)showToast(ok+' Eintr\u00e4ge synchronisiert \u2713')}
+if(ok>0){if(anwesenheitCampId)updateAnwesenheitSummary(anwesenheitCampId);if(ok===keys.length)showToast(ok+' Eintr\u00e4ge synchronisiert \u2713')}
 }
 window.addEventListener('online',function(){showToast('Verbindung da \u2013 synchronisiere\u2026');flushQueue()});
 
@@ -1195,7 +1436,7 @@ var anw=Object.assign({},existing.anwesenheit||{});
 if(checked)anw[datum]=true;else delete anw[datum];
 if(!teilnahmeCache[referenzId])teilnahmeCache[referenzId]={referenz_id:referenzId};
 Object.assign(teilnahmeCache[referenzId],{anwesenheit:anw});
-updateAnwesenheitSummary();
+updateAnwesenheitSummary(anwesenheitCampId);
 var result=await upsertTeilnahme(referenzId,quelle,anwesenheitCampId,{anwesenheit:anw});
 if(result)teilnahmeCache[referenzId]=result;
 else if(navigator.onLine)showToast('Speichern fehlgeschlagen',true)}
@@ -1212,14 +1453,12 @@ var result=await upsertTeilnahme(referenzId,quelle,anwesenheitCampId,data);
 if(result){teilnahmeCache[referenzId]=result;if(navigator.onLine)showToast(field.charAt(0).toUpperCase()+field.slice(1)+' gespeichert \u2713')}
 else if(navigator.onLine)showToast('Speichern fehlgeschlagen',true)}
 
-function updateAnwesenheitSummary(){
-var camp=allCamps.find(function(c){return c.id===anwesenheitCampId});if(!camp)return;
-var days=getCampDays(camp.datum_von,camp.datum_bis);
-var kids=allAnmeldungen.filter(function(a){return a.camp_id===anwesenheitCampId&&a.__effectiveStatus!=='storniert'&&a.__effectiveStatus!=='erstattet'});
-var sum={};days.forEach(function(d){sum[d]=0});
-kids.forEach(function(a){var anw=(teilnahmeCache[a.id]||{}).anwesenheit||{};days.forEach(function(d){if(anw[d])sum[d]++})});
-var spans=document.querySelectorAll('.aw-summary .aw-day-count');
-spans.forEach(function(span,i){if(days[i])span.textContent=sum[days[i]]+'/'+kids.length})}
+function updateAnwesenheitSummary(campId){
+var data=getAttendanceSummaryData(campId);if(!data)return;
+document.querySelectorAll('.aw-summary[data-attendance-camp="'+campId+'"] .aw-summary-day').forEach(function(dayEl){
+var day=dayEl.getAttribute('data-attendance-day');
+var countEl=dayEl.querySelector('.aw-day-count');
+if(countEl&&Object.prototype.hasOwnProperty.call(data.counts,day))countEl.textContent=data.counts[day]})}
 
 async function toggleAnwesenheitMain(referenzId,quelle,campId,datum,checked){
 var existing=teilnahmeCache[referenzId]||{};
@@ -1227,29 +1466,11 @@ var anw=Object.assign({},existing.anwesenheit||{});
 if(checked)anw[datum]=true;else delete anw[datum];
 if(!teilnahmeCache[referenzId])teilnahmeCache[referenzId]={referenz_id:referenzId};
 Object.assign(teilnahmeCache[referenzId],{anwesenheit:anw});
+updateAnwesenheitSummary(campId);
 var result=await upsertTeilnahme(referenzId,quelle,campId,{anwesenheit:anw});
 if(result)teilnahmeCache[referenzId]=result;
 else if(navigator.onLine)showToast('Speichern fehlgeschlagen',true)}
 
-function bulkReminderMailto(sel){
-var grouped={};
-sel.filter(isParentPaymentOpen).forEach(function(a){
-var e=a.email.toLowerCase().trim();
-if(!grouped[e])grouped[e]={email:e,eltern:a.eltern_vorname||'',kinder:[],betrag:0,camp:''};
-grouped[e].kinder.push(a.vorname+' '+a.nachname);
-grouped[e].betrag+=getParentAmount(a);
-grouped[e].camp=a.camps?a.camps.name:'Feriencamp'});
-var emails=Object.values(grouped);
-if(emails.length===1){
-var g=emails[0];
-var subj='Zahlungserinnerung – Feriencamp TALENTEXPERTE';
-var body='Hallo '+g.eltern+',\n\nvielen Dank für die Anmeldung von '+g.kinder.join(', ')+' zum '+g.camp+'.\n\nWir möchten Sie freundlich daran erinnern, dass die Teilnahmegebühr von '+g.betrag.toLocaleString('de-DE')+' € noch aussteht.\n\nBitte überweisen Sie den Betrag zeitnah, damit wir den Platz verbindlich reservieren können.\n\nBei Fragen stehen wir Ihnen gerne zur Verfügung.\n\nSportliche Grüße\nTALENTEXPERTE Fußballschule\nkontakt@talentexperte.de';
-window.open('mailto:'+g.email+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body))}
-else{
-var bcc=emails.map(function(g){return g.email}).join(',');
-var subj='Zahlungserinnerung – Feriencamp TALENTEXPERTE';
-var body='Hallo,\n\nvielen Dank für die Anmeldung zum Feriencamp TALENTEXPERTE.\n\nWir möchten Sie freundlich daran erinnern, dass die Teilnahmegebühr noch aussteht.\n\nBitte überweisen Sie den Betrag zeitnah, damit wir den Platz verbindlich reservieren können.\n\nBei Fragen stehen wir Ihnen gerne zur Verfügung.\n\nSportliche Grüße\nTALENTEXPERTE Fußballschule\nkontakt@talentexperte.de';
-window.open('mailto:?bcc='+bcc+'&subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body))}}
 </script>
 </body>
 </html>

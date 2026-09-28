@@ -9,9 +9,9 @@ if (!["all_future", "missing_legacy"].includes(scope)) {
 }
 
 const supabaseUrl = process.env.SUPABASE_URL || "";
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-if (!supabaseUrl || !serviceKey) {
-  throw new Error("SUPABASE_URL und SUPABASE_SERVICE_ROLE_KEY fehlen in der geschützten Env-Datei.");
+const adminFunctionSecret = process.env.ADMIN_FUNCTION_SECRET || "";
+if (!supabaseUrl || !adminFunctionSecret) {
+  throw new Error("SUPABASE_URL und ADMIN_FUNCTION_SECRET fehlen in der geschützten Env-Datei.");
 }
 
 const response = await fetch(
@@ -19,7 +19,7 @@ const response = await fetch(
   {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${serviceKey}`,
+      Authorization: `Bearer ${adminFunctionSecret}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ scope, apply }),

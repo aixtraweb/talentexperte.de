@@ -5,6 +5,8 @@
   "description": "Static website for talentexperte.de",
   "scripts": {
     "dev": "browser-sync start --server --files \"**/*.html,css/**/*.css,**/*.js\" --port 3000 --host 127.0.0.1 --no-open --no-ui --no-notify",
+    "test:security": "node scripts/security-smoke-test.mjs",
+    "test:security:deployment": "CHECK_DEPLOYMENT=1 node scripts/security-smoke-test.mjs",
     "social:dry": "node scripts/social-publish.mjs --posts social-posts.json",
     "social:publish": "node scripts/social-publish.mjs --posts social-posts.json --publish",
     "social:google:url": "node scripts/social-auth.mjs google-url",

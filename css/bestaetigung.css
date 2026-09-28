@@ -3,6 +3,7 @@
    ========================================================== */
 
 :root {
+  color-scheme: dark;
   --red: #e50000;
   --red-dark: #c00;
   --black: #0a0a0a;
@@ -18,6 +19,8 @@
   --font-display: 'Bebas Neue', Impact, sans-serif;
   --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
 }
+:where(button,a,input,select,textarea,[tabindex]):focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; scroll-behavior:auto!important; } }
 
 *,
 *::before,
@@ -377,7 +380,7 @@ a {
   font-size: .9rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all .3s;
+  transition: color .3s, background-color .3s, border-color .3s, box-shadow .3s, transform .3s, opacity .3s;
 }
 
 .empfehl-btn.wa {
@@ -496,7 +499,7 @@ a {
   font-size: .85rem;
   font-weight: 600;
   color: var(--gray-300);
-  transition: all .3s;
+  transition: color .3s, background-color .3s, border-color .3s, box-shadow .3s, transform .3s, opacity .3s;
 }
 
 .contact-link:hover {
@@ -537,7 +540,7 @@ a {
   background: var(--red);
   color: var(--white);
   box-shadow: 0 4px 25px rgba(229, 0, 0, .3);
-  transition: all .3s;
+  transition: color .3s, background-color .3s, border-color .3s, box-shadow .3s, transform .3s, opacity .3s;
   border: none;
   cursor: pointer;
 }
@@ -560,7 +563,7 @@ a {
   background: transparent;
   color: var(--gray-300);
   border: 2px solid rgba(255, 255, 255, .15);
-  transition: all .3s;
+  transition: color .3s, background-color .3s, border-color .3s, box-shadow .3s, transform .3s, opacity .3s;
 }
 
 .btn-home:hover {
@@ -600,3 +603,65 @@ a {
 
   .sponsor-confirmation-card { gap: 13px; }
 }
+
+/* ==========================================================
+   Helles, freundliches Design (2026-09-26) – passend zur Anmeldung.
+   Navigation bleibt dunkel; Inhalt hell mit hohem Kontrast.
+   ========================================================== */
+body { background: #f7f3ec; }
+.main, .footer-mini {
+  color-scheme: light;
+  --black: #f7f3ec; --black-card: #fff;
+  --white: #1c1917; --gray-300: #3f3a36; --gray-500: #6b6560; --gray-700: #a8a29e;
+  --green: #15803d; --teal: #0f766e; --yellow: #b45309; --red: #d40000;
+  color: var(--white);
+}
+.nav { border-bottom: none; }
+.nav-brand { color: #fff; }
+.main :where(button,a,input,[tabindex]):focus-visible { outline-color: #d40000; }
+.main { padding-top: clamp(28px, 6vw, 56px); }
+.success-header { margin-bottom: 32px; padding: 28px 20px; border-radius: 18px; background: linear-gradient(180deg,#fff7ec,#fff); border: 1px solid #ece4d8; box-shadow: 0 4px 24px rgba(28,25,23,.05); }
+.check-circle { background: #dcfce7; }
+.success-header[data-status="sponsored"] .check-circle { background: #ccfbf1; }
+.success-header[data-status="open"] .check-circle,
+.success-header[data-status="unknown"] .check-circle,
+.success-header[data-status="loading"] .check-circle,
+.success-header[data-status="refunded"] .check-circle { background: #fef3c7; }
+.success-header[data-status="cancelled"] .check-circle { background: #fee2e2; }
+.success-header h1 .red, .success-header[data-status="cancelled"] .check-circle svg { color: #b91c1c; stroke: #b91c1c; }
+.success-header p { color: #44403c; }
+
+.info-card, body .lookup-card { background: #fff; border: 1px solid #ece4d8; box-shadow: 0 4px 24px rgba(28,25,23,.05); border-radius: 16px; }
+.info-row { border-bottom-color: #f0ebe3; }
+.info-label { color: #57534e; }
+.info-value--betrag.inactive { color: #b91c1c; }
+.checklist li { border-bottom-color: #f0ebe3; color: #292524; }
+.pack-item, .contact-intro { color: #292524; }
+
+.sponsor-confirmation-card { background: #f0fdfa; border-color: #5eead4; box-shadow: none; }
+.sponsor-confirmation-card .sponsor-no-payment, .sponsor-detail-row .info-value { color: #115e59; }
+.payment-open-card { background: #fffbeb; border-color: #fcd34d; }
+.sponsor-confirmation-card p, .payment-open-card p { color: #3f3a36; }
+
+.empfehl-card { background: linear-gradient(160deg,#fff1f1,#f0fdf4); border-color: #fecaca; }
+.empfehl-text strong { color: #1c1917; }
+.empfehl-btn.wa { background: #16a34a; color: #fff; box-shadow: 0 4px 18px rgba(22,163,74,.25); }
+.empfehl-btn.wa:hover { background: #15803d; }
+.empfehl-btn.share { background: #fff; color: #292524; border-color: #d6d3d1; }
+.empfehl-btn.share:hover { color: #1c1917; background: #fff5f5; }
+
+.contact-link { background: #fff; border-color: #d6d3d1; color: #292524; }
+.contact-link:hover { color: #1c1917; background: #fff5f5; }
+.contact-link.wa { border-color: #86efac; color: #15803d; }
+.contact-link.wa:hover { background: #f0fdf4; border-color: #16a34a; }
+
+.btn-dl { color: #fff; }
+.btn-home { color: #292524; border-color: #cfc8bd; }
+.btn-home:hover { color: #d40000; }
+
+body .lookup-card p { color: #57534e; }
+body .lookup-input { background: #fff; border: 1.5px solid #cfc8bd; color: #1c1917; }
+body .lookup-error { color: #b91c1c; }
+
+.footer-mini { background: #f7f3ec; border-top-color: #ece4d8; }
+.footer-mini a { color: #44403c; }

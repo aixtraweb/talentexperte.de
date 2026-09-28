@@ -16,12 +16,16 @@ import {
   SponsorConfigurationError,
 } from "../_shared/sponsoring.ts";
 import {
-  assertConfirmationTokenConfiguration,
-  ConfirmationConfigurationError,
-  confirmationExpiryForCamp,
-  createConfirmationToken,
   verifyConfirmationToken,
 } from "../_shared/confirmation-token.ts";
+import {
+  createStoredConfirmationToken,
+  isStoredConfirmationToken,
+  verifyStoredConfirmationToken,
+} from "../_shared/stored-confirmation-token.ts";
+import { enqueueEmail } from "../_shared/email-outbox.ts";
+import { appendTalentexperteEmailSignature } from "../_shared/talentexperte-email-signature.ts";
+import { formatDeadline } from "../_shared/payment-deadline-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -217,6 +221,7 @@ function buildConfirmationHtml(opts: {
   buchungsNr: string;
   payLink: string | null;
   bestaetigungLink: string;
+  paymentDueAt: string | null;
 }): string {
   const sponsored = Boolean(opts.partnerName);
   const paymentBlock = sponsored
@@ -235,7 +240,10 @@ function buildConfirmationHtml(opts: {
         }" style="display:inline-block;background:#e50000;color:#fff;padding:14px 32px;border-radius:30px;text-decoration:none;font-weight:bold">JETZT BEZAHLEN</a></p>`
         : ""
     }
-      <p style="font-size:13px;color:#888">Der Platz wird erst nach Zahlungseingang verbindlich reserviert.</p>`;
+      <div style="margin:20px 0;padding:16px;border-left:4px solid #e50000;background:#251414;color:#fff;line-height:1.55">
+        <strong>Zahlungsfrist: ${escapeHtml(opts.paymentDueAt ? formatDeadline(opts.paymentDueAt) : "innerhalb von 72 Stunden")}</strong><br>
+        Bis dahin halten wir den Platz vorläufig frei. Bleibt die Zahlung offen, erhalten Sie eine letzte Erinnerung mit 24 Stunden Nachfrist. Ohne Zahlung wird die Anmeldung danach automatisch storniert und der Platz wieder freigegeben.
+      </div>`;
 
   const amountRows = sponsored
     ? `<tr><td style="padding:6px 0;color:#888">Teilnahmebeitrag</td><td style="padding:6px 0">${
@@ -253,7 +261,7 @@ function buildConfirmationHtml(opts: {
       escapeHtml(formatEuro(opts.parentAmount))
     }</strong></td></tr>`;
 
-  return `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#111;color:#fff;border-radius:12px;overflow:hidden">
+  return appendTalentexperteEmailSignature(`<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#111;color:#fff;border-radius:12px;overflow:hidden">
   <div style="background:#e50000;padding:24px 32px">
     <h1 style="margin:0;font-size:24px;color:#fff">TALENTEXPERTE</h1>
     <p style="margin:4px 0 0;font-size:14px;color:#fff;opacity:.9">Anmeldebestätigung</p>
@@ -285,7 +293,7 @@ function buildConfirmationHtml(opts: {
   }</a></p>
     <p style="font-size:13px;color:#888">Bei Fragen erreichen Sie uns unter <a href="mailto:kontakt@talentexperte.de" style="color:#e50000">kontakt@talentexperte.de</a>.</p>
   </div>
-</div>`;
+</div>`);
 }
 
 Deno.serve(async (req) => {
@@ -333,10 +341,17 @@ Deno.serve(async (req) => {
 
       const registrationId = cleanText(data.registration_id, 80);
       const confirmationToken = asString(data.confirmation_token, 160);
-      if (
-        !isUuid(registrationId) ||
-        !await verifyConfirmationToken(registrationId, confirmationToken)
-      ) {
+      const confirmationAllowed = isUuid(registrationId) && (
+        isStoredConfirmationToken(confirmationToken)
+          ? await verifyStoredConfirmationToken(
+            supabase,
+            "registration",
+            registrationId,
+            confirmationToken,
+          )
+          : await verifyConfirmationToken(registrationId, confirmationToken)
+      );
+      if (!confirmationAllowed) {
         return jsonResponse({
           code: "confirmation_link_invalid",
           error: "Dieser Bestätigungslink ist ungültig oder abgelaufen.",
@@ -346,7 +361,7 @@ Deno.serve(async (req) => {
       const { data: confirmation, error: confirmationError } = await supabase
         .from("anmeldungen")
         .select(
-          "id,vorname,nachname,geburtsdatum,eltern_vorname,eltern_nachname,email,telefon,camp_id,betrag_euro,zahlungsstatus,payer_type,parent_payment_status,list_price_euro,parent_amount_euro,sponsor_amount_euro,sponsoring_partners(name,slug),camps(name,datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,ort,adresse)",
+          "id,vorname,nachname,geburtsdatum,eltern_vorname,eltern_nachname,email,telefon,camp_id,betrag_euro,zahlungsstatus,payer_type,parent_payment_status,list_price_euro,parent_amount_euro,sponsor_amount_euro,payment_due_at,payment_deadline_reminder_sent_at,reservation_expires_at,released_due_to_nonpayment_at,sponsoring_partners(name,slug),camps(name,datum_von,datum_bis,uhrzeit_von,uhrzeit_bis,ort,adresse)",
         )
         .eq("id", registrationId)
         .maybeSingle();
@@ -382,7 +397,8 @@ Deno.serve(async (req) => {
         "allergien",
         "notizen",
       ],
-    });
+      consumeToken: action !== "validate_sponsor",
+    }, supabase);
 
     if (!spamCheck.ok) {
       return jsonResponse(
@@ -577,15 +593,11 @@ Deno.serve(async (req) => {
       (today.getMonth() === birthDate.getMonth() &&
         today.getDate() < birthDate.getDate())
     ) age -= 1;
-    if (age < 4 || age > 16) {
+    if (age < 5 || age > 14) {
       return jsonResponse({
         error: "Das Kind muss zwischen 5 und 14 Jahren alt sein.",
       }, 400);
     }
-
-    // Vor jedem schreibenden Pfad sicherstellen, dass anschließend ein
-    // geschützter Bestätigungslink erzeugt werden kann.
-    assertConfirmationTokenConfiguration();
 
     if (sponsorRequested) {
       const sponsorLimit = await checkPersistentSponsorRateLimit(supabase, req);
@@ -651,6 +663,8 @@ Deno.serve(async (req) => {
     let sponsorAmount = 0;
     let payerType: "parent" | "sponsor" = "parent";
     let parentPaymentStatus: "open" | "not_required" = "open";
+    let confirmationToken = "";
+    let paymentDueAt: string | null = null;
 
     if (sponsorRequested) {
       const expandedCode = expandSponsorCode(sponsorCode, camp.datum_von);
@@ -736,9 +750,17 @@ Deno.serve(async (req) => {
       payerType = "sponsor";
       parentPaymentStatus = "not_required";
     } else {
+      const plannedRegistrationId = crypto.randomUUID();
+      confirmationToken = await createStoredConfirmationToken(
+        supabase,
+        "registration",
+        plannedRegistrationId,
+        camp.datum_bis,
+      );
       const { data: anmeldung, error: insertError } = await supabase
         .from("anmeldungen")
         .insert({
+          id: plannedRegistrationId,
           ...registration,
           betrag_euro: aktuellerPreis,
           zahlungsstatus: "offen",
@@ -751,21 +773,35 @@ Deno.serve(async (req) => {
           sponsoring_partner_id: null,
           sponsoring_entitlement_id: null,
         })
-        .select("id")
+        .select("id,payment_due_at")
         .single();
 
       if (insertError || !anmeldung) {
         console.error("Insert Error:", insertError?.message);
+        await supabase.from("confirmation_tokens").delete()
+          .eq("subject_type", "registration").eq("subject_id", plannedRegistrationId);
+        const message = String(insertError?.message || "");
+        if (message.includes("REGISTRATION_DUPLICATE")) {
+          return jsonResponse({ error: "Dieses Kind ist bereits für dieses Camp angemeldet." }, 409);
+        }
+        if (message.includes("CAMP_FULL")) {
+          return jsonResponse({ error: "Dieses Camp ist leider ausgebucht." }, 409);
+        }
         return jsonResponse({ error: "Fehler beim Speichern." }, 500);
       }
       anmeldungId = anmeldung.id;
+      paymentDueAt = anmeldung.payment_due_at || null;
     }
 
     const buchungsNr = String(anmeldungId).slice(0, 8).toUpperCase();
-    const confirmationToken = await createConfirmationToken(
-      anmeldungId,
-      confirmationExpiryForCamp(camp.datum_bis),
-    );
+    if (!confirmationToken) {
+      confirmationToken = await createStoredConfirmationToken(
+        supabase,
+        "registration",
+        anmeldungId,
+        camp.datum_bis,
+      );
+    }
     const payLink = payerType === "parent" && camp.stripe_link
       ? camp.stripe_link + (camp.stripe_link.includes("?") ? "&" : "?") +
         "client_reference_id=" + anmeldungId +
@@ -784,7 +820,39 @@ Deno.serve(async (req) => {
       "#token=" + encodeURIComponent(confirmationToken);
 
     let emailVersendet = false;
+    let emailFailure = "";
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    const confirmationEmailPayload = {
+      from: FROM_EMAIL,
+      to: [registration.email],
+      bcc: ["kontakt@talentexperte.de"],
+      reply_to: "kontakt@talentexperte.de",
+      subject: payerType === "sponsor"
+        ? `Anmeldebestätigung – vollständig gesponsert – ${camp.name} (Buchungs-Nr. ${buchungsNr})`
+        : `Anmeldebestätigung – ${camp.name} (Buchungs-Nr. ${buchungsNr})`,
+      attachments: payerType === "sponsor"
+        ? [{
+          path: "https://www.talentexperte.de/pdf/faq-camps-sponsoring.pdf",
+          filename: "So-funktioniert-ein-gesponserter-Platz.pdf",
+        }]
+        : undefined,
+      html: buildConfirmationHtml({
+        elternVorname: registration.eltern_vorname,
+        kindVorname: registration.vorname,
+        campName: camp.name,
+        zeitraum: formatDateDE(camp.datum_von) + " – " + formatDateDE(camp.datum_bis),
+        uhrzeit: formatTime(camp.uhrzeit_von) + " – " + formatTime(camp.uhrzeit_bis),
+        ort: camp.ort || "–",
+        listPrice: aktuellerPreis,
+        parentAmount,
+        sponsorAmount,
+        partnerName,
+        buchungsNr,
+        payLink: paymentStartLink,
+        bestaetigungLink,
+        paymentDueAt,
+      }),
+    };
     if (RESEND_API_KEY) {
       try {
         const mailRes = await fetch("https://api.resend.com/emails", {
@@ -793,53 +861,29 @@ Deno.serve(async (req) => {
             "Authorization": "Bearer " + RESEND_API_KEY,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            from: FROM_EMAIL,
-            to: [registration.email],
-            reply_to: "kontakt@talentexperte.de",
-            subject: payerType === "sponsor"
-              ? `Anmeldebestätigung – vollständig gesponsert – ${camp.name} (Buchungs-Nr. ${buchungsNr})`
-              : `Anmeldebestätigung – ${camp.name} (Buchungs-Nr. ${buchungsNr})`,
-            attachments: payerType === "sponsor"
-              ? [{
-                path:
-                  "https://www.talentexperte.de/pdf/faq-camps-sponsoring.pdf",
-                filename: "So-funktioniert-ein-gesponserter-Platz.pdf",
-              }]
-              : undefined,
-            html: buildConfirmationHtml({
-              elternVorname: registration.eltern_vorname,
-              kindVorname: registration.vorname,
-              campName: camp.name,
-              zeitraum: formatDateDE(camp.datum_von) + " – " +
-                formatDateDE(camp.datum_bis),
-              uhrzeit: formatTime(camp.uhrzeit_von) + " – " +
-                formatTime(camp.uhrzeit_bis),
-              ort: camp.ort || "–",
-              listPrice: aktuellerPreis,
-              parentAmount,
-              sponsorAmount,
-              partnerName,
-              buchungsNr,
-              payLink: paymentStartLink,
-              bestaetigungLink,
-            }),
-          }),
+          body: JSON.stringify(confirmationEmailPayload),
         });
         if (mailRes.ok) {
           emailVersendet = true;
         } else {
-          console.error(
-            "Resend-Fehler (" + mailRes.status + "):",
-            await mailRes.text(),
-          );
+          emailFailure = `Resend ${mailRes.status}: ${(await mailRes.text()).slice(0, 500)}`;
+          console.error(emailFailure);
         }
       } catch (emailError) {
-        console.error("Email-Fehler:", emailError);
+        emailFailure = emailError instanceof Error ? emailError.message : String(emailError);
+        console.error("Email-Fehler:", emailFailure);
       }
     } else {
-      console.error(
-        "RESEND_API_KEY fehlt – keine Bestätigungs-E-Mail versendet.",
+      emailFailure = "RESEND_API_KEY fehlt";
+      console.error(emailFailure + " – keine Bestätigungs-E-Mail versendet.");
+    }
+    if (!emailVersendet) {
+      await enqueueEmail(
+        supabase,
+        "registration_confirmation",
+        registration.email,
+        confirmationEmailPayload,
+        emailFailure || "Unbekannter Versandfehler",
       );
     }
 
@@ -863,18 +907,12 @@ Deno.serve(async (req) => {
       sponsor_settlement_status: payerType === "sponsor" ? "open" : null,
       partner_name: partnerName,
       payment_required: payerType === "parent",
+      payment_due_at: paymentDueAt,
       stripe_link: payLink,
       email_versendet: emailVersendet,
       freie_plaetze: Math.max(Number(camp.freie_plaetze) - 1, 0),
     });
   } catch (error) {
-    if (error instanceof ConfirmationConfigurationError) {
-      console.error(error.message);
-      return jsonResponse({
-        error:
-          "Der sichere Bestätigungsdienst ist noch nicht vollständig eingerichtet. Es wurde keine Anmeldung angelegt.",
-      }, 503);
-    }
     if (error instanceof SponsorConfigurationError) {
       console.error(error.message);
       return jsonResponse({

@@ -2,10 +2,9 @@
 // die wegen des falschen Resend-Absenders (onboarding@resend.dev) nie eine erhalten haben.
 // Aufruf nur mit Service-Role-Key als Bearer. Ohne { "apply": true } nur Dry-Run.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import {
-  confirmationExpiryForCamp,
-  createConfirmationToken,
-} from "../_shared/confirmation-token.ts";
+import { createStoredConfirmationToken } from "../_shared/stored-confirmation-token.ts";
+import { formatDeadline } from "../_shared/payment-deadline-email.ts";
+import { appendTalentexperteEmailSignature } from "../_shared/talentexperte-email-signature.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -92,7 +91,7 @@ function buildHtml(
   const bezahlt = isParentPaid(a);
   const parentAmountEuro = sponsored ? 0 : parentAmount(a);
   const sponsor = sponsorName(a);
-  return `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#111;color:#fff;border-radius:12px;overflow:hidden">
+  return appendTalentexperteEmailSignature(`<div style="font-family:sans-serif;max-width:600px;margin:0 auto;background:#111;color:#fff;border-radius:12px;overflow:hidden">
   <div style="background:#e50000;padding:24px 32px">
     <h1 style="margin:0;font-size:24px;color:#fff">TALENTEXPERTE</h1>
     <p style="margin:4px 0 0;font-size:14px;color:#fff;opacity:.9">Anmeldebestätigung</p>
@@ -122,13 +121,16 @@ function buildHtml(
       ? `<p style="margin:24px 0;color:#7be07b;font-weight:bold">✓ Zahlung erhalten – der Platz ist verbindlich reserviert.</p>`
       : (payLink
         ? `<p style="margin:24px 0"><a href="${escapeHtml(payLink)}" style="display:inline-block;background:#e50000;color:#fff;padding:14px 32px;border-radius:30px;text-decoration:none;font-weight:bold">JETZT BEZAHLEN</a></p>
-           <p style="font-size:13px;color:#888">Der Platz wird erst nach Zahlungseingang verbindlich reserviert.</p>`
+           <div style="margin:20px 0;padding:16px;border-left:4px solid #e50000;background:#251414;color:#fff;line-height:1.55">
+             <strong>Zahlungsfrist: ${escapeHtml(a.payment_due_at ? formatDeadline(String(a.payment_due_at)) : "innerhalb von 72 Stunden")}</strong><br>
+             Bis dahin halten wir den Platz vorläufig frei. Bleibt die Zahlung offen, folgt eine letzte Erinnerung mit 24 Stunden Nachfrist. Ohne Zahlung wird die Anmeldung danach automatisch storniert und der Platz wieder freigegeben.
+           </div>`
         : "")}
     <p style="font-size:13px;color:#888">Ihre Bestätigung können Sie jederzeit hier abrufen:<br>
       <a href="${escapeHtml(confirmationLink)}" style="color:#e50000">Persönliche Bestätigung sicher öffnen</a></p>
     <p style="font-size:13px;color:#888">Bei Fragen erreichen Sie uns unter <a href="mailto:kontakt@talentexperte.de" style="color:#e50000">kontakt@talentexperte.de</a>.</p>
   </div>
-</div>`;
+</div>`);
 }
 
 Deno.serve(async (req) => {
@@ -137,9 +139,9 @@ Deno.serve(async (req) => {
   }
 
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  const myServiceKey = Deno.env.get("MY_SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const adminFunctionSecret = Deno.env.get("ADMIN_FUNCTION_SECRET") ?? "";
   const auth = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
-  if (!auth || (auth !== serviceKey && auth !== myServiceKey)) {
+  if (!adminFunctionSecret || auth !== adminFunctionSecret) {
     return new Response(JSON.stringify({ error: "Nicht autorisiert" }), { status: 401, headers: corsHeaders });
   }
 
@@ -158,7 +160,7 @@ Deno.serve(async (req) => {
 
   let query = supabase
     .from("anmeldungen")
-    .select("id, vorname, nachname, eltern_vorname, email, zahlungsstatus, betrag_euro, payer_type, parent_payment_status, list_price_euro, parent_amount_euro, sponsor_amount_euro, sponsor_settlement_status, notizen, created_at, sponsoring_partners(name,slug), camps!inner(name, datum_von, datum_bis, uhrzeit_von, uhrzeit_bis, ort, stripe_link)")
+    .select("id, vorname, nachname, eltern_vorname, email, zahlungsstatus, betrag_euro, payer_type, parent_payment_status, list_price_euro, parent_amount_euro, sponsor_amount_euro, sponsor_settlement_status, payment_due_at, notizen, created_at, sponsoring_partners(name,slug), camps!inner(name, datum_von, datum_bis, uhrzeit_von, uhrzeit_bis, ort, stripe_link)")
     .gte("camps.datum_von", today);
 
   if (scope === "missing_legacy") query = query.lt("created_at", cutoff);
@@ -183,9 +185,11 @@ Deno.serve(async (req) => {
   for (const a of recipients) {
     const camp = a.camps as unknown as Record<string, unknown>;
     const buchungsNr = String(a.id).slice(0, 8).toUpperCase();
-    const confirmationToken = await createConfirmationToken(
+    const confirmationToken = await createStoredConfirmationToken(
+      supabase,
+      "registration",
       String(a.id),
-      confirmationExpiryForCamp(camp.datum_bis),
+      camp.datum_bis,
     );
     const confirmationLink = "https://www.talentexperte.de/bestaetigung.html?id=" +
       encodeURIComponent(String(a.id)) + "#token=" + encodeURIComponent(confirmationToken);
@@ -213,6 +217,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             from: FROM_EMAIL,
             to: [a.email],
+            bcc: ["kontakt@talentexperte.de"],
             reply_to: "kontakt@talentexperte.de",
             subject: isSponsored(a)
               ? (scope === "all_future" ? "Aktualisierter sicherer Bestätigungslink – vollständig gesponsert – " : "Anmeldebestätigung – vollständig gesponsert – ") + camp.name + " (Buchungs-Nr. " + buchungsNr + ")"

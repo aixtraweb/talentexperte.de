@@ -1,5 +1,234 @@
 # Changelog
 
+## 2026-09-28 — Search-Console-Verifizierung (Ausnahme zur Projekttrennung)
+
+- Betreiberentscheidung: Property per `googled0f4b13b6eb20b6f.html` mit dem AIXTRA-WEB-Google-Konto bestätigen, Reporting-Service-Account lesend als „Nutzer“ berechtigen (siehe `docs/DECISIONS.md`).
+- `ci/deploy.sh`: Verifizierungsdatei auf die Positivliste, damit `--delete-excluded` sie nicht entfernt.
+
+## 2026-09-28 — Allergieangaben 3 Monate nach Campende leeren
+
+- Betreiberentscheidung: ausschließlich Allergie-/Gesundheitsangaben werden 3 Monate nach Campende entfernt; alle übrigen Anmeldedaten bleiben für Steuer/Finanzamt erhalten.
+- Migration `20260928090000_clear_expired_health_data.sql` eingespielt: `clear_expired_health_data()` leert `anmeldungen.allergien`/`firmen_anmeldungen.allergien` und bereinigt Kopien in `security_audit_log`; täglicher pg_cron-Job 03:30 UTC; Protokoll `health_data_cleanup_runs`. Probelauf mit Rollback, danach erster Lauf: 18 + 2 Datensätze (Ostercamp I/II); Anmeldungen, Notizen und Teilnahmedaten unverändert.
+- `code.gs`: `previewAllergyCleanup()`, `clearExpiredAllergies()`, `setupAllergyCleanupTrigger()` für Google-Tabelle (Spalte M) und Google-Kontakte; `setupTrigger()` ersetzt nur noch den eigenen Trigger. Muss im Apps-Script-Projekt eingefügt und einmal eingerichtet werden.
+- `datenschutz.html`: Löschfrist für Gesundheitsangaben in Abschnitt 3 und 12.
+
+## 2026-09-27 — Aufbewahrung statt Löschroutine
+
+- Betreiberentscheidung: Zu Anmeldungen wird nichts gelöscht (Aufbewahrung für Steuerberater und Finanzamt). Die vorbereiteten, **nie eingespielten** Migrationen `20260927120000_add_retention_policy.sql` und `20260927121000_schedule_retention_policy.sql` entfernt; Datenbank geprüft: keine Funktionen, Tabellen oder Cron-Jobs angelegt, nichts gelöscht.
+- `docs/LOESCHKONZEPT.md` als Aufbewahrungskonzept neu gefasst.
+- `datenschutz.html` Abschnitt 12: Anmelde-, Teilnahme-, Zahlungs- und Rechnungsdaten bis zu 10 Jahre (§ 147 AO, § 257 HGB), E-Mails bis 6/10 Jahre, Bestätigungslinks ungültig 30 Tage nach Campende, Server-Logs 7 Tage; Löschwunsch → Löschung bzw. Sperrung.
+
+## 2026-09-27 — Löschkonzept (vorbereitet, Aktivierung ausstehend)
+
+- `docs/LOESCHKONZEPT.md`: Fristen R1–R13 für Datenbank, Google Workspace, Postfach, Server-Logs (7 Tage, geprüft), Browser und Fotos.
+- Migration `20260927120000_add_retention_policy.sql`: `retention_counts()`, `retention_preview()`, `apply_retention_policy()` (R1 Freitext/Allergien 3 Monate, R2 Teilnahme 12 Monate, R3 Tokens, R4 Formularschutz, R5 Outbox, R6 Sicherheitsprotokoll; bereinigt Protokollkopien mit), Tabelle `retention_runs`. Migration `20260927121000_schedule_retention_policy.sql`: täglicher pg_cron-Lauf 03:30 UTC.
+- `datenschutz.html` Abschnitt 12 „Speicherdauer und Löschfristen“ neu – **noch nicht deployt**, bis die Löschroutine aktiv ist.
+
+## 2026-09-27 — Impressum-Anschrift
+
+- `impressum.html`: Anschrift nach § 5 TMG auf Betreiberanweisung von Würselener Wall 8, 52070 Aachen auf Kornelimünsterweg 15a, 52066 Aachen geändert (jetzt identisch mit der verantwortlichen Stelle in der Datenschutzerklärung).
+
+## 2026-09-27 — Datenschutzerklärung komplett neu, keine Drittanbieter-Ressourcen mehr
+
+- `datenschutz.html` vollständig neu gefasst (15 Abschnitte): Verantwortlicher (Kornelimünsterweg 15a laut Betreiber), Rechtsgrundlagen inkl. Art. 9 für Allergieangaben, Hoster Feyer Media GmbH (hostingwerk), Session Storage statt Cookies, Camp-Anmeldung (Supabase Frankfurt, Google Workspace Sheet/Kontakte), Förderpartner, Anwesenheit/Trainingswerte, Stripe/PayPal/Überweisung/bar, Resend (DPF + SCC) mit BCC-Archiv, Bewertungsanfragen (§ 7 Abs. 3 UWG, Widerspruch), WhatsApp-Links, Live-Plätze, OpenStreetMap, Google-Links, Instagram-Feed, Fotos/Videos (Einwilligung laut AGB), Drittlandübermittlung, Speicherdauer, Betroffenenrechte, LDI NRW. Newsletter-Abschnitt entfernt (kein Angebot).
+- jsPDF 2.5.1 (bisher cdnjs) und Supabase JS 2.49.1 (bisher jsDelivr) nach `vendor/` übernommen; npm-Prüfsummen und Abgleich mit den CDN-Dateien.
+- `agb.html`, `impressum.html`, `datenschutz.html` luden Google Fonts von Google-Servern – auf lokale `css/fonts.css` umgestellt.
+- Statische Prüfung aller öffentlichen Seiten: keine externen Ressourcen außer eigener Supabase-Datenbank und OpenStreetMap-Kacheln.
+
+## 2026-09-27 — Datenschutzerklärung ergänzt
+
+- `datenschutz.html`: neuer Abschnitt „8. Plugins und Tools“ (OpenStreetMap-Kacheln mit lokal gehostetem Leaflet, Google-Links für Route/Rezensionen erst nach Klick, Live-Anzeige freier Plätze über Supabase, Server Frankfurt). Instagram-Absatz auf den lokalen Feed umgestellt (keine Übermittlung beim Seitenaufruf, Anbieter Meta Platforms Ireland).
+- Fakten vor Veröffentlichung geprüft: Supabase-Region `eu-central-1`, Supabase-Anschrift laut Nutzungsbedingungen, UK-Angemessenheitsbeschluss (erneuert 19.12.2025, gültig bis 27.12.2031).
+
+## 2026-09-27 — Google-Bewertungen per eigenem Sync
+
+- Neues Skript `scripts/google-reviews-sync.mjs`: liest den öffentlichen Google-Maps-Eintrag (ohne Login, Cookie-Banner abgelehnt, Identitätsprüfung Name + Adresse) und schreibt Note, Anzahl und neueste Rezensionen statisch in `index.html` (Karten, JSON-LD, Hero, Footer) und `anmeldung.html` (Sterne-Leiste, Zitate).
+- Markerblöcke `GOOGLE-REVIEWS`, `GOOGLE-TRUST`, `GOOGLE-QUOTES` um die bestehenden Inhalte gesetzt.
+- Rückfallstufe für Googles eingeschränkte Ansicht (aktuell aktiv): nur Note abgleichen, Anzahl/Zitate unverändert. Erster Lauf: Note 5,0 bestätigt, keine inhaltliche Änderung.
+
+## 2026-09-27 — Instagram-Feed ohne Elfsight
+
+- Elfsight-Widget (deaktiviert, leerer Bereich) entfernt: Container, Lazy-Loader-Skript, Preconnect sowie `elfsightcdn.com`/`*.elfsight.com` und `unpkg.com` aus der CSP von `index.html`.
+- Neues Skript `scripts/instagram-sync.mjs`: liest @talentexperte öffentlich ohne Login (Playwright, wenige Seitenaufrufe), lädt die letzten 8 Beiträge als vollständige 4:5-Bilder nach `images/instagram/` (JPG + WebP, 640×800) und schreibt das Raster statisch zwischen die `INSTAGRAM-FEED`-Marker in `index.html` (Alt-Texte aus Bildunterschrift ohne Emojis/Hashtags).
+- `css/main.css`: `.insta-grid`/`.insta-post` (4 Spalten, mobil 2).
+- Eigenständige TALENTEXPERTE-Umsetzung nach dem Prinzip des Elfsight-Ersatzes; keine AIXTRA-WEB-Skripte, -Widgets oder -Datenquellen (Projekttrennung).
+
+## 2026-09-26 — Leaflet lokal, Datenschutz-Entwurf Karte
+
+- Leaflet 1.9.4 aus dem offiziellen npm-Paket (Prüfsumme gegen Registry verifiziert) nach `vendor/leaflet-1.9.4/` übernommen (JS, CSS, Bilder, Lizenz); `index.html` lädt nicht mehr von `unpkg.com`.
+- `ci/deploy.sh`: `/vendor/***` in die Deployment-Allowlist aufgenommen.
+- Entwurf für die Datenschutzerklärung (OpenStreetMap, Route-Link, Live-Plätze via Supabase) in `docs/DATENSCHUTZ-ENTWURF-KARTE.md` – nicht veröffentlicht, Freigabe offen.
+
+## 2026-09-26 — Dokumentation der Web-Arbeiten, JSON-LD Anmeldung
+
+- `anmeldung.html`: vergangene Oster-/Sommer-Events aus JSON-LD entfernt, Herbst-Events mit Kampagnenbildern (jetzt konsistent zur Startseite).
+- Dokumentiert in `docs/DESIGN-SYSTEM.md` (Hell/Dunkel, Herbst-Tokens, Medienpfade), `docs/COMPONENTS.md` (Saisonkampagne, Live-Verfügbarkeit, Videos, Anmeldung-Kopf, Karte), `docs/DECISIONS.md`, `docs/STRUCTURED-DATA.md`, `docs/SEO-GEO.md`, `docs/INTEGRATIONS.md`, `docs/OPEN-QUESTIONS.md` (Elfsight, Datenschutz Karte, statische Bewertungszahl, faq-camps.pdf).
+
+## 2026-09-26 — Startseite: Hell/Dunkel-Rhythmus
+
+- Neue Klassen `.theme-light` / `.theme-light--white` in `css/main.css` (Variablen-Overrides + Karten, Bewertungen, Ablauf, FAQ).
+- Hell: Über uns, Bewertungen, Training, Ablauf, Galerie, Instagram, FAQ. Dunkel bleiben Hero, Herbstcamp, Leistungen, Termine, Videos, Standort, CTA und Footer.
+
+## 2026-09-26 — Bestätigungsseite hell
+
+- `css/bestaetigung.css`: heller, kontrastreicher Stil passend zur Anmeldung (weiße Karten, dunkle Schrift, abgedunkelte Status-Farben für Grün/Türkis/Gelb/Rot, helle Statuskarten für Sponsoring und offene Zahlung, helle Buttons und Kontaktlinks, Lookup-Karte). Navigation bleibt dunkel; Logik unverändert.
+
+## 2026-09-26 — Anmeldeseite: heller, kontrastreicher, Vertrauensnachweise
+
+- Formularbereich auf helles, warmes Design umgestellt (weiße Karten, dunkle Schrift, sichtbare Feldränder, Fokus-Ringe); Navigation und Erfolgs-/Fehler-Overlays bleiben dunkel.
+- Großes Herbst-Banner durch kompakte Herbst-Leiste ersetzt, Navigation verschlankt, Kopfbereich verkürzt: Camp-Auswahl liegt auf Desktop und Mobil jetzt im ersten Bildschirm; Stepper klebt korrekt unter der Navigation.
+- Sterne-Leiste „5,0 · 43 Google-Rezensionen“ (Link zu Google) plus „Seit 2005 · 4.000+ Kinder · Sichere Zahlung“ im Kopf; zwei echte Google-Elternstimmen direkt vor AGB und Absenden.
+- Camp-Auswahl zweispaltig, Grün-/Rottöne für helle Flächen kontraststark angepasst.
+
+## 2026-09-26 — Standortkarte repariert
+
+- CARTO-Kacheln verlangen inzwischen einen API-Key („API KEY REQUIRED“); Leaflet-Karte auf OpenStreetMap-Standardkacheln umgestellt, dezent entsättigt, mit lesbarer Namensnennung.
+- Button „Route planen“ (Google-Maps-Routenziel Branderhofer Weg 15) unter der Karte ergänzt.
+
+## 2026-09-26 — Ehemaliger Trainer entfernt
+
+- Foto des nicht mehr aktiven Trainers (`images/trainer.*`, `trainer-480/768.*`) aus „Alles inklusive“ entfernt und gelöscht; ersetzt durch Pokal-Foto aus Sommercamp II.
+
+## 2026-09-26 — Herbstcamp-Kampagne und Design-Upgrade der Startseite
+
+### Startseite (`index.html`, `css/main.css`)
+
+- Neuer Hero „Deine Ferien. Dein Spiel.“ mit beiden Herbstcamp-Terminen als klickbaren Karten, Countdown bis zum Anpfiff und Herbstcamp-Plakat.
+- Live-Verfügbarkeit der Herbstcamps aus der öffentlichen View `camp_verfuegbarkeit_public` (nur `freie_plaetze`); ab ≤10 Plätzen „Nur noch X Plätze“, bei 0 „Ausgebucht“.
+- Neue Sektion `#herbstcamp` mit Nutzen für Kinder und Eltern, Fakten und 5 Herbst-Motiven (Lightbox).
+- Termine: Herbstcamps als hervorgehobene Karten mit Motiv; Oster- und Sommercamps 2026 nur noch als gedämpfter „Rückblick 2026“.
+- Neue Sektion `#videos`: 6 Hochkant-Videos und 4 Teamfotos aus Sommercamp II (Teamfotos ohne Titelzeile und ohne AIXTRA-WEB-Fußzeile zugeschnitten).
+- CTA-Banner auf Herbst umgestellt, Sticky-Anmelde-Leiste auf Mobilgeräten, Navigation um Herbstcamp/Videos ergänzt.
+- Meta-Title/Description/OG-Bild auf Herbstcamp 2026; JSON-LD: vergangene Oster-/Sommer-Events entfernt, Herbst-Events mit neuen Bildern, neue FAQ „Wann sind die Herbstcamps 2026?“.
+- JSON-LD `aggregateRating.ratingCount` von 87 auf 43 an die sichtbare Angabe „43 Google-Rezensionen“ angeglichen.
+- `pdf/faq-camps.pdf` wiederhergestellt (lokal versehentlich gelöscht, aber von Startseite und Bestätigung verlinkt).
+- Fix: Fotostreifen-Bilder schrumpften auf Mobilgeräten auf wenige Pixel (`flex-shrink`).
+- Neue Assets: `images/herbstcamp-2026/`, `images/sommercamp-2026/`, `images/videos/` (AVIF/WebP/JPG bzw. MP4 mit `faststart`).
+
+### Anmeldung (`anmeldung.html`, `css/anmeldung.css`)
+
+- Abgelaufene Camps erscheinen nicht mehr in der Auswahl, nur noch als Hinweiszeile „Bereits abgeschlossen: …“.
+- Vorauswahl per Link `anmeldung.html?camp=<camp-id>` (von den Herbstcamp-Buttons der Startseite genutzt).
+- Herbstcamp-Banner oberhalb der Anmeldung.
+
+## 2026-09-05 — Social-Produktion vorläufig pausiert
+
+- Vier Sommercamp-Codex-Aufgaben bleiben PAUSED.
+- Zwei Sommercamp-LaunchAgents auf dem MacBook und zwei kombinierte Blog-/Social-LaunchAgents auf dem Mini deaktiviert und entladen.
+- Betriebspause im Handbuch dokumentiert; Entwürfe und Zugangsdaten erhalten.
+
+
+## 2026-08-23 — Persistente Aufgabenliste im Admin-Dashboard
+
+### Admin-Dashboard und Supabase
+
+- Neuer Tab „Aufgaben“ mit Offen-/Alle-/Erledigt-Filter, offener Anzahl, Priorität, Fälligkeit und responsiver Camp-Einsatz-Ansicht.
+- Aufgaben können angelegt, bearbeitet, erledigt, wieder geöffnet und gelöscht werden; eine optionale Anmeldungsverknüpfung öffnet direkt den privaten Teilnehmerdatensatz.
+- Neue Tabelle `admin_todos` ausschließlich für freigeschaltete Dashboard-Admins; anonyme Rollen bleiben gesperrt und jede Änderung wird im vorhandenen `security_audit_log` protokolliert.
+- Migration ohne konkrete Teilnehmernamen oder Zahlungsdetails gehalten; operative Sommercamp-II-Aufgaben wurden separat als private Live-Daten angelegt.
+- Anonymer Negativtest für `admin_todos` in den Sicherheitstest aufgenommen.
+- Migration und Dashboard produktiv ausgerollt; lokale und entfernte Hashes von `admin.html` und `css/admin.css` stimmen überein, der Deployment-Sicherheitstest besteht.
+- Rollbackpunkt des Website-Rollouts: `/srv/www/medina-82/backups/talentexperte/backup_2026-08-23_21-48-32.tar.gz`.
+
+## 2026-07-20 — Tagesgesamtzahl der anwesenden Kinder im Dashboard
+
+### Admin-Dashboard
+
+- Bei ausgewähltem Camp zeigt die Anmeldeliste oberhalb der Tabelle für jeden Camptag die Anzahl der bereits als anwesend markierten Kinder im Verhältnis zu allen aktiven Camp-Anmeldungen.
+- Die Tagesgesamtzahl steigt oder sinkt unmittelbar mit jedem Anwesenheitshaken und bleibt durch den vorhandenen lokalen Cache auch bei ausstehender Offline-Synchronisierung aktuell.
+- Stornierte und erstattete Anmeldungen werden wie in der bestehenden Anwesenheitsansicht nicht in die Gesamtzahl einbezogen; Such- und Statusfilter verfälschen den Camp-Gesamtwert nicht.
+- Die gemeinsame Tagesanzeige wurde für Desktop und Mobilgeräte kontrastreich und responsiv gestaltet.
+- Das sichtbare Format auf die reine Anwesenheitszahl reduziert: beispielsweise `48` statt `48 / 59`.
+- Produktiv auf das bestätigte TALENTEXPERTE-Hostingwerk-Ziel ausgerollt; der Dry-Run enthielt ausschließlich `admin.html` und `css/admin.css`, ohne Löschungen.
+- Aktueller Rollbackpunkt nach der Formatkorrektur: `/srv/www/medina-82/backups/talentexperte/backup_2026-07-20_20-56-25.tar.gz`. Lokale, serverseitige und öffentlich ausgelieferte SHA-256-Hashes der beiden Dateien stimmen überein; Deployment-Sicherheitstest und Schutz interner Pfade bestanden.
+
+## 2026-07-20 — Workflow für einzelne Zahlungsrückfragen dokumentiert
+
+### Dokumentation
+
+- `docs/PAYMENT-INQUIRY-WORKFLOW.md` als verbindliches operatives Runbook ergänzt: vorhandene Live-Zugänge zu Supabase, Admin-Dashboard und Stripe werden bei neuen Rückfragen ohne erneute Zugangsklärung direkt verwendet.
+- Suchreihenfolge über Anmeldungs-ID, unterschiedliche E-Mail-Adressen, Namen, Betrag und Zeitfenster festgelegt; PayPal-Zahlerdaten innerhalb von Stripe ausdrücklich aufgenommen.
+- Sichere Verbuchung für Einzel- und gemeinsame Geschwisterzahlungen, Schutz vor doppelter Erstattung, Erhalt der ursprünglichen Namensschreibweise und abschließende Reminder-/Outbox-Prüfung dokumentiert.
+- Handbuch, Root-Runbook, Integrationsübersicht, Dokumentationsinventar, Entscheidungslog und README mit dem neuen Workflow verknüpft.
+
+## 2026-07-20 — Zahlungsfrist auf neue Anmeldungen begrenzt
+
+- Automatik unmittelbar gestoppt, nachdem klargestellt wurde, dass aktuell vorhandene Anmeldungen während des laufenden Campbetriebs nicht verändert werden dürfen; bis dahin war kein Platz automatisch freigegeben worden.
+- Eine additive Policy-Grenze ergänzt: Nur Anmeldungen ab dem produktiven Aktivierungszeitpunkt werden vom Zahlungsfrist-Prozessor berücksichtigt.
+- Bestehende Anmeldungen werden weder nachträglich erinnert noch automatisch storniert oder freigegeben; der Prozessor arbeitet bei fehlender Policy-Konfiguration fail-closed.
+- Die sieben bereits versendeten Letzterinnerungen können nicht zurückgerufen werden. Die betroffenen bestehenden Anmeldungen sind von der automatischen Freigabe ausgeschlossen; ihre fachlichen Anmeldungs-, Zahlungs-, Camp- und Kapazitätswerte werden nicht weiter verändert.
+- Policy ab 20.07.2026, 15:15:34 Uhr MESZ produktiv aktiviert. Dry-Run und kontrollierter Echtlauf lieferten jeweils 0 Kandidaten, 0 Mails und 0 Freigaben; die anonymen Fingerabdrücke aller 166 bestehenden Anmeldungen und 6 Camps blieben über den Rollout identisch.
+
+## 2026-07-20 — Git-Ausnahme und absolutes E-Mail-Verbot präzisiert
+
+- Den bestehenden Remote `github.com/aixtraweb/talentexperte.de` als korrekten und einzigen erlaubten Berührungspunkt mit AIXTRA-WEB bestätigt; Fetch, Pull und Push sind zulässig.
+- Festgelegt, dass diese Git-Ausnahme keinerlei AIXTRA-WEB-Freigabe für andere Dienste begründet.
+- `kontakt@aixtra-web.de` als Absender, Alias, Reply-To, Weiterleitung, Signaturbestandteil und technischen Versandweg für TALENTEXPERTE ausdrücklich ausgeschlossen.
+
+## 2026-07-20 — Zahlungsfrist produktiv aktiviert
+
+### Produktionsstand
+
+- Supabase-Projekt `feriencamps` in der Organisation `TALENTEXPERTE`, Stripe-Konto `FUSSBALLSCHULE TALENTEXPERTE` und die verifizierte Resend-Domain `talentexperte.de` vor dem Rollout bestätigt.
+- Migrationen für Zahlungsfristen, sichere Platzfreigabe, `pg_cron`, Vault-Secrets und zwei kontrollierbare 15-Minuten-Jobs produktiv angewendet.
+- Abhängige Edge Functions und statische Website mit vorherigem Hosting-Backup aktualisiert; produktive Sicherheits- und Webroot-Tests bestanden.
+- Der erste Dry-Run meldete sieben fällige offene Elternzahlungen für das Sommercamp II ohne Stripe- oder Zuordnungskonflikt.
+- Sieben eindeutige Letzterinnerungen erfolgreich über TALENTEXPERTE versendet; die Plätze bleiben bis 21.07.2026, 14:15 Uhr MESZ reserviert. Beim Rollout wurde kein Platz freigegeben.
+- Zahlungsfrist-Prozessor und E-Mail-Outbox laufen geheimnisgeschützt alle 15 Minuten. Ein erneuter Dry-Run war idempotent und meldete keine weiteren Kandidaten; der erste automatische Doppellauf um 14:15 Uhr lieferte zweimal HTTP 200.
+
+## 2026-07-19 — Verbindliche Zahlungsfrist und automatische Platzfreigabe vorbereitet
+
+### Umsetzung
+
+- Für neue Elternanmeldungen eine 72-Stunden-Zahlungsfrist und eine Letzterinnerung mit mindestens 24 Stunden Nachfrist als gemeinsame Datenbankregel ergänzt.
+- `process-payment-deadlines` gleicht fällige Anmeldungen vor jeder Mail und Freigabe mit Stripe ab, stoppt bei API-/Zuordnungsfehlern und schließt Sponsor, Firma sowie begonnene Camps aus.
+- Remindertext nennt Kind, Camp, Betrag sowie konkretes Datum/Uhrzeit und kommuniziert eindeutig die automatische Stornierung ohne weitere Nachricht.
+- Outbox und atomare RPCs verhindern Doppelversand und stellen sicher, dass eine fehlgeschlagene Mail keine Freigabefrist startet.
+- Anmeldung, Bestätigung, PDF, Zahlungsstart und Admin-Dashboard zeigen den Friststatus konsistent; alte Zahlungslinks prüfen vor Stripe den aktuellen Buchungsstatus.
+- Bestehende offene Elternanmeldungen werden beim Rollout zuerst für die neue Letzterinnerung fällig und nicht ohne diese rückwirkend storniert.
+- Ein geschützter Dry-Run liefert vor Aktivierung nur anonymisierte Kandidatenzahlen je Camp und führt weder Versand noch Datenbankänderungen oder Platzfreigaben aus.
+
+### Rolloutgrenze
+
+- Repository-Umsetzung ist vorbereitet. Produktiv sind Migration, Functions, ausschließlich TALENTEXPERTE zugeordnete Resend-/Stripe-/Supabase-Identitäten, `PAYMENT_DEADLINE_PROCESSOR_SECRET`, Zeitplan und kontrollierte Testfälle getrennt zu aktivieren. Es wurden keine Mails versendet und keine Plätze freigegeben.
+
+## 2026-07-19 — Strikte Trennung von TALENTEXPERTE und AIXTRA-WEB festgelegt
+
+### Dokumentation
+
+- Die Betreiberentscheidung dokumentiert, TALENTEXPERTE auf Marken-, Konto-, Absender-, Connector-, Speicher-, Publishing-, Zahlungs-, Hosting- und Integrationsebene vollständig von AIXTRA-WEB zu trennen.
+- Ein verbindliches Versand-Gate ergänzt: tatsächlichen Absender, Anzeigenamen, Reply-To, Signatur, Empfänger und sichtbare Testdarstellung unmittelbar vor jeder TALENTEXPERTE-Mail prüfen.
+- AIXTRA-WEB-Konten dürfen nicht als Testweg, Fallback oder technisches Zwischenkonto für TALENTEXPERTE verwendet werden; allgemeine Versand-/Publish-Freigaben heben diese Regel nicht auf.
+- Einen priorisierten Bestandsaudit für vorhandene AIXTRA-WEB-Verknüpfungen in E-Mail, GitHub, Testskripten und weiteren externen Diensten aufgenommen.
+
+### Bekannte offene Punkte
+
+- Der bestehende AIXTRA-WEB-Gmail-Connector und hart codierte AIXTRA-WEB-Testempfänger sind bis zu ihrer kontrollierten Ablösung für externe TALENTEXPERTE-Aktionen gesperrt. Der später ausdrücklich bestätigte Git-Remote ist davon ausgenommen.
+
+## 2026-07-18 — Projektdokumentation konsolidiert
+
+### Dokumentation
+
+- Das gesamte Repository, alle vorhandenen Markdown-Dateien, produktiven Seiten, Styles, Skripte, Supabase-Funktionen und Migrationen sowie die Deployment-Allowlist wurden inventarisiert.
+- `AGENTS.md`, `README.md` und `PROJEKT-HANDBUCH.md` wurden als kurze verbindliche Einstiegsebene ergänzt, ohne bestehende fachliche Regeln oder lokale Fremdänderungen zu verwerfen.
+- Unter `docs/` wurden ausschließlich die für die komplexe Website-, Anmelde-, Zahlungs-, Admin-, SEO/GEO- und Integrationsarchitektur erforderlichen Fachdateien angelegt.
+- Historische Audit-, Status-, Kampagnen- und Wochenplan-Dateien bleiben unverändert erhalten; ihre Gültigkeit, Widersprüche und empfohlene Behandlung sind in `docs/DOCUMENTATION-INVENTORY.md` dokumentiert.
+
+### Bekannte offene Punkte
+
+- Live-Stände von Campdaten, Sponsor-Rollout, Hosting-Headern, Social-API-Zugängen und Zahlungsabgleich wurden bei dieser Repository-Dokumentation nicht als bestätigt ausgegeben.
+- Die Deployment-Allowlist veröffentlicht derzeit den gesamten Ordner `images/` mit Ausnahme von `images/social-input/`; darin liegen große Rohmedien und PSD-Dateien. Eine Einschränkung erfordert eine gesonderte, geprüfte Umsetzungsaufgabe.
+- Geschäfts-, Datenschutz- und Camp-Ortsadressen sind im Bestand nicht vollständig konsistent und dürfen ohne fachliche/rechtliche Klärung nicht vereinheitlicht werden.
+
+## 2026-07-13 — Bewertungsbereich repariert und live deployt
+
+- Das nicht mehr initialisierende Elfsight-Bewertungswidget auf der Startseite wurde durch einen nativen, responsiven Bewertungsblock ersetzt. Dadurch bleiben die Bewertungen ohne externe Widget-Konfiguration sichtbar und für Suchmaschinen sowie Screenreader lesbar.
+- Eingebunden sind drei öffentlich verifizierte Google-Rezensionen, die Gesamtbewertung von 5,0 Sternen bei 43 Rezensionen und ein Link zum Google-Unternehmensprofil.
+- Desktop- und Mobilansicht geprüft: drei Spalten auf Desktop, eine Spalte auf Mobilgeräten; das alte Bewertungswidget ist nicht mehr im DOM vorhanden.
+- Sicherheitsprüfungen `npm run test:security` und `npm run test:security:deployment` bestanden. Der rsync-Dry-Run enthielt ausschließlich `index.html` und `css/main.css`; keine Live-Dateien wurden gelöscht.
+- Deployment mit `ci/deploy.sh` nach `/srv/www/medina-82/public/talentexperte`. Vor dem Upload wurde das Remote-Backup `/srv/www/medina-82/backups/talentexperte/backup_2026-07-13_22-09-13.tar.gz` erstellt.
+- Live-Verifikation bestanden: lokale, ausgelieferte und serverseitige SHA-256-Prüfsummen von `index.html` und `css/main.css` stimmen überein; Startseite, Anmeldung, Impressum, Datenschutz, Sitemap, robots.txt und Stylesheet liefern HTTP 200.
+
 ## 2026-07-12 — Hotfix: Camp-Auswahl lud nicht mehr („Camps konnten nicht geladen werden")
 
 Die RLS-Härtung aus `20260710090000` entzog `anon` den Lesezugriff auf `anmeldungen`/`firmen_anmeldungen`. Die öffentliche View `camp_verfuegbarkeit_public` lief aber mit `security_invoker=true` und zählt `freie_plaetze` über genau diese Tabellen → `permission denied` beim `select *` des Anmeldeformulars (Teilselektionen ohne `freie_plaetze` funktionierten weiter, daher fiel es erst im Formular auf). Fix: View auf Besitzerrechte umgestellt (`security_invoker=false`, Migration `20260712100000`) — sie liefert ausschließlich Camp-Metadaten und aggregierte Zahlen. Direkt in Prod angewendet und verifiziert; alle übrigen Views bleiben invoker-basiert und ohne anon-Zugriff.

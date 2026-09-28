@@ -1,5 +1,23 @@
 RewriteEngine On
 
+# Defense in depth for Apache-compatible hosting. The production host currently
+# terminates through nginx; equivalent headers are documented in ci/nginx-security-headers.conf.
+Options -Indexes
+ServerSignature Off
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(self)"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://elfsightcdn.com; connect-src 'self' https://yxygwwoocsdnneqykiym.supabase.co https://elfsightcdn.com https://*.elfsight.com; frame-src https://buy.stripe.com https://*.stripe.com; upgrade-insecure-requests"
+</IfModule>
+
+<FilesMatch "(^\.|\.(?:bak|bak2|conf|env|json|log|md|mjs|sh|sql|ts|ya?ml)$)">
+  Require all denied
+</FilesMatch>
+
 # Alte URL nach Relaunch: Firmenanmeldung
 Redirect 301 /anmeldung-saint-gobain.html /firmen-anmeldung.html
 
