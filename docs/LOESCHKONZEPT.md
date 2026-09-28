@@ -8,7 +8,7 @@ Geltungsbereich: Supabase-Projekt `yxygwwoocsdnneqykiym`, Google Workspace, Post
 
 **Zu den Anmeldungen wird nichts automatisch gelöscht** – einzige Ausnahme sind die Allergie-/Gesundheitsangaben (siehe unten). Anmeldedaten (Eltern- und Firmenanmeldungen einschließlich aller Formularangaben), Teilnahme-/Anwesenheitsdaten, Förderberechtigungen, Zahlungs- und Rechnungsdaten sowie zugehörige E-Mails und Protokolle werden für Steuerberater und Finanzamt bis zum Ende der gesetzlichen Aufbewahrungsfristen aufbewahrt.
 
-- Keine Löschroutine, kein pg_cron-Job und keine Anonymisierung von Anmeldedaten einführen. Eine am 27.09.2026 vorbereitete Routine (R1–R6) wurde **nicht** eingespielt und aus dem Repository entfernt.
+- Keine weitere Löschroutine, keinen weiteren pg_cron-Job und keine Anonymisierung von Anmeldedaten einführen (einzige Ausnahme: Allergieangaben, siehe unten). Eine am 27.09.2026 vorbereitete Routine (R1–R6) wurde **nicht** eingespielt und aus dem Repository entfernt.
 - Löschung erst nach Ablauf der Aufbewahrungsfrist und nur nach ausdrücklicher Freigabe durch den Betreiber.
 - Löschwünsche von Betroffenen: Daten, für die keine Aufbewahrungspflicht besteht, auf Anfrage löschen; aufbewahrungspflichtige Daten bis Fristende sperren (nur Aufbewahrung, keine weitere Nutzung). Vor jeder Löschung Betreiber fragen.
 
