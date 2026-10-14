@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-14 — Herbstcamp II abgesagt und Anmeldung gesperrt
+
+- Herbstcamp II (26.–29.10.2026) auf Betreiberauftrag in Supabase auf `abgesagt` gesetzt; Herbstcamp I bleibt `aktiv` und buchbar. Bestehende Buchungen unverändert.
+- Startseite: Absage im Hero und in der Campkarte, keine Anmeldelinks zu Camp II; widersprüchliche Wochenwahl, Countdown und Plakate mit beiden Terminen aktualisiert.
+- Stylesheet-Link auf der Startseite versioniert, da ein älterer Browsercache noch ohne aktuelle Herbstcamp-Stile geladen wurde; CSS selbst unverändert.
+- Elternformular zeigt Camp II deaktiviert als abgesagt; Firmenformular schließt es über den bestehenden Aktiv-Filter aus. Meta-/FAQ-/Eventdaten, `llms.txt` und Sitemap aktualisiert.
+- Migration `20261014160000_respect_camp_status_in_public_availability.sql`: `buchbar` berücksichtigt den Aktivstatus statt nur freie Plätze; Spalten, Grants und Aggregatgrenze bleiben erhalten.
+- Sicherheitstests erweitert: abgesagtes Camp ist öffentlich nicht buchbar; gültige Eltern-/Firmen-Testanfragen werden vor Speicherung oder Versand mit HTTP 409 abgewiesen.
+
 ## 2026-09-28 — Search-Console-Verifizierung (Ausnahme zur Projekttrennung)
 
 - Betreiberentscheidung: Property per `googled0f4b13b6eb20b6f.html` mit dem AIXTRA-WEB-Google-Konto bestätigen, Reporting-Service-Account lesend als „Nutzer“ berechtigen (siehe `docs/DECISIONS.md`).

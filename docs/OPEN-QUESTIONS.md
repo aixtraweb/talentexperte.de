@@ -80,6 +80,13 @@ Geltungsbereich: ungeklärte Punkte aus Repository- und Dokumentationsinventur
 - Verantwortlich: Betreiber/rechtliche Prüfung
 - Datum: 18.07.2026
 
+## Bestehende Buchungen nach Absage Herbstcamp II
+
+- Status: operativ offen; Sperre für neue Anmeldungen umgesetzt am 14.10.2026
+- Herbstcamp II ist `abgesagt`, die Website kennzeichnet die Absage und neue Eltern-/Firmenanmeldungen werden serverseitig abgewiesen. Herbstcamp I bleibt buchbar.
+- Bestehende Buchungen bleiben für Rückmeldungen, Umbuchung, Gutschein und Erstattung erhalten. Zahlungslinks und Zahlungsfrist-/Outbox-Automatik bestehender offener Buchungen sind ein eigener Folgepunkt; der Campstatus alleine ersetzt keinen Abschluss dieser Buchungen.
+- Keine pauschale Stornierung, Erstattung oder Datenlöschung aus der Websitesperre ableiten.
+
 ## Aktueller Live-Stand von Camps und Preisen
 
 - Status: wartet auf Technik

@@ -328,3 +328,13 @@ Instagram-/Facebook-Posts für Sommercamp und TALENTEXPERTE bleiben bis zur
 erneuten Nutzeranweisung eingestellt. Auch kombinierte Blog-/Social-Zeitpläne
 sind gestoppt. Bestehende Inhalte und Zugangsdaten bleiben erhalten.
 [Nachweis und Wiederaufnahmegrenze](SOCIAL-PAUSE-2026-09-05.md).
+
+## 2026-10-14 – Herbstcamp II absagen, Herbstcamp I buchbar lassen
+
+Status: akzeptiert, ausdrücklicher Betreiberauftrag.
+
+Herbstcamp II vom 26. bis 29. Oktober 2026 findet wegen zu geringer Teilnehmerzahl nicht statt. Der Campstatus `abgesagt` sperrt neue Eltern-, Sponsor- und Firmenanmeldungen über die vorhandenen serverseitigen Aktivstatus-Prüfungen. Die öffentliche Ansicht darf trotz rechnerisch freier Plätze nicht `buchbar=true` melden.
+
+Herbstcamp I vom 19. bis 22. Oktober 2026 bleibt aktiv. Vorhandene Buchungen und Zahlungsdaten werden nicht pauschal storniert, gelöscht oder umgebucht. Umbuchung, Gutschein und Erstattung folgen jeweils der individuellen Rückmeldung und sind getrennte Betriebsvorgänge.
+
+Die Absage bleibt sichtbar auf Website und Elternformular; sie ist auch im Eventschema (`EventCancelled`) und in `llms.txt` dokumentiert. Es wird kein neues Designsystem oder Anmeldeverfahren eingeführt.

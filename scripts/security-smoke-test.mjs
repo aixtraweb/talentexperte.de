@@ -69,6 +69,54 @@ async function replayTest(slug, purposeLabel) {
 await replayTest("register", "Elternanmeldung");
 await replayTest("company-register", "Firmenanmeldung");
 
+// Opt-in: check the status gate with a previously verified cancelled camp.
+// A rejection must happen before any registration, payment or email is created.
+if (process.env.CANCELLED_CAMP_ID) {
+  const campId = process.env.CANCELLED_CAMP_ID;
+  const campResponse = await expect("Abgesagtes Camp: öffentliche Ansicht", {
+    url: `${projectUrl}/rest/v1/camp_verfuegbarkeit_public?id=eq.${encodeURIComponent(campId)}&select=id,status,buchbar`,
+    options: { headers: publicHeaders },
+  }, [200]);
+  const camp = campResponse?.ok ? (await campResponse.json())[0] : null;
+  if (camp?.status !== "abgesagt" || camp.buchbar !== false) {
+    console.log("FAIL Abgesagtes Camp ist nicht eindeutig gesperrt; keine POST-Tests.");
+    failures += 1;
+  } else {
+    console.log("PASS Abgesagtes Camp: buchbar=false");
+    for (const slug of ["register", "company-register"]) {
+      const response = await expect(`${slug}: Token für Campstatus-Negativtest`, {
+        url: `${projectUrl}/functions/v1/${slug}`,
+        options: { cache: "no-store" },
+      }, [200]);
+      if (!response?.ok) continue;
+      const { token } = await response.json();
+      await expect(`${slug}: abgesagtes Camp serverseitig gesperrt`, {
+        url: `${projectUrl}/functions/v1/${slug}`,
+        options: {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            form_token: token,
+            form_started_at: Math.floor(Date.now() / 1000) - 10,
+            website_url: "", contact_url: "", fax_number: "",
+            camp_id: campId,
+            vorname: "Campstatus", nachname: "Negativtest",
+            geburtsdatum: "2016-01-01",
+            eltern_vorname: "Campstatus", eltern_nachname: "Negativtest",
+            email: "campstatus-test@example.invalid", telefon: "0000000000",
+            firma_name: "Campstatus-Negativtest", firma_telefon: "0000000000",
+            firma_email: "campstatus-test@example.invalid",
+            mitarbeiter_vorname: "Campstatus", mitarbeiter_nachname: "Negativtest",
+            mitarbeiter_email: "campstatus-test@example.invalid", mitarbeiter_telefon: "0000000000",
+            kind_vorname: "Campstatus", kind_nachname: "Negativtest",
+            kind_geburtsdatum: "2016-01-01",
+          }),
+        },
+      }, [409]);
+    }
+  }
+}
+
 await expect("Firmenbestätigung ohne gültigen Token", {
   url: `${projectUrl}/functions/v1/company-register`,
   options: {

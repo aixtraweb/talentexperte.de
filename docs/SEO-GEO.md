@@ -89,3 +89,15 @@ Geltungsbereich: organische Suche, lokale Sichtbarkeit und KI-Suchsysteme
 - [`STRUCTURED-DATA.md`](STRUCTURED-DATA.md)
 - [`CONTENT-GUIDE.md`](CONTENT-GUIDE.md)
 - [`QA-CHECKLIST.md`](QA-CHECKLIST.md)
+
+## Betriebsänderung 14. Oktober 2026: Herbstcamp II abgesagt
+
+Herbstcamp II ist in Supabase `abgesagt` und öffentlich `buchbar=false`. Startseite, Elternformular, FAQ, Eventschema, Metadaten, `llms.txt` und Sitemap sind angeglichen. Herbstcamp I bleibt aktiv und buchbar. Das abgesagte Event bleibt mit seinen ursprünglichen Terminen und `EventCancelled` als nachvollziehbarer Eintrag erhalten; seine Anmeldelinks sind entfernt.
+
+Das Elternformular zeigt die abgesagte Option deaktiviert, auch bei einem alten Direktlink. Das Firmenformular nutzt unverändert den bestehenden Filter `status=aktiv`. Die beiden Edge Functions weisen Anmeldungen für inaktive Camps mit HTTP 409 zurück. Der öffentliche Verfügbarkeitsstatus berücksichtigt jetzt zusätzlich den Campstatus; die Aggregat- und Berechtigungsgrenze bleibt unverändert.
+
+Validierung: Desktop-/Mobilvorschau, deaktivierte Camp-II-Auswahl, aktive Camp-I-Auswahl, JSON-LD-/JavaScript-Syntax sowie `CANCELLED_CAMP_ID=7f4d8bfb-192e-4858-9fbb-4d3895d982b8 npm run test:security`. Keine Testbuchung, Zahlungsaktion oder E-Mail ausgelöst; bestehende aktive Camp-II-Buchungen bleiben 8 Eltern und 1 Firma.
+
+Live-Abnahme: vier öffentliche Dateien gezielt per SSH/rsync auf den bestehenden TALENTEXPERTE-Webroot übertragen, nach Sicherung des gesamten vorherigen Webroots. HTTP 200 und identische SHA-256-Dateihashes bestätigt. `npm run test:security:deployment` bestanden; private Quellen bleiben 403/404. Der bekannte Hinweis zu nginx-Security-Headern bleibt offen. Live-Anmeldung auf 390 × 844: Herbstcamp I aktiviert, Herbstcamp II deaktiviert und nicht vorausgewählt; keine Konsolenfehler oder horizontales Scrollen. Desktop 1280 × 900 geprüft. Der Stylesheet-Link der Startseite ist versioniert, damit ein alter Jahrescache die vorhandenen aktuellen Herbstcamp-Stile nicht verdeckt.
+
+Website-Rollbackpunkt: `/srv/www/medina-82/backups/talentexperte/backup_2026-10-14_herbstcamp-ii_1791990712957.tar.gz`. Ein Website-Rollback hebt den separaten Supabase-Status `abgesagt` nicht auf.

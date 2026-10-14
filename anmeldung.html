@@ -75,7 +75,7 @@
       "name": "Herbstcamp II Aachen",
       "startDate": "2026-10-26T09:00:00+02:00",
       "endDate": "2026-10-29T15:00:00+02:00",
-      "eventStatus": "https://schema.org/EventScheduled",
+      "eventStatus": "https://schema.org/EventCancelled",
       "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
       "location": {
         "@type": "Place",
@@ -98,7 +98,7 @@
         "url": "https://www.talentexperte.de/anmeldung.html",
         "price": "149",
         "priceCurrency": "EUR",
-        "availability": "https://schema.org/InStock"
+        "availability": "https://schema.org/SoldOut"
       }
     }
   ]
@@ -132,7 +132,7 @@
 
 <!-- HERO (kompakt, damit die Camp-Auswahl sofort sichtbar ist) -->
 <section class="hero-mini"><div class="container">
-  <a href="index.html#herbstcamp" class="herbst-ribbon"><span class="herbst-ribbon-tag">🍂 Herbstcamps 2026</span><span>19.–22.10. &amp; 26.–29.10. · 5–14 Jahre · 149 €</span></a>
+  <a href="index.html#herbstcamp" class="herbst-ribbon"><span class="herbst-ribbon-tag">🍂 Herbstcamps 2026</span><span>Herbstcamp I: 19.–22.10. · Herbstcamp II abgesagt</span></a>
   <h1>JETZT <span class="accent">ANMELDEN</span></h1>
   <p id="heroIntro">In 2 Minuten zum Camp-Platz: Camp wählen, Daten eintragen, fertig. Die Bestätigung kommt sofort per E-Mail.</p>
 <!-- GOOGLE-TRUST:START (generiert von scripts/google-reviews-sync.mjs) -->
@@ -561,7 +561,7 @@ async function loadCamps() {
   
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/camp_verfuegbarkeit_public?status=in.(aktiv,ausgebucht)&order=datum_von.asc`,
+      `${SUPABASE_URL}/rest/v1/camp_verfuegbarkeit_public?status=in.(aktiv,ausgebucht,abgesagt)&order=datum_von.asc`,
       {
         headers: {
           'apikey': SUPABASE_ANON_KEY,
@@ -595,7 +595,9 @@ async function loadCamps() {
     grid.innerHTML = camps.map(camp => {
       const abgelaufen = istAbgelaufen(camp);
       const frei = camp.freie_plaetze;
-      const voll = frei <= 0;
+      const abgesagt = camp.status === 'abgesagt';
+      const voll = frei <= 0 || camp.status === 'ausgebucht';
+      const gesperrt = abgesagt || voll || abgelaufen;
       const wenig = !abgelaufen && frei > 0 && frei <= 5;
       const preis = camp.aktueller_preis || camp.preis_euro;
       const fruehbucher = camp.fruehbucher_aktiv;
@@ -608,8 +610,8 @@ async function loadCamps() {
       const datumBis = formatDate(camp.datum_bis);
 
       return `
-        <label class="camp-option ${abgelaufen ? 'disabled expired' : voll ? 'disabled' : ''}" data-id="${escapeHtml(camp.id)}">
-          <input type="checkbox" name="camp" value="${escapeHtml(camp.id)}" ${(voll || abgelaufen) ? 'disabled' : ''}>
+        <label class="camp-option ${abgelaufen ? 'disabled expired' : gesperrt ? 'disabled' : ''}" data-id="${escapeHtml(camp.id)}">
+          <input type="checkbox" name="camp" value="${escapeHtml(camp.id)}" ${gesperrt ? 'disabled' : ''}>
           <div class="camp-radio"></div>
           <div class="camp-info">
             <h3>${saisonEmoji} ${escapeHtml(camp.name)}</h3>
@@ -621,10 +623,10 @@ async function loadCamps() {
           <div class="camp-right">
             <div>
               <div class="camp-price-tag">${escapeHtml(preis)}€</div>
-              <div class="camp-spots ${abgelaufen ? 'expired' : voll ? 'full' : wenig ? 'few' : 'available'}">
-                ${abgelaufen ? '⏳ Abgelaufen · Vergangenheit' : voll ? '✕ Ausgebucht' : wenig ? `⚡ Nur noch ${frei} Plätze` : `✓ ${frei} Plätze frei`}
+              <div class="camp-spots ${abgelaufen ? 'expired' : gesperrt ? 'full' : wenig ? 'few' : 'available'}">
+                ${abgesagt ? '✕ Abgesagt · keine Anmeldung möglich' : abgelaufen ? '⏳ Abgelaufen · Vergangenheit' : voll ? '✕ Ausgebucht' : wenig ? `⚡ Nur noch ${frei} Plätze` : `✓ ${frei} Plätze frei`}
               </div>
-              ${(fruehbucher && !abgelaufen) ? '<div class="camp-fruehbucher">🏷️ Frühbucher-Preis</div>' : ''}
+              ${(fruehbucher && !gesperrt) ? '<div class="camp-fruehbucher">🏷️ Frühbucher-Preis</div>' : ''}
             </div>
           </div>
         </label>
