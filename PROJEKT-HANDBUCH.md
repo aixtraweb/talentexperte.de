@@ -110,7 +110,7 @@ Wichtig:
 - Bestehen: seit 2005
 - Erfahrungssignal: mehr als 4.000 Kinder und mehr als 150 Camps
 - Zielgruppe: Kinder von 5 bis 14 Jahren, Anfänger bis Vereinsspieler
-- Regelzeit: täglich 09:00–15:00 Uhr; Ankunft spätestens 08:45 Uhr
+- Regelzeit: täglich 09:00–15:00 Uhr; Ankunft ab 09:00 Uhr, täglich zwischen 09:00 und 10:00 Uhr möglich
 - Inklusive: Training, Spiele/Turniere, Mittagessen, Getränke, Obst, Urkunde, Erinnerungsfoto und Medaille
 - Camp-Ort: Kunstrasenplatz am Branderhofer Weg, 52066 Aachen-Burtscheid
 - Kontakt: `kontakt@talentexperte.de`

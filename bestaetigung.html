@@ -160,7 +160,7 @@
     <ul class="checklist">
       <li id="reservationStep"><span class="icon">1️⃣</span><span id="reservationStepText">Der Camp-Platz ist ab sofort verbindlich für dein Kind reserviert.</span></li>
       <li><span class="icon">2️⃣</span>Kurz vor dem Camp senden wir dir eine Info-Mail mit allen Details (Treffpunkt, Ablauf, was mitbringen).</li>
-      <li><span class="icon">3️⃣</span>Am ersten Tag bitte 15 Minuten früher da sein (8:45 Uhr) für die Begrüßung.</li>
+      <li><span class="icon">3️⃣</span>Ankunft: ab 09:00 Uhr. Die Kinder können täglich zwischen 09:00 und 10:00 Uhr ankommen.</li>
     </ul>
   </div>
 
@@ -168,9 +168,9 @@
   <div class="info-card" id="packingCard">
     <h2>🎒 Das sollte dein Kind mitbringen</h2>
     <div class="pack-grid">
-      <div class="pack-item"><span class="icon">👟</span>Fußballschuhe (Kunstrasen)</div>
+      <div class="pack-item"><span class="icon">👟</span>Fußballschuhe</div>
       <div class="pack-item"><span class="icon">🥾</span>Hallenschuhe (bei Regen)</div>
-      <div class="pack-item"><span class="icon">⚽</span>Schienbeinschoner</div>
+      <div class="pack-item"><span class="icon">🌧️</span>Regenjacke / Wechselkleidung</div>
       <div class="pack-item"><span class="icon">👕</span>Sportkleidung</div>
       <div class="pack-item"><span class="icon">🧴</span>Sonnencreme</div>
       <div class="pack-item"><span class="icon">💧</span>Trinkflasche</div>
@@ -182,7 +182,7 @@
   <!-- KONTAKT -->
   <div class="info-card">
     <h2>📞 Fragen? Wir sind für dich da!</h2>
-    <p class="contact-intro">Bei Fragen, Änderungswünschen oder Stornierung – melde dich einfach.</p>
+    <p class="contact-intro">Bei Fragen, Änderungswünschen oder Stornierung – melde dich einfach. Während der Campzeit von 09:00 bis 15:00 Uhr sind wir nur stark eingeschränkt erreichbar. Informiere uns bitte auch kurz, falls dein Kind erkrankt oder nicht teilnehmen kann.</p>
     <div class="contact-bar">
       <a href="https://wa.me/4915234678108?text=Hallo%2C%20ich%20habe%20gerade%20ein%20Feriencamp%20gebucht%20und%20habe%20eine%20Frage." class="contact-link wa" target="_blank" rel="noopener">💬 WhatsApp</a>
       <a href="tel:+4915234678108" class="contact-link">📱 +49 1523 4678108</a>
@@ -896,8 +896,8 @@ async function downloadPDF() {
   doc.setFontSize(9);
   doc.setTextColor(80, 80, 80);
   var pack = [
-    [u('Fußballschuhe (Kunstrasen)'), 'Hallenschuhe (bei Regen)'],
-    ['Schienbeinschoner',             'Sportkleidung'],
+    [u('Fußballschuhe'), 'Hallenschuhe (bei Regen)'],
+    ['Regenjacke / Wechselkleidung', 'Sportkleidung'],
     ['Sonnencreme',                   'Trinkflasche'],
     [u('Kappe / Mütze'),              'Rucksack'],
   ];
@@ -910,11 +910,12 @@ async function downloadPDF() {
 
   // Hinweis
   doc.setFillColor(255, 248, 230);
-  doc.roundedRect(margin, y, col, 18, 3, 3, 'F');
+  doc.roundedRect(margin, y, col, 24, 3, 3, 'F');
   doc.setTextColor(120, 100, 0);
   doc.setFontSize(8);
-  doc.text(u('Bitte am ersten Tag 15 Minuten früher da sein (8:45 Uhr) für die Begrüßung.'), margin + 8, y + 7);
+  doc.text(u('Ankunft: ab 09:00 Uhr. Die Kinder können zwischen 09:00 und 10:00 Uhr ankommen.'), margin + 8, y + 7);
   doc.text('Bei Fragen: kontakt@talentexperte.de | +49 1523 4678108 | WhatsApp', margin + 8, y + 13);
+  doc.text(u('Von 09:00 bis 15:00 Uhr sind wir nur stark eingeschränkt erreichbar.'), margin + 8, y + 19);
   } else {
     doc.setFillColor(250, 245, 245);
     doc.roundedRect(margin, y, col, 20, 3, 3, 'F');

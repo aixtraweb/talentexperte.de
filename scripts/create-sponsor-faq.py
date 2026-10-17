@@ -236,7 +236,7 @@ def build():
     story.append(Paragraph("Alles Wichtige für den Camp-Start", title))
     story.append(Paragraph("Zeiten und Ankunft", heading))
     story.append(bullet_item("Camp-Zeit: in der Regel 09:00 bis 15:00 Uhr."))
-    story.append(bullet_item("Am ersten Tag bitte um 08:45 Uhr zur Begrüßung vor Ort sein."))
+    story.append(bullet_item("Ankunft: ab 09:00 Uhr. Die Kinder können täglich zwischen 09:00 und 10:00 Uhr ankommen."))
     story.append(bullet_item("Den konkreten Zeitraum und Ort finden Sie in Ihrer Bestätigung."))
 
     story.append(Paragraph("Im Camp enthalten", heading))
@@ -247,10 +247,10 @@ def build():
 
     story.append(Paragraph("Bitte mitbringen", heading))
     gear = [
-        ["Fußballschuhe (Kunstrasen)", "Schienbeinschoner"],
+        ["Fußballschuhe", "Rucksack"],
         ["Sportkleidung", "Trinkflasche"],
         ["Regenjacke / Wechselkleidung", "Sonnencreme und Kappe"],
-        ["Hallenschuhe bei Regen", "Rucksack"],
+        ["Hallenschuhe bei Regen", "Mütze / Handschuhe"],
     ]
     gear_table = Table(gear, colWidths=[79 * mm, 79 * mm])
     gear_table.setStyle(
@@ -263,8 +263,8 @@ def build():
                 ("TEXTCOLOR", (0, 0), (-1, -1), INK),
                 ("LEFTPADDING", (0, 0), (-1, -1), 4 * mm),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 4 * mm),
-                ("TOPPADDING", (0, 0), (-1, -1), 3 * mm),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 3 * mm),
+                ("TOPPADDING", (0, 0), (-1, -1), 2 * mm),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 2 * mm),
             ]
         )
     )
@@ -274,7 +274,8 @@ def build():
     story.append(
         faq(
             "Absage oder Camp-Wechsel",
-            "Informieren Sie uns so früh wie möglich per E-Mail. Für Eltern entsteht aus der "
+            "Informieren Sie uns bitte auch kurz, falls Ihr Kind erkrankt oder nicht teilnehmen kann. "
+            "Für Eltern entsteht aus der "
             "gesponserten Teilnahme keine Zahlungs- oder Erstattungspflicht. Die Abstimmung mit dem "
             "Kooperationspartner erfolgt intern.",
         )
@@ -282,7 +283,7 @@ def build():
 
     contact = Table(
         [[
-            Paragraph("<b>Fragen zum Camp?</b><br/>kontakt@talentexperte.de<br/>+49 1523 4678108", body),
+            Paragraph("<b>Fragen zum Camp?</b><br/>kontakt@talentexperte.de<br/>WhatsApp: 01523 4678108<br/>Während der Campzeit von 09:00 bis 15:00 Uhr sind wir nur stark eingeschränkt erreichbar.", small),
             Paragraph(
                 "<b>Trainingsadresse</b><br/>JSC Blau-Weiß Aachen 1946 e.V.<br/>Branderhofer Weg, 52066 Aachen",
                 body,

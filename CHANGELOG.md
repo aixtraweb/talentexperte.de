@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-17 — Ankunft und Campinformationen vereinheitlicht
+
+- Startseite samt FAQ-Schema, Bestätigungsseite und PDF-Ausgabe: Ankunft ab 09:00 Uhr, täglich zwischen 09:00 und 10:00 Uhr möglich.
+- Drei FAQ-PDFs und Sponsoring-Generator abgeglichen; Packliste nennt Fußballschuhe ohne zusätzliche Schienbeinschoner-Vorgabe.
+- Stark eingeschränkte Erreichbarkeit während 09:00–15:00 Uhr und Bitte um kurze Nachricht bei Erkrankung/Nichtteilnahme ergänzt.
+- Betreiberentscheidung in Handbuch und Inhaltsleitfaden festgehalten; E-Mail bleibt Vorlage zur Kontrolle.
+- QA: Sicherheitstests bestanden; FAQ auf Desktop (1440 px) und Mobil (390 px), Tastatur, Konsole und JSON-LD geprüft. Geänderte FAQ-Seiten und persönliche PDF-Ausgabe mit lokalen Testdaten visuell geprüft.
+- Veröffentlichung: gezielte Übertragung ausschließlich der zwei HTML-Dateien und drei PDFs nach Backup im bestätigten TALENTEXPERTE-Webroot; keine Löschsynchronisation oder Übertragung fremder Änderungen.
+
 ## 2026-10-14 — Herbstcamp II abgesagt und Anmeldung gesperrt
 
 - Herbstcamp II (26.–29.10.2026) auf Betreiberauftrag in Supabase auf `abgesagt` gesetzt; Herbstcamp I bleibt `aktiv` und buchbar. Bestehende Buchungen unverändert.

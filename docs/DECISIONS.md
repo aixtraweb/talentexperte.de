@@ -338,3 +338,9 @@ Herbstcamp II vom 26. bis 29. Oktober 2026 findet wegen zu geringer Teilnehmerza
 Herbstcamp I vom 19. bis 22. Oktober 2026 bleibt aktiv. Vorhandene Buchungen und Zahlungsdaten werden nicht pauschal storniert, gelöscht oder umgebucht. Umbuchung, Gutschein und Erstattung folgen jeweils der individuellen Rückmeldung und sind getrennte Betriebsvorgänge.
 
 Die Absage bleibt sichtbar auf Website und Elternformular; sie ist auch im Eventschema (`EventCancelled`) und in `llms.txt` dokumentiert. Es wird kein neues Designsystem oder Anmeldeverfahren eingeführt.
+
+## 2026-10-17 – Ankunft und Elterninformationen vereinheitlichen
+
+Status: akzeptiert, ausdrücklicher Betreiberauftrag.
+
+Die Kinder können täglich zwischen 09:00 und 10:00 Uhr ankommen; Ankunft ab 09:00 Uhr. Die bisherige Aufforderung zu 08:45 Uhr entfällt auf Website, Bestätigung und PDFs. Die Packliste nennt Fußballschuhe ohne Kunstrasen-/Schienbeinschoner-Vorgabe. Während der Campzeit 09:00–15:00 Uhr ist die Erreichbarkeit stark eingeschränkt. Bei Erkrankung oder Nichtteilnahme sollen Eltern kurz informieren.

@@ -110,3 +110,10 @@ Geltungsbereich: Website, Formulare, E-Mails, PDFs, Social Media und GEO-Inhalte
 - Geschäftsanschrift im Impressum, Verantwortlichenanschrift im Datenschutz und weitere Personenanschrift weichen ab; Camp-Ort separat halten und nicht ungeprüft konsolidieren.
 - `llms.txt` und sichtbare Website enthalten feste Camp-/Preisangaben; Supabase bleibt für aktuelle Betriebsdaten maßgeblich.
 - Historische Audits enthalten veraltete Camps, Scores und Empfehlungen; siehe [`DOCUMENTATION-INVENTORY.md`](DOCUMENTATION-INVENTORY.md).
+
+## Camp-Informationen – bestätigt am 17.10.2026
+
+- Ankunft: ab 09:00 Uhr; die Kinder können täglich zwischen 09:00 und 10:00 Uhr ankommen. Keine Ankunft um 08:45 Uhr verlangen.
+- Packliste: „Fußballschuhe“; keine zusätzliche Schienbeinschoner-Vorgabe.
+- E-Mail: kontakt@talentexperte.de; WhatsApp: 01523 4678108. Während der Campzeit von 09:00 bis 15:00 Uhr ist die Erreichbarkeit stark eingeschränkt.
+- Eltern bitten, kurz zu informieren, falls ihr Kind erkrankt oder nicht teilnehmen kann.
